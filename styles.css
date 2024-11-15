@@ -1,0 +1,111 @@
+/* Default layout for larger screens */
+.container {
+    flex-direction: column;
+}
+
+.sidebar {
+    flex: 1;
+    order: 1;
+}
+
+.main-content {
+    flex: 1;
+    order: 2;
+}
+/* Responsive layout for mobile devices */
+@media (min-width: 1024px) {
+    .container {
+        display: flex;
+        flex-direction: row;
+    }
+    
+    .sidebar {
+        flex: 0 0 250px; /* Adjust the width as needed */
+        padding: 10px;
+    }
+    
+    .main-content {
+        flex: 1;
+        padding: 10px;
+    }
+    
+    
+   
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+table, th, td {
+    border: 1px solid black;
+}
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+th {
+    background-color: #f2f2f2;
+}
+tr:hover {
+    background-color: #f5f5f5;
+}
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+.pagination a {
+    margin: 0 5px;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    text-decoration: none;
+    color: #333;
+}
+.pagination a.active {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+.pagination a:hover {
+    background-color: #ddd;
+}
+.form-group {
+    margin-bottom: 10px;
+}
+/* New styles for order statuses */
+.order-assigned {
+    background-color: #fffacd; /* Light yellow */
+}
+.order-completed {
+    background-color: #aff1af; /* Light green */
+}
+.order-current-user {
+    background-color: #fceceee8; /* Light pink */
+}
+.order-delivered {
+    background-color: #ffffffe8; 
+    text-color: #a4a4a5
+}
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.filters .form-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filters button {
+    align-self: flex-end;
+}
+
+textarea {
+    max-width: fit-content; /* Adjust the width as needed */
+    word-wrap: break-word;
+    white-space: normal;
+}
+

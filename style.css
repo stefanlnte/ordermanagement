@@ -1,0 +1,83 @@
+.oms-dashboard {
+    display: flex;
+    height: 100vh; /* Full height */
+}
+
+.oms-sidebar {
+    width: 25%;
+    padding: 10px;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box; /* Ensure padding is included in the width */
+    align-items: flex-start; /* Align content to the top */
+}
+
+.oms-sidebar label,
+.oms-sidebar input,
+.oms-sidebar textarea,
+.oms-sidebar select,
+.oms-sidebar button {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.oms-sidebar .form-group-inline {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.oms-sidebar .form-group-inline label,
+.oms-sidebar .form-group-inline input {
+    width: 48%;
+}
+
+.oms-sidebar button {
+    font-size: 110%;
+}
+
+.oms-panels {
+    width: 75%;
+    display: flex;
+    justify-content: space-between;
+    flex-grow: 1;
+    box-sizing: border-box; /* Ensure padding is included in the width */
+    align-items: flex-start; /* Align content to the top */
+}
+
+.oms-panel {
+    flex: 1;
+    padding: 10px;
+    background-color: #f1f1f1;
+    margin-left: 10px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box; /* Ensure padding is included in the width */
+    align-items: flex-start; /* Align content to the top */
+}
+
+.oms-panel:first-child {
+    margin-left: 0;
+}
+
+.oms-panel h2 {
+    text-align: center;
+}
+
+.oms-panel table {
+    width: 100%;
+    border-collapse: collapse;
+    flex-grow: 1;
+}
+
+.oms-panel th, .oms-panel td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+.oms-panel tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
