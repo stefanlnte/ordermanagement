@@ -38,7 +38,7 @@ body {
 }
 
 /* Hover effect */
-.button a:hover {
+.button :hover {
   background-color: yellow; /* Darker blue on hover */
   transform: scale(1.05); /* Slightly enlarges the button */
 }
@@ -132,4 +132,10 @@ body {
 
 .oms-panel tr:nth-child(even) {
   background-color: #f2f2f2;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

@@ -509,6 +509,10 @@ function formatRemainingDays($dueDate) {
         </div>
     </div>
 
+    <footer>
+        <p class="footer">© Color Print</p>
+    </footer>
+
 
  <!-- Initialize CodeMirror -->
 
