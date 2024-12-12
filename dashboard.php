@@ -264,6 +264,7 @@ function formatRemainingDays($dueDate) {
 
     <title>Dashboard Utilizator</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -275,6 +276,33 @@ function formatRemainingDays($dueDate) {
 </head>
 <body>
 <body>
+    <header id="header">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var currentDate = new Date();
+            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            var formattedDate = currentDate.toLocaleDateString('ro-RO', options);
+            document.getElementById('currentdate').textContent = formattedDate;
+
+            // Determinarea mesajului de întâmpinare
+            var currentHour = currentDate.getHours();
+            var greetingMessage = "";
+
+            if (currentHour < 12) {
+                greetingMessage = "Bună dimineața ☕";
+            } else {
+                greetingMessage = "Bună ziua ⚡";
+            }
+
+            // Actualizarea doar a mesajului de întâmpinare
+            document.getElementById('greeting-message').textContent = greetingMessage;
+        });
+    </script>
+
+    <p>
+        <span id="greeting-message"></span>, <?php echo $_SESSION['username']; ?>! Astăzi este <span id="currentdate"></span>.</p>
+     <div class="button" ><a href="logout.php">Deconectare</a> </div>   
+    </header>
     <div class="container">
         <div class="sidebar">
             <h2>Adaugă Comandă</h2>
@@ -481,35 +509,6 @@ function formatRemainingDays($dueDate) {
         </div>
     </div>
 
-    <footer>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var currentDate = new Date();
-            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            var formattedDate = currentDate.toLocaleDateString('ro-RO', options);
-            document.getElementById('currentdate').textContent = formattedDate;
-
-            // Determinarea mesajului de întâmpinare
-            var currentHour = currentDate.getHours();
-            var greetingMessage = "";
-
-            if (currentHour < 12) {
-                greetingMessage = "Bună dimineața ☕";
-            } else {
-                greetingMessage = "Bună ziua ⚡";
-            }
-
-            // Actualizarea doar a mesajului de întâmpinare
-            document.getElementById('greeting-message').textContent = greetingMessage;
-        });
-    </script>
-
-    <p>
-        <span id="greeting-message"></span>, <?php echo $_SESSION['username']; ?>! | <a href="logout.php">Deconectare</a>
-    </p>
-    <p>Astăzi este <span id="currentdate"></span></p>
-    <p>&copy; COLOR PRINT</p>
-</footer>
 
  <!-- Initialize CodeMirror -->
 

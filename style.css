@@ -1,20 +1,67 @@
+html,
 body {
-    font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+#header {
+  position: sticky;
+  display: flex;
+  top: 0;
+  z-index: 1000; /* Asigură-te că este deasupra altor elemente */
+  background-color: #808080; /* Setează o culoare de fundal pentru a evita suprapunerea cu conținutul */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3); /* Adaugă un efect de umbră pentru a diferenția header-ul */
+  color: white !important;
+  padding: 10px 20px;
+  margin: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+#header > div > a {
+  margin-left: 5px;
+}
+
+/* General styling for buttons */
+.button a {
+  display: inline-block; /* Makes the link behave like a button */
+  padding: 10px 20px; /* Adds padding for better clickability */
+  font-size: 16px; /* Makes text more readable */
+  color: black; /* Text color */
+  background-color: yellow; /* Primary blue background */
+  border: none; /* Removes default link borders */
+  border-radius: 5px; /* Adds rounded corners */
+  text-decoration: none; /* Removes underline */
+  text-align: center; /* Centers text */
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Adds hover and click effects */
+}
+
+/* Hover effect */
+.button a:hover {
+  background-color: yellow; /* Darker blue on hover */
+  transform: scale(1.05); /* Slightly enlarges the button */
+}
+
+/* Active effect */
+.button a:active {
+  background-color: yellowgreen; /* Even darker blue when clicked */
+  transform: scale(0.98); /* Shrinks button slightly on click */
 }
 
 .oms-dashboard {
-    display: flex;
-    height: 100vh; /* Full height */
+  display: flex;
+  height: 100vh; /* Full height */
 }
 
 .oms-sidebar {
-    width: 25%;
-    padding: 10px;
-    background-color: #f9f9f9;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box; /* Ensure padding is included in the width */
-    align-items: flex-start; /* Align content to the top */
+  width: 25%;
+  padding: 10px;
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box; /* Ensure padding is included in the width */
+  align-items: flex-start; /* Align content to the top */
 }
 
 .oms-sidebar label,
@@ -22,66 +69,67 @@ body {
 .oms-sidebar textarea,
 .oms-sidebar select,
 .oms-sidebar button {
-    display: block;
-    width: 100%;
-    margin-bottom: 10px;
-    text-align: left;
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  text-align: left;
 }
 
 .oms-sidebar .form-group-inline {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .oms-sidebar .form-group-inline label,
 .oms-sidebar .form-group-inline input {
-    width: 48%;
+  width: 48%;
 }
 
 .oms-sidebar button {
-    font-size: 110%;
+  font-size: 110%;
 }
 
 .oms-panels {
-    width: 75%;
-    display: flex;
-    justify-content: space-between;
-    flex-grow: 1;
-    box-sizing: border-box; /* Ensure padding is included in the width */
-    align-items: flex-start; /* Align content to the top */
+  width: 75%;
+  display: flex;
+  justify-content: space-between;
+  flex-grow: 1;
+  box-sizing: border-box; /* Ensure padding is included in the width */
+  align-items: flex-start; /* Align content to the top */
 }
 
 .oms-panel {
-    flex: 1;
-    padding: 10px;
-    background-color: #f1f1f1;
-    margin-left: 10px;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box; /* Ensure padding is included in the width */
-    align-items: flex-start; /* Align content to the top */
+  flex: 1;
+  padding: 10px;
+  background-color: #f1f1f1;
+  margin-left: 10px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box; /* Ensure padding is included in the width */
+  align-items: flex-start; /* Align content to the top */
 }
 
 .oms-panel:first-child {
-    margin-left: 0;
+  margin-left: 0;
 }
 
 .oms-panel h2 {
-    text-align: center;
+  text-align: center;
 }
 
 .oms-panel table {
-    width: 100%;
-    border-collapse: collapse;
-    flex-grow: 1;
+  width: 100%;
+  border-collapse: collapse;
+  flex-grow: 1;
 }
 
-.oms-panel th, .oms-panel td {
-    border: 1px solid #ddd;
-    padding: 8px;
+.oms-panel th,
+.oms-panel td {
+  border: 1px solid #ddd;
+  padding: 8px;
 }
 
 .oms-panel tr:nth-child(even) {
-    background-color: #f2f2f2;
+  background-color: #f2f2f2;
 }
