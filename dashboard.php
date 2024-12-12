@@ -488,14 +488,29 @@ function formatRemainingDays($dueDate) {
             var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             var formattedDate = currentDate.toLocaleDateString('ro-RO', options);
             document.getElementById('currentdate').textContent = formattedDate;
+
+            // Determinarea mesajului de întâmpinare
+            var currentHour = currentDate.getHours();
+            var greetingMessage = "";
+
+            if (currentHour < 12) {
+                greetingMessage = "Bună dimineața ☕";
+            } else {
+                greetingMessage = "Bună ziua ⚡";
+            }
+
+            // Actualizarea doar a mesajului de întâmpinare
+            document.getElementById('greeting-message').textContent = greetingMessage;
         });
     </script>
-            
-        
-        <p>Bun venit, <?php echo $_SESSION['username']; ?>! | <a href="logout.php">Deconectare</a></p>
-        <p> Astazi este <span id="currentdate"></span></p>
-        <p>&copy; COLOR PRINT</p>
-    </footer>
+
+    <p>
+        <span id="greeting-message"></span>, <?php echo $_SESSION['username']; ?>! | <a href="logout.php">Deconectare</a>
+    </p>
+    <p>Astăzi este <span id="currentdate"></span></p>
+    <p>&copy; COLOR PRINT</p>
+</footer>
+
  <!-- Initialize CodeMirror -->
 
  <script>
