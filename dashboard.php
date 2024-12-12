@@ -436,8 +436,8 @@ function formatRemainingDays($dueDate) {
                 <option value="DESC" <?php if ($sort_order == 'DESC') echo 'selected'; ?>>Descendent</option>
             </select>
         </div>
-        <button type="submit">Aplică filtre</button>
-        <button type="button" onclick="window.location.href='dashboard.php'">Resetează filtre</button>
+        <div><button type="submit">Aplică filtre</button></div>
+        <div><button type="button" onclick="window.location.href='dashboard.php'">Resetează filtre</button></div>
     </form>
 </div>
                     <tr>
