@@ -1,4 +1,17 @@
 <?php
+// Set session cookie lifetime to 24 hours (86400 seconds)
+ini_set('session.gc_maxlifetime', 86400);  // 24 hours
+ini_set('session.cookie_lifetime', 86400); // 24 hours
+
+// Set session cookie parameters (e.g., secure, httponly)
+session_set_cookie_params([
+    'lifetime' => 86400,  // 24 hours
+    'path' => '/',
+    'secure' => false,     // Set to true for HTTPS
+    'httponly' => true,    // Helps prevent XSS attacks
+]);
+
+// Start the session
 session_start();
 include 'db.php';
 
