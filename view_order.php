@@ -92,6 +92,10 @@ if ($users_result->num_rows > 0) {
 </head>
 <body>
 <h2>Comanda nr.  <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
+<div class="checkbox-container" style="display: flex; align-items: center; gap: 10px;">
+    <label for="comanda" style="font-size: 18px; font-weight: bold; color: #333; text-align: left;">Comandă în lucru</label>
+        <input type="checkbox" id="comanda" name="comanda">
+    </div>
 <p><strong>Din data: </strong><?php echo $order['order_date']; ?></p>
 <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
 <p><strong>Nume client: </strong><?php echo $client_name; ?></p>
