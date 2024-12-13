@@ -19,9 +19,6 @@
                 <label for="password">Parola</label>
                 <input type="password" id="password" name="password" required>
             </div>
-            <label for="remember_me">
-        <input type="checkbox" id="remember_me" name="remember_me">Ține-mă minte
-        </label>
             <div class="buttonal">
             <button type="submit">Login</button>
 
