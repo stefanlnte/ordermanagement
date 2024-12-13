@@ -7,8 +7,7 @@ ini_set('session.cookie_lifetime', 86400); // 24 hours
 session_set_cookie_params([
     'lifetime' => 86400,  // 24 hours
     'path' => '/',
-    'secure' => false,     // Set to true for HTTPS
-    'httponly' => true,    // Helps prevent XSS attacks
+    'secure' => true,     // Set to true for HTTPS
 ]);
 
 // Start the session
