@@ -1,7 +1,14 @@
 <?php
-// Set session cookie lifetime to 24 hours (86400 seconds)
-ini_set('session.gc_maxlifetime', 86400);
-ini_set('session.cookie_lifetime', 86400);
+// Set session cookie lifetime to 30 days
+ini_set('session.gc_maxlifetime', 86400*30);
+ini_set('session.cookie_lifetime', 86400*30);
+
+session_set_cookie_params([
+    'lifetime' => 86400*30,  // 30 days
+    'path' => '/',
+    'secure' => true,     // Set to true for HTTPS
+    'httponly' => true,    // Helps prevent XSS attacks
+]);
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
