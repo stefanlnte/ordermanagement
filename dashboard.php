@@ -379,7 +379,7 @@ function formatRemainingDays($dueDate) {
                         ?>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group button">
                     <input type="submit" value="Adaugă Comandă">
                 </div>
             </form>
