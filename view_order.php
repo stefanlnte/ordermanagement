@@ -126,7 +126,7 @@ if ($rest_de_plata > 0) {
                 
     </div> 
     
-    <hr style="no-print width: 500px; height: 1px; background-color: black; border: none; margin: 20px 0;">
+    <hr style="width: 500px; height: 1px; background-color: black; border: none; margin: 20px 0;">
     <?php if ($order['status'] != 'delivered') { ?>
     <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
         <div class="form-group no-print">
