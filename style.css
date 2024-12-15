@@ -85,8 +85,13 @@ input[type='submit'] {
   margin-top: 30px;
   color: white;
   height: 100%;
+  width: auto;
   padding: 15px;
   box-shadow: 1px 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+#orderForm {
+  width: auto;
 }
 
 .oms-sidebar label,

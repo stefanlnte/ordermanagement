@@ -86,7 +86,6 @@ tr:hover {
 }
 .order-delivered {
   background-color: #ffffffe8;
-  text-color: #a4a4a5;
 }
 .filters {
   display: flex;

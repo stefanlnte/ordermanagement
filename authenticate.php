@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $conn->prepare($token_sql);
                 $stmt->bind_param("iss", $user['user_id'], $remember_token, $remember_token);
                 $stmt->execute();
-                setcookie("remember_token", $remember_token, time() + 86400 * 30, "/", "", false, true);
+                setcookie("remember_token", $remember_token, time() + 86400 * 30, "/", "", true, true);
             }
 
             header("Location: dashboard.php");
