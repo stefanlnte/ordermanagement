@@ -1,10 +1,10 @@
 <?php
 // Set session cookie lifetime to 30 days
-ini_set('session.gc_maxlifetime', 86400*30);
-ini_set('session.cookie_lifetime', 86400*30);
+ini_set('session.gc_maxlifetime', 86400 * 30);
+ini_set('session.cookie_lifetime', 86400 * 30);
 
 session_set_cookie_params([
-    'lifetime' => 86400*30,  // 30 days
+    'lifetime' => 86400 * 30,  // 30 days
     'path' => '/',
     'secure' => true,     // Set to true for HTTPS
     'httponly' => true,    // Helps prevent XSS attacks
@@ -35,11 +35,16 @@ if (isset($_COOKIE['remember_token'])) {
             $user = $result->fetch_assoc();
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['username'] = $user['username'];
+            echo "User logged in via remember token: " . $user['username'] . "<br>"; // Debugging statement
+        } else {
+            echo "Invalid remember token.<br>"; // Debugging statement
         }
         $stmt->close();
     } else {
         die("Database error: " . $conn->error);
     }
+} else {
+    echo "No remember token cookie found.<br>"; // Debugging statement
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -59,22 +64,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['username'] = $user['username'];
             $_SESSION['user_id'] = $user['user_id'];
+            echo "User logged in: " . $user['username'] . "<br>"; // Debugging statement
 
             // If "Remember Me" is checked, create a persistent cookie
             if ($remember_me) {
                 $remember_token = bin2hex(random_bytes(32));
-                $token_sql = "INSERT INTO remember_tokens (user_id, token) VALUES (?, ?)
-                              ON DUPLICATE KEY UPDATE token = ?";
+                $token_sql = "INSERT INTO remember_tokens (user_id, token) VALUES (?, ?)";
                 $stmt = $conn->prepare($token_sql);
-                $stmt->bind_param("iss", $user['user_id'], $remember_token, $remember_token);
-                $stmt->execute();
-                setcookie("remember_token", $remember_token, time() + 86400 * 30, "/", "", true, true);
+                $stmt->bind_param("is", $user['user_id'], $remember_token);
+                if ($stmt->execute()) {
+                    setcookie("remember_token", $remember_token, time() + 86400 * 30, "/", "", true, true);
+                    echo "Remember token set: " . $remember_token . "<br>"; // Debugging statement
+                } else {
+                    die("Database error: " . $stmt->error);
+                }
             }
 
             header("Location: dashboard.php");
             exit();
         } else {
-            echo "Invalid username or password.";
+            echo "Invalid username or password.<br>"; // Debugging statement
         }
         $stmt->close();
     } else {
