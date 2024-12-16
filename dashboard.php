@@ -1,4 +1,15 @@
 <?php
+// Set session cookie lifetime to 30 days
+ini_set('session.gc_maxlifetime', 86400 * 30);
+ini_set('session.cookie_lifetime', 86400 * 30);
+
+session_set_cookie_params([
+    'lifetime' => 86400 * 30,  // 30 days
+    'path' => '/',
+    'secure' => true,     // Set to true for HTTPS
+    'httponly' => true,    // Helps prevent XSS attacks
+]);
+
 session_start();
 if (!isset($_SESSION['username'])) {
     header("Location: login.php");
