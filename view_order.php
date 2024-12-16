@@ -242,5 +242,23 @@ function finishOrder() {
         window.print();
     }
     </script>
+
+// Remove checkbox if unticked
+     <script>
+        // Get the checkbox element
+        const checkbox = document.getElementById('comanda');
+
+        // Get the div element that contains the checkbox
+        const checkboxContainer = document.querySelector('.checkbox-container');
+
+        // Add an event listener to the checkbox for the 'change' event
+        checkbox.addEventListener('change', function() {
+            // Check if the checkbox is unchecked
+            if (!checkbox.checked) {
+                // Remove the div from the DOM
+                checkboxContainer.remove();
+            }
+        });
+    </script>
 </body>
 </html>
