@@ -243,7 +243,7 @@ function finishOrder() {
     }
     </script>
 
-// Remove checkbox if unticked
+<!-- Remove checkbox if unticked -->
      <script>
         // Get the checkbox element
         const checkbox = document.getElementById('comanda');
