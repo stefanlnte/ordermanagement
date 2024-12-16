@@ -8,6 +8,14 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  src: url('https://color-print.ro/magazincp/fonts/Poppins-Regular.ttf')
+    format('truetype');
+}
+
 #remember_me {
   margin-bottom: 15px;
 }
