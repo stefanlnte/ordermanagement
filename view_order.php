@@ -209,32 +209,46 @@ function finishOrder() {
         
     }
 
+    function showAlert(message) {
+    return new Promise((resolve) => {
+        alert(message);
+        resolve();
+    });
+}
+
     function sendSMS(clientPhone, orderId) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'send_sms.php', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                alert(xhr.responseText);
-            }
-        };
-        xhr.send('to=' + clientPhone + '&order_id=' + orderId);
-        setTimeout(function() {
-            window.location.href = 'dashboard.php';
-        }, 2000);
-    }
-    function deliverOrder() {
-        var orderId = <?php echo $order['order_id']; ?>;
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'delete_order.php', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'send_sms.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            showAlert('Good job. Felicitări pentru terminarea comenzii. 🎉').then(() => {
                 window.location.href = 'dashboard.php';
-            }
-        };
-        xhr.send('order_id=' + orderId);
-    }
+            });
+        }
+    };
+    xhr.send('to=' + clientPhone + '&order_id=' + orderId);
+}
+
+function deliverOrder() {
+    var orderId = <?php echo $order['order_id']; ?>;
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'delete_order.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            // Display the alert message first
+            showAlert(xhr.responseText).then(() => {
+                // Redirect to the dashboard after the alert is closed
+                window.location.href = 'dashboard.php';
+            });
+        } else if (xhr.readyState == 4) {
+            // Display an error message if the request was unsuccessful
+            showAlert('Eroare');
+        }
+    };
+    xhr.send('order_id=' + orderId);
+}
 
     
 

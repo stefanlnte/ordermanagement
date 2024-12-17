@@ -9,7 +9,7 @@ if ($order_id) {
     $stmt = $conn->prepare($update_order_sql);
     $stmt->bind_param("i", $order_id);
     if ($stmt->execute()) {
-        echo "Order status updated to 'livrata' successfully.";
+        echo "Comanda a fost livrată cu succes 💰";
     } else {
         echo "Error updating order status: " . $stmt->error;
     }
