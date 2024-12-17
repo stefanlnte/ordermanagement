@@ -27,6 +27,7 @@ body {
   padding: 25px;
   background-color: #5252524c;
   border-radius: 10px;
+  box-shadow: 2px 3px 6px rgba(255, 255, 0, 0.5);
 }
 
 .logo {

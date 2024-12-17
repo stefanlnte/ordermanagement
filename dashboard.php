@@ -10,13 +10,54 @@ session_set_cookie_params([
     'httponly' => true,    // Helps prevent XSS attacks
 ]);
 
-session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
-    exit();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
 include 'db.php';
+
+// Function to validate remember token
+function validateRememberToken($conn, $remember_token) {
+    $token_sql = "SELECT u.user_id, u.username 
+                  FROM users u
+                  INNER JOIN remember_tokens t ON u.user_id = t.user_id
+                  WHERE t.token = ?";
+    $stmt = $conn->prepare($token_sql);
+    if ($stmt) {
+        $stmt->bind_param("s", $remember_token);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            return $result->fetch_assoc();
+        }
+        $stmt->close();
+    }
+    return false;
+}
+
+// Check if the user is already logged in via session
+if (!isset($_SESSION['username'])) {
+    // Check if there is a "remember_token" cookie
+    if (isset($_COOKIE['remember_token'])) {
+        $remember_token = $_COOKIE['remember_token'];
+        $user = validateRememberToken($conn, $remember_token);
+
+        if ($user) {
+            $_SESSION['user_id'] = $user['user_id'];
+            $_SESSION['username'] = $user['username'];
+        } else {
+            // Invalid token, clear the cookie
+            setcookie("remember_token", "", time() - 3600, "/", "", true, true);
+        }
+    }
+
+    // If neither session nor cookie is valid, redirect to login
+    if (!isset($_SESSION['username'])) {
+        header("Location: login.php");
+        exit();
+    }
+}
 
 // Fetch filter values
 $status_filter = $_GET['status_filter'] ?? '';
