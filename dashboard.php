@@ -341,10 +341,12 @@ function formatRemainingDays($dueDate) {
             var greetingMessage = "";
 
             if (currentHour < 12) {
-                greetingMessage = "Bună dimineața ☕";
-            } else {
-                greetingMessage = "Bună ziua ⚡";
-            }
+            greetingMessage = "Bună dimineața ☕";
+        } else if (currentHour >= 12 && currentHour < 14) {
+            greetingMessage = "Poftă bună 🍕";
+        } else {
+            greetingMessage = "Bună ziua ⚡";
+        }
 
             // Actualizarea doar a mesajului de întâmpinare
             document.getElementById('greeting-message').textContent = greetingMessage;

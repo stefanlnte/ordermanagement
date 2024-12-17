@@ -31,13 +31,13 @@ body {
   margin-left: 5px;
 }
 
-/* General styling for buttons */
+/* Link buttons */
 .button a {
   display: inline-block; /* Makes the link behave like a button */
   padding: 10px 20px; /* Adds padding for better clickability */
   font-size: 16px; /* Makes text more readable */
   color: black; /* Text color */
-  background-color: yellow; /* Primary blue background */
+  background-color: yellow; /* Primary yellow background */
   border: none; /* Removes default link borders */
   border-radius: 5px; /* Adds rounded corners */
   text-decoration: none; /* Removes underline */
@@ -46,8 +46,7 @@ body {
 }
 
 /* Hover effect */
-.button :hover {
-  background-color: yellow; /* Darker blue on hover */
+.button a:hover {
   transform: scale(1.05); /* Slightly enlarges the button */
   transition: 1s;
 }
@@ -55,7 +54,8 @@ body {
 /* Active effect */
 .button a:active {
   background-color: yellowgreen; /* Even darker blue when clicked */
-  transform: scale(0.98); /* Shrinks button slightly on click */
+  transform: scale(0.9); /* Shrinks button slightly on click */
+  transition: 1s;
 }
 
 input[type='submit'] {
