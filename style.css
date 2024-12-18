@@ -48,14 +48,14 @@ body {
 /* Hover effect */
 .button :hover {
   transform: scale(1.05); /* Slightly enlarges the button */
-  transition: 1s;
+  transition: 500ms;
 }
 
 /* Active effect */
 .button a:active {
   background-color: yellowgreen; /* Even darker blue when clicked */
   transform: scale(0.9); /* Shrinks button slightly on click */
-  transition: 1s;
+  transition: 500ms;
 }
 
 input[type='submit'] {
@@ -178,7 +178,7 @@ body > div.container > div.main-content > table > tbody > tr {
 }
 
 div.pagination :hover {
-  transition: 1s;
+  transition: 500ms;
 }
 
 .footer {
