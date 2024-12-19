@@ -95,7 +95,6 @@ tr:hover {
   flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 20px;
-  align-items: center;
 }
 
 .filters .form-group {
