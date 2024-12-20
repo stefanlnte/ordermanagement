@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($stmt->execute()) {
-        echo json_encode(['success' => true, 'message' => 'Order status updated successfully.']);
+        echo "Comanda a fost livrată cu succes 💰💰💰";
     } else {
         echo json_encode(['error' => 'Failed to update order status.']);
     }
