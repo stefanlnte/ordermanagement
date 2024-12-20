@@ -233,8 +233,10 @@ function finishOrder() {
 
 function deliverOrder() {
     var orderId = <?php echo $order['order_id']; ?>;
+    var currentDate = new Date().toISOString().slice(0, 19).replace('T', ' '); // Format: YYYY-MM-DD HH:MM:SS
+
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'delete_order.php', true);
+    xhr.open('POST', 'update_order_status.php', true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4 && xhr.status == 200) {
@@ -248,7 +250,7 @@ function deliverOrder() {
             showAlert('Eroare');
         }
     };
-    xhr.send('order_id=' + orderId);
+    xhr.send('order_id=' + orderId + '&status=delivered&delivery_date=' + encodeURIComponent(currentDate));
 }
 
     
