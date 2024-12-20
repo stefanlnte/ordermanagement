@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $conn->prepare($update_sql);
         $stmt->bind_param("sssi", $status, $finished_date, $finished_time, $order_id);
     } elseif ($status === 'delivered' && $delivery_date) {
-        $update_sql = "iver_date = ? WHERE order_id = ?";
+        $update_sql = "UPDATE orders SET status = ?, delivery_date = ? WHERE order_id = ?";
         $stmt = $conn->prepare($update_sql);
         $stmt->bind_param("ssi", $status, $delivery_date, $order_id);
     } else {
