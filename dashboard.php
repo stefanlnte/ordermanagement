@@ -69,7 +69,7 @@ $limit = 18; // Number of orders per page
 $offset = ($page - 1) * $limit;
 
 // Fetch orders with filters and sorting
-$order_sql = "SELECT o.*, c.client_name, u.username as assigned_user, cat.category_name FROM orders o 
+$order_sql = "SELECT o.*, c.client_name, u.username as assigned_user, cat.category_name, o.delivery_date FROM orders o 
               JOIN clients c ON o.client_id = c.client_id 
               LEFT JOIN users u ON o.assigned_to = u.user_id 
               LEFT JOIN categories cat ON o.category_id = cat.category_id 
@@ -294,7 +294,14 @@ function formatDateWithoutYearWithDay($dateString) {
     return $dayOfWeek . ', ' . str_pad($day, 2, '0', STR_PAD_LEFT) . '.' . str_pad($month, 2, '0', STR_PAD_LEFT) . '.' . $year;
 }
 
-function formatRemainingDays($dueDate) {
+
+// updated to show the delivery date if the order is marked as delivered in data livrare
+function formatRemainingDays($dueDate, $status, $deliveryDate = null) {
+    if ($status === 'delivered' && $deliveryDate) {
+        $deliveryDateObj = new DateTime($deliveryDate);
+        return formatDateWithoutYearWithDay($deliveryDateObj->format('Y-m-d'));
+    }
+
     $currentDate = new DateTime();
     $dueDateObj = new DateTime($dueDate);
     $interval = $currentDate->diff($dueDateObj);
@@ -434,7 +441,7 @@ function formatRemainingDays($dueDate) {
                     </select>
                 </div>
                 <div class="form-group button">
-                    <input type="submit" value="Adaugă Comandă">
+                    <input type="submit" value="Adaugă Comandă" style="font-family: Poppins, sans-serif;">
                 </div>
             </form>
         </div>
@@ -507,45 +514,45 @@ function formatRemainingDays($dueDate) {
     <?php
     if ($orders_result->num_rows > 0) {
         while($row = $orders_result->fetch_assoc()) {
-            $order_id = str_pad($row["order_id"], 3, '0', STR_PAD_LEFT);
-            $order_date = formatDateWithoutYearWithDay($row["order_date"]) . ' ' . date('H:i', strtotime($row["order_time"]));
-            $due_date = formatRemainingDays($row["due_date"]);
-            $status = $row["status"] ?? 'neatribuită';
-            $row_classes = [];
-                   
-      
-            if ($status == 'assigned' && $status =='completed') {
-                $status = 'atribuită lui ' . $row["assigned_user"];
-                $row_classes[] = 'order-completed';
-            }
-            elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status != 'completed' && $status != 'delivered'){
-                $status = 'comanda ta'; 
-                $row_classes[] = 'order-current-user';
-            }
-            elseif ($status != "completed" && $status != "delivered") {
-                $status = 'atribuită lui ' . $row["assigned_user"];
-                $row_classes[] = 'order-assigned';
-            }    
-            elseif ($status == 'completed') {
-                $status = 'terminată';
-                $row_classes[] = 'order-completed';
-            }
-            else {
-                $status = 'livrata';
-                $row_classes[] = 'order-delivered';
-            }
-            
-            $row_class = implode(' ', $row_classes);
+    $order_id = str_pad($row["order_id"], 3, '0', STR_PAD_LEFT);
+    $order_date = formatDateWithoutYearWithDay($row["order_date"]) . ' ' . date('H:i', strtotime($row["order_time"]));
+    //formatRemainingDays is called with delivery_date
+    $due_date = formatRemainingDays($row["due_date"], $row["status"], $row["delivery_date"] ?? null);
+    $status = $row["status"] ?? 'neatribuită';
+    $row_classes = [];
 
-            echo "<tr class='$row_class' onclick=\"window.open('view_order.php?order_id=" . $row["order_id"] . "', '_blank');\">";
-            echo "<td>" . $order_id . "</td>";
-            echo "<td>" . $row["client_name"] . "</td>";
-            echo "<td>" . $row["order_details"] . "</td>";
-            echo "<td>" . $order_date . "</td>";
-            echo "<td>" . $due_date . "</td>";
-            echo "<td>" . $status . "</td>";
-            echo "</tr>";
-        }
+    if ($status == 'assigned' && $status =='completed') {
+        $status = 'atribuită lui ' . $row["assigned_user"];
+        $row_classes[] = 'order-completed';
+    }
+    elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status != 'completed' && $status != 'delivered'){
+        $status = 'comanda ta'; 
+        $row_classes[] = 'order-current-user';
+    }
+    elseif ($status != "completed" && $status != "delivered") {
+        $status = 'atribuită lui ' . $row["assigned_user"];
+        $row_classes[] = 'order-assigned';
+    }    
+    elseif ($status == 'completed') {
+        $status = 'terminată';
+        $row_classes[] = 'order-completed';
+    }
+    else {
+        $status = 'livrată';
+        $row_classes[] = 'order-delivered';
+    }
+    
+    $row_class = implode(' ', $row_classes);
+
+    echo "<tr class='$row_class' onclick=\"window.open('view_order.php?order_id=" . $row["order_id"] . "', '_blank');\">";
+    echo "<td>" . $order_id . "</td>";
+    echo "<td>" . $row["client_name"] . "</td>";
+    echo "<td>" . $row["order_details"] . "</td>";
+    echo "<td>" . $order_date . "</td>";
+    echo "<td>" . $due_date . "</td>";
+    echo "<td>" . $status . "</td>";
+    echo "</tr>";
+}
     }else {
         echo "<tr><td colspan='6'>Nu există comenzi.</td></tr>";
     }
