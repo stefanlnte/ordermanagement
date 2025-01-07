@@ -1,11 +1,63 @@
 <?php
-session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
-    exit();
+// Set session cookie lifetime to 30 days
+ini_set('session.gc_maxlifetime', 86400 * 30);
+ini_set('session.cookie_lifetime', 86400 * 30);
+
+session_set_cookie_params([
+    'lifetime' => 86400 * 30,  // 30 days
+    'path' => '/',
+    'secure' => true,     // Set to true for HTTPS
+    'httponly' => true,    // Helps prevent XSS attacks
+]);
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
 include 'db.php';
+
+// Function to validate remember token
+function validateRememberToken($conn, $remember_token) {
+    $token_sql = "SELECT u.user_id, u.username 
+                  FROM users u
+                  INNER JOIN remember_tokens t ON u.user_id = t.user_id
+                  WHERE t.token = ?";
+    $stmt = $conn->prepare($token_sql);
+    if ($stmt) {
+        $stmt->bind_param("s", $remember_token);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            return $result->fetch_assoc();
+        }
+        $stmt->close();
+    }
+    return false;
+}
+
+// Check if the user is already logged in via session
+if (!isset($_SESSION['username'])) {
+    // Check if there is a "remember_token" cookie
+    if (isset($_COOKIE['remember_token'])) {
+        $remember_token = $_COOKIE['remember_token'];
+        $user = validateRememberToken($conn, $remember_token);
+
+        if ($user) {
+            $_SESSION['user_id'] = $user['user_id'];
+            $_SESSION['username'] = $user['username'];
+        } else {
+            // Invalid token, clear the cookie
+            setcookie("remember_token", "", time() - 3600, "/", "", true, true);
+        }
+    }
+
+    // If neither session nor cookie is valid, redirect to login
+    if (!isset($_SESSION['username'])) {
+        header("Location: login.php");
+        exit();
+    }
+}
 
 // Fetch filter values
 $status_filter = $_GET['status_filter'] ?? '';
@@ -17,7 +69,7 @@ $limit = 18; // Number of orders per page
 $offset = ($page - 1) * $limit;
 
 // Fetch orders with filters and sorting
-$order_sql = "SELECT o.*, c.client_name, u.username as assigned_user, cat.category_name FROM orders o 
+$order_sql = "SELECT o.*, c.client_name, u.username as assigned_user, cat.category_name, o.delivery_date FROM orders o 
               JOIN clients c ON o.client_id = c.client_id 
               LEFT JOIN users u ON o.assigned_to = u.user_id 
               LEFT JOIN categories cat ON o.category_id = cat.category_id 
@@ -242,7 +294,14 @@ function formatDateWithoutYearWithDay($dateString) {
     return $dayOfWeek . ', ' . str_pad($day, 2, '0', STR_PAD_LEFT) . '.' . str_pad($month, 2, '0', STR_PAD_LEFT) . '.' . $year;
 }
 
-function formatRemainingDays($dueDate) {
+
+// updated to show the delivery date if the order is marked as delivered in data livrare
+function formatRemainingDays($dueDate, $status, $deliveryDate = null) {
+    if ($status === 'delivered' && $deliveryDate) {
+        $deliveryDateObj = new DateTime($deliveryDate);
+        return formatDateWithoutYearWithDay($deliveryDateObj->format('Y-m-d'));
+    }
+
     $currentDate = new DateTime();
     $dueDateObj = new DateTime($dueDate);
     $interval = $currentDate->diff($dueDateObj);
@@ -264,6 +323,7 @@ function formatRemainingDays($dueDate) {
 
     <title>Dashboard Utilizator</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -275,6 +335,35 @@ function formatRemainingDays($dueDate) {
 </head>
 <body>
 <body>
+    <header id="header">
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var currentDate = new Date();
+            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            var formattedDate = currentDate.toLocaleDateString('ro-RO', options);
+            document.getElementById('currentdate').textContent = formattedDate;
+
+            // Determinarea mesajului de întâmpinare
+            var currentHour = currentDate.getHours();
+            var greetingMessage = "";
+
+            if (currentHour < 12) {
+            greetingMessage = "Bună dimineața ☕";
+        } else if (currentHour >= 12 && currentHour < 14) {
+            greetingMessage = "Poftă bună 🍕";
+        } else {
+            greetingMessage = "Bună ziua ⚡";
+        }
+
+            // Actualizarea doar a mesajului de întâmpinare
+            document.getElementById('greeting-message').textContent = greetingMessage;
+        });
+    </script>
+
+    <p>
+        <span id="greeting-message"></span>, <?php echo $_SESSION['username']; ?>! Astăzi este <span id="currentdate"></span>.</p>
+     <div class="button" ><a href="logout.php">Deconectare</a> </div>   
+    </header>
     <div class="container">
         <div class="sidebar">
             <h2>Adaugă Comandă</h2>
@@ -351,8 +440,8 @@ function formatRemainingDays($dueDate) {
                         ?>
                     </select>
                 </div>
-                <div class="form-group">
-                    <input type="submit" value="Adaugă Comandă">
+                <div class="form-group button">
+                    <input type="submit" value="Adaugă Comandă" style="font-family: Poppins, sans-serif;">
                 </div>
             </form>
         </div>
@@ -408,8 +497,8 @@ function formatRemainingDays($dueDate) {
                 <option value="DESC" <?php if ($sort_order == 'DESC') echo 'selected'; ?>>Descendent</option>
             </select>
         </div>
-        <button type="submit">Aplică filtre</button>
-        <button type="button" onclick="window.location.href='dashboard.php'">Resetează filtre</button>
+        <div><button type="submit">Aplică filtre</button></div>
+        <div><button type="button" onclick="window.location.href='dashboard.php'">Resetează filtre</button></div>
     </form>
 </div>
                     <tr>
@@ -425,45 +514,45 @@ function formatRemainingDays($dueDate) {
     <?php
     if ($orders_result->num_rows > 0) {
         while($row = $orders_result->fetch_assoc()) {
-            $order_id = str_pad($row["order_id"], 3, '0', STR_PAD_LEFT);
-            $order_date = formatDateWithoutYearWithDay($row["order_date"]) . ' ' . date('H:i', strtotime($row["order_time"]));
-            $due_date = formatRemainingDays($row["due_date"]);
-            $status = $row["status"] ?? 'neatribuită';
-            $row_classes = [];
-                   
-      
-            if ($status == 'assigned' && $status =='completed') {
-                $status = 'atribuită lui ' . $row["assigned_user"];
-                $row_classes[] = 'order-completed';
-            }
-            elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status != 'completed' && $status != 'delivered'){
-                $status = 'comanda ta'; 
-                $row_classes[] = 'order-current-user';
-            }
-            elseif ($status != "completed" && $status != "delivered") {
-                $status = 'atribuită lui ' . $row["assigned_user"];
-                $row_classes[] = 'order-assigned';
-            }    
-            elseif ($status == 'completed') {
-                $status = 'terminată';
-                $row_classes[] = 'order-completed';
-            }
-            else {
-                $status = 'livrata';
-                $row_classes[] = 'order-delivered';
-            }
-            
-            $row_class = implode(' ', $row_classes);
+    $order_id = str_pad($row["order_id"], 3, '0', STR_PAD_LEFT);
+    $order_date = formatDateWithoutYearWithDay($row["order_date"]) . ' ' . date('H:i', strtotime($row["order_time"]));
+    //formatRemainingDays is called with delivery_date
+    $due_date = formatRemainingDays($row["due_date"], $row["status"], $row["delivery_date"] ?? null);
+    $status = $row["status"] ?? 'neatribuită';
+    $row_classes = [];
 
-            echo "<tr class='$row_class' onclick=\"window.location.href='view_order.php?order_id=" . $row["order_id"] . "'\">";
-            echo "<td>" . $order_id . "</td>";
-            echo "<td>" . $row["client_name"] . "</td>";
-            echo "<td>" . $row["order_details"] . "</td>";
-            echo "<td>" . $order_date . "</td>";
-            echo "<td>" . $due_date . "</td>";
-            echo "<td>" . $status . "</td>";
-            echo "</tr>";
-        }
+    if ($status == 'assigned' && $status =='completed') {
+        $status = 'atribuită lui ' . $row["assigned_user"];
+        $row_classes[] = 'order-completed';
+    }
+    elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status != 'completed' && $status != 'delivered'){
+        $status = 'comanda ta'; 
+        $row_classes[] = 'order-current-user';
+    }
+    elseif ($status != "completed" && $status != "delivered") {
+        $status = 'atribuită lui ' . $row["assigned_user"];
+        $row_classes[] = 'order-assigned';
+    }    
+    elseif ($status == 'completed') {
+        $status = 'terminată';
+        $row_classes[] = 'order-completed';
+    }
+    else {
+        $status = 'livrată';
+        $row_classes[] = 'order-delivered';
+    }
+    
+    $row_class = implode(' ', $row_classes);
+
+    echo "<tr class='$row_class' onclick=\"window.open('view_order.php?order_id=" . $row["order_id"] . "', '_blank');\">";
+    echo "<td>" . $order_id . "</td>";
+    echo "<td>" . $row["client_name"] . "</td>";
+    echo "<td>" . $row["order_details"] . "</td>";
+    echo "<td>" . $order_date . "</td>";
+    echo "<td>" . $due_date . "</td>";
+    echo "<td>" . $status . "</td>";
+    echo "</tr>";
+}
     }else {
         echo "<tr><td colspan='6'>Nu există comenzi.</td></tr>";
     }
@@ -482,20 +571,10 @@ function formatRemainingDays($dueDate) {
     </div>
 
     <footer>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var currentDate = new Date();
-            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            var formattedDate = currentDate.toLocaleDateString('ro-RO', options);
-            document.getElementById('currentdate').textContent = formattedDate;
-        });
-    </script>
-            
-        
-        <p>Bun venit, <?php echo $_SESSION['username']; ?>! | <a href="logout.php">Deconectare</a></p>
-        <p> Astazi este <span id="currentdate"></span></p>
-        <p>&copy; COLOR PRINT</p>
+        <p class="footer">© Color Print</p>
     </footer>
+
+
  <!-- Initialize CodeMirror -->
 
  <script>

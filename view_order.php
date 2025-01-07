@@ -89,9 +89,14 @@ if ($users_result->num_rows > 0) {
             margin: 5px 5px 5px 5px;
         }
     </style>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 <h2>Comanda nr.  <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
+<div class="checkbox-container" style="display: flex; align-items: center; gap: 10px;">
+    <label for="comanda" style="font-size: 150%; font-weight: bold; color: #333; text-align: left;">Comandă în lucru</label>
+        <input type="checkbox" id="comanda" name="comanda" checked>
+    </div>
 <p><strong>Din data: </strong><?php echo $order['order_date']; ?></p>
 <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
 <p><strong>Nume client: </strong><?php echo $client_name; ?></p>
@@ -122,7 +127,7 @@ if ($rest_de_plata > 0) {
                 
     </div> 
     
-    <hr style="no-print width: 500px; height: 1px; background-color: black; border: none; margin: 20px 0;">
+    <hr style="width: 500px; height: 1px; background-color: black; border: none; margin: 20px 0;">
     <?php if ($order['status'] != 'delivered') { ?>
     <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
         <div class="form-group no-print">
@@ -205,38 +210,72 @@ function finishOrder() {
         
     }
 
+    function showAlert(message) {
+    return new Promise((resolve) => {
+        alert(message);
+        resolve();
+    });
+}
+
     function sendSMS(clientPhone, orderId) {
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'send_sms.php', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
-                alert(xhr.responseText);
-            }
-        };
-        xhr.send('to=' + clientPhone + '&order_id=' + orderId);
-        setTimeout(function() {
-            window.location.href = 'dashboard.php';
-        }, 2000);
-    }
-    function deliverOrder() {
-        var orderId = <?php echo $order['order_id']; ?>;
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'delete_order.php', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'send_sms.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            showAlert('Good job. Felicitări pentru terminarea comenzii. 🎉').then(() => {
                 window.location.href = 'dashboard.php';
-            }
-        };
-        xhr.send('order_id=' + orderId);
-    }
+            });
+        }
+    };
+    xhr.send('to=' + clientPhone + '&order_id=' + orderId);
+}
+
+function deliverOrder() {
+    var orderId = <?php echo $order['order_id']; ?>;
+    var currentDate = new Date().toISOString().slice(0, 19).replace('T', ' '); // Format: YYYY-MM-DD HH:MM:SS
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'update_order_status.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            // Display the alert message first
+            showAlert(xhr.responseText).then(() => {
+                // Redirect to the dashboard after the alert is closed
+                window.location.href = 'dashboard.php';
+            });
+        } else if (xhr.readyState == 4) {
+            // Display an error message if the request was unsuccessful
+            showAlert('Eroare');
+        }
+    };
+    xhr.send('order_id=' + orderId + '&status=delivered&delivery_date=' + encodeURIComponent(currentDate));
+}
 
     
 
     function printOrder() {
         window.print();
     }
+    </script>
+
+<!-- Remove checkbox if unticked -->
+     <script>
+        // Get the checkbox element
+        const checkbox = document.getElementById('comanda');
+
+        // Get the div element that contains the checkbox
+        const checkboxContainer = document.querySelector('.checkbox-container');
+
+        // Add an event listener to the checkbox for the 'change' event
+        checkbox.addEventListener('change', function() {
+            // Check if the checkbox is unchecked
+            if (!checkbox.checked) {
+                // Remove the div from the DOM
+                checkboxContainer.remove();
+            }
+        });
     </script>
 </body>
 </html>
