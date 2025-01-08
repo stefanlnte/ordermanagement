@@ -156,7 +156,7 @@ if ($rest_de_plata > 0) {
 <?php } ?>
 <?php } ?>
 <button class="no-print" onclick="printOrder()">Print Order</button>
-    <h2 class="no-print"><a href="dashboard.php"> &#8592; Inapoi la panou comenzi</a></h2>
+    <h2 class="no-print"><a style='text-decoration:none' href="dashboard.php"> &#8592; Inapoi la panou comenzi</a></h2>
 </div>
 <script>
 function editOrderDetails() {
@@ -224,7 +224,7 @@ function finishOrder() {
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4 && xhr.status == 200) {
             showAlert('Good job. Felicitări pentru terminarea comenzii. 🎉').then(() => {
-                window.location.href = 'dashboard.php';
+                console.log('SMS SENT')
             });
         }
     };
@@ -242,8 +242,7 @@ function deliverOrder() {
         if (xhr.readyState == 4 && xhr.status == 200) {
             // Display the alert message first
             showAlert(xhr.responseText).then(() => {
-                // Redirect to the dashboard after the alert is closed
-                window.location.href = 'dashboard.php';
+                console.log('Comanda Livrata')
             });
         } else if (xhr.readyState == 4) {
             // Display an error message if the request was unsuccessful
