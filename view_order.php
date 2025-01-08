@@ -150,9 +150,9 @@ if ($rest_de_plata > 0) {
     <button class="no-print" onclick="editOrderDetails()">Edit</button>
 <button class="no-print" onclick="saveOrderDetails()" style="display:none;">Salvează modificarile</button>
 <?php if ($order['status'] == 'assigned' && $order['status'] != 'livrata') { ?>
-    <button class="no-print" onclick="finishOrder(<?php echo $order['order_id']; ?>)">Comanda a fost terminata</button>
+    <button id="finishButton" class="no-print" onclick="finishOrder(<?php echo $order['order_id']; ?>)">Comanda a fost terminata</button>
 <?php } ?>
-<button class="no-print" onclick="deliverOrder()">Comanda a fost Livrata</button>
+<button id="deliverButton" class="no-print" onclick="deliverOrder()">Comanda a fost Livrata</button>
 <?php } ?>
 <?php } ?>
 <button class="no-print" onclick="printOrder()">Print Order</button>
@@ -195,20 +195,35 @@ function saveOrderDetails() {
     xhr.send('order_id=' + orderId + '&detalii_suplimentare=' + encodeURIComponent(detaliiSuplimentare) + '&total=' + encodeURIComponent(total));
 }
 function finishOrder() {
-        var orderId = <?php echo $order['order_id']; ?>;
-        var clientPhone = '<?php echo $client_phone; ?>';
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', 'update_order_status.php', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && xhr.status == 200 ) {
-                sendSMS(clientPhone, orderId);
-                
+    var orderId = <?php echo $order['order_id']; ?>;
+    var clientPhone = '<?php echo $client_phone; ?>';
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'update_order_status.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            sendSMS(clientPhone, orderId);
+            // Remove the button from the DOM
+            var button = document.getElementById('finishButton');
+            if (button) {
+                console.log('Butonul a fost gasit si va fi sters.');
+                button.parentNode.removeChild(button);
+            } else {
+                console.log('Butonul nu a fost gasit.');
             }
-        };
-        xhr.send('order_id=' + orderId + '&status=completed');
-        
-    }
+        } else if (xhr.readyState == 4) {
+            console.error('Cererea a esuat cu status:', xhr.status);
+            // Opțional: Afisează un mesaj de eroare pentru utilizator
+            showAlert('Eroare la finalizarea comenzii');
+        }
+    };
+    xhr.onerror = function () {
+        console.error('Eroare la cererea AJAX');
+        // Opțional: Afisează un mesaj de eroare pentru utilizator
+        showAlert('Eroare la finalizarea comenzii');
+    };
+    xhr.send('order_id=' + orderId + '&status=completed');
+}
 
     function showAlert(message) {
     return new Promise((resolve) => {
@@ -242,7 +257,11 @@ function deliverOrder() {
         if (xhr.readyState == 4 && xhr.status == 200) {
             // Display the alert message first
             showAlert(xhr.responseText).then(() => {
-                console.log('Comanda Livrata')
+                console.log('Comanda Livrata');
+                // Remove the button from the DOM
+                var button = document.getElementById('deliverButton');
+                    button.parentNode.removeChild(button);
+                
             });
         } else if (xhr.readyState == 4) {
             // Display an error message if the request was unsuccessful
