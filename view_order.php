@@ -156,7 +156,6 @@ if ($rest_de_plata > 0) {
 <?php } ?>
 <?php } ?>
 <button class="no-print" onclick="printOrder()">Print Order</button>
-    <h2 class="no-print"><a style='text-decoration:none' href="dashboard.php"> &#8592; Inapoi la panou comenzi</a></h2>
 </div>
 <script>
 function editOrderDetails() {
@@ -258,10 +257,6 @@ function deliverOrder() {
             // Display the alert message first
             showAlert(xhr.responseText).then(() => {
                 console.log('Comanda Livrata');
-                // Remove the button from the DOM
-                var button = document.getElementById('deliverButton');
-                    button.parentNode.removeChild(button);
-                
             });
         } else if (xhr.readyState == 4) {
             // Display an error message if the request was unsuccessful
@@ -269,6 +264,9 @@ function deliverOrder() {
         }
     };
     xhr.send('order_id=' + orderId + '&status=delivered&delivery_date=' + encodeURIComponent(currentDate));
+        // Remove the button from the DOM
+                var button = document.getElementById('deliverButton');
+                    button.parentNode.removeChild(button);
 }
 
     
