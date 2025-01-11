@@ -544,7 +544,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null) {
     
     $row_class = implode(' ', $row_classes);
 
-    echo "<tr class='$row_class' onclick=\"window.open('view_order.php?order_id=" . $row["order_id"] . "', '_blank');\">";
+    echo "<tr class='$row_class' onclick=\"window.location.href='view_order.php?order_id=" . $row["order_id"] . "'\">";
     echo "<td>" . $order_id . "</td>";
     echo "<td>" . $row["client_name"] . "</td>";
     echo "<td>" . $row["order_details"] . "</td>";

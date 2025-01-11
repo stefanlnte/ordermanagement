@@ -123,7 +123,7 @@ if ($rest_de_plata > 0) {
                 <p>Program: Luni - Vineri: 08:00 – 18:00</p>
                 <p>Sambata: 08:00 – 12:00  Duminica: INCHIS</p>
                 <p>---------------------------------------------------</p>
-                <p>---------------VĂ MULŢUMIM!-------------</p>
+                <p>---------------VĂ MULŢUMIM!-----------------------</p>
                 
     </div> 
     
@@ -148,14 +148,15 @@ if ($rest_de_plata > 0) {
     </form>
     <div  class="no-print">
     <button class="no-print" onclick="editOrderDetails()">Edit</button>
-<button class="no-print" onclick="saveOrderDetails()" style="display:none;">Salvează modificarile</button>
+<button class="no-print" onclick="saveOrderDetails()" style="display:none;">Salvează modificările</button>
 <?php if ($order['status'] == 'assigned' && $order['status'] != 'livrata') { ?>
-    <button id="finishButton" class="no-print" onclick="finishOrder(<?php echo $order['order_id']; ?>)">Comanda a fost terminata</button>
+    <button id="finishButton" class="no-print" onclick="finishOrder(<?php echo $order['order_id']; ?>)">Comanda a fost terminată</button>
 <?php } ?>
-<button id="deliverButton" class="no-print" onclick="deliverOrder()">Comanda a fost Livrata</button>
+<button id="deliverButton" class="no-print" onclick="deliverOrder()">Comanda a fost Livrată</button>
 <?php } ?>
 <?php } ?>
 <button class="no-print" onclick="printOrder()">Print Order</button>
+<h2 class="no-print"><button href="javascript:void(0);" onclick="window.history.back();"> &#8592; Înapoi la panou comenzi</button></h2>
 </div>
 <script>
 function editOrderDetails() {
