@@ -155,8 +155,8 @@ if ($rest_de_plata > 0) {
 <button id="deliverButton" class="no-print" onclick="deliverOrder()">Comanda a fost Livrată</button>
 <?php } ?>
 <?php } ?>
-<button class="no-print" onclick="printOrder()">Print Order</button>
-<h2 class="no-print"><button href="javascript:void(0);" onclick="window.history.back();"> &#8592; Înapoi la panou comenzi</button></h2>
+<button class="no-print" onclick="printOrder()">Print Order</button><br>
+<button class="no-print" href="javascript:void(0);" onclick="window.history.back();"> &#8592; Înapoi la panou comenzi</button>
 </div>
 <script>
 function editOrderDetails() {
