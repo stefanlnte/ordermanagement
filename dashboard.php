@@ -215,12 +215,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
         $stmt->bind_param("issssdii", $client_id, $order_details, $due_date, $due_time, $category_id, $avans, $total, $assigned_to);
         if ($stmt->execute()) {
             $last_order_id = $stmt->insert_id; // Get the last inserted order ID
-            echo "<script>alert('Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ');</script>";
+            echo "Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ";
+            echo "<script>document.getElementById('orderForm').reset();</script>";
             echo "<script>window.location.href='view_order.php?order_id=" . $last_order_id . "';</script>";
             exit();
         } else {
             echo "Error adding new order: " . $stmt->error;
         }
+
         $stmt->close();
     }
 }
@@ -337,6 +339,34 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <!-- CodeMirror JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('orderForm').addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                fetch('dashboard.php', {
+                        method: 'POST',
+                        body: new FormData(this)
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        if (data.includes('Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ')) {
+                            alert('Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ');
+                            this.reset(); // Reset the form after successful submission
+                            // Assuming you want to navigate to view_order.php after reset
+                            const orderId = data.match(/order_id=(\d+)/)[1];
+                            window.location.href = 'view_order.php?order_id=' + orderId;
+                        } else {
+                            alert('Error adding new order: ' + data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while processing your request.');
+                    });
+            });
+        });
+    </script>
 </head>
 
 <body>
@@ -380,7 +410,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <div class="container">
             <div class="sidebar">
                 <h2>Adaugă Comandă</h2>
-                <form id="orderForm" method="post" action="dashboard.php">
+                <form id="orderForm" method="post" action="dashboard.php" autocomplete="off">
                     <input type="hidden" name="add_order" value="1">
                     <div class="form-group">
                         <label for="client_search"><strong>Caută Client:</strong></label>
@@ -719,6 +749,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 }
             }
         </script>
+
     </body>
 
 </html>
