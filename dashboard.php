@@ -115,9 +115,9 @@ $orders_result = $stmt->get_result();
 // Fetch total number of orders for pagination
 $total_orders_sql = "SELECT COUNT(*) as total FROM orders WHERE 1=1";
 
-// Exclude orders with status 'livrata' by default in the total count
-if ($status_filter !== 'delivered') {
-    $total_orders_sql .= " AND status != 'delivered'";
+// Exclude orders with status 'delivered' and 'cancelled' by default in the total count
+if ($status_filter !== 'delivered' && $status_filter !== 'cancelled') {
+    $total_orders_sql .= " AND status NOT IN ('delivered', 'cancelled')";
 }
 
 if ($status_filter) {
