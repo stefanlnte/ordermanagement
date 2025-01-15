@@ -157,7 +157,7 @@ if ($users_result->num_rows > 0) {
     </div>
 
     <hr style="width: 500px; height: 1px; background-color: black; border: none; margin: 20px 0;">
-    <?php if ($order['status'] != 'delivered') { ?>
+    <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled') { ?>
         <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
             <div class="form-group no-print">
                 <label for="assigned_to">Atribuie comanda lui:</label>
@@ -184,7 +184,7 @@ if ($users_result->num_rows > 0) {
             <button id="deliverButton" class="no-print" onclick="deliverOrder()">Comanda a fost Livrată</button>
         <?php } ?>
     <?php } ?>
-    <button id="cancelButton" class="no-print" onclick="cancelOrder()">Anulează Comanda</button>
+    <button id="cancelButton" class="no-print" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>>Anulează Comanda</button>
     <button class="no-print" onclick="printOrder()">Print Order</button><br>
     <button class="no-print" href="javascript:void(0);" onclick="window.history.back();"> &#8592; Înapoi la panou comenzi</button>
         </div>
