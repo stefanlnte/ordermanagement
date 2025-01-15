@@ -81,9 +81,9 @@ $total_types = '';
 $params = [];
 $types = '';
 
-// Exclude orders with status 'livrata' by default
-if ($status_filter !== 'delivered') {
-    $order_sql .= " AND o.status != 'delivered' ";
+// Exclude orders with status 'delivered' and 'cancelled' by default
+if ($status_filter !== 'delivered' && $status_filter !== 'cancelled') {
+    $order_sql .= " AND o.status NOT IN ('delivered', 'cancelled') ";
 }
 
 if ($status_filter) {
@@ -505,6 +505,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                         <option value="assigned" <?php if ($status_filter == 'assigned') echo 'selected'; ?>>Atribuit</option>
                                         <option value="completed" <?php if ($status_filter == 'completed') echo 'selected'; ?>>Terminat</option>
                                         <option value="delivered" <?php if ($status_filter == 'delivered') echo 'selected'; ?>>Livrat</option>
+                                        <option value="cancelled" <?php if ($status_filter == 'cancelled') echo 'selected'; ?>>Anulat</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -625,9 +626,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                             $start = max(1, $end - 4);
                         }
                     }
-
-                    // Debugging statements
-                    echo "<!-- Debugging: total_pages=$total_pages, page=$page, start=$start, end=$end -->\n";
 
                     // First page link
                     if ($page > 1) {

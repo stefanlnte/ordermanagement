@@ -184,6 +184,7 @@ if ($users_result->num_rows > 0) {
             <button id="deliverButton" class="no-print" onclick="deliverOrder()">Comanda a fost Livrată</button>
         <?php } ?>
     <?php } ?>
+    <button id="cancelButton" class="no-print" onclick="cancelOrder()">Anulează Comanda</button>
     <button class="no-print" onclick="printOrder()">Print Order</button><br>
     <button class="no-print" href="javascript:void(0);" onclick="window.history.back();"> &#8592; Înapoi la panou comenzi</button>
         </div>
@@ -300,6 +301,26 @@ if ($users_result->num_rows > 0) {
                 button.parentNode.removeChild(button);
             }
 
+            function cancelOrder() {
+                var orderId = <?php echo $order['order_id']; ?>;
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'cancel_order.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        // Display the alert message first
+                        showAlert(xhr.responseText).then(() => {
+                            console.log('Comanda Anulată');
+                            // Optionally, redirect or refresh the page
+                            window.location.reload();
+                        });
+                    } else if (xhr.readyState == 4) {
+                        // Display an error message if the request was unsuccessful
+                        showAlert('Eroare la anularea comenzii');
+                    }
+                };
+                xhr.send('order_id=' + orderId);
+            }
 
 
             function printOrder() {
