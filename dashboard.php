@@ -602,9 +602,57 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </table>
                 <div class="pagination">
                     <?php
-                    for ($i = 1; $i <= $total_pages; $i++) {
+                    // Ensure all variables are set and have valid values
+                    $total_pages = isset($total_pages) ? (int)$total_pages : 1;
+                    $page = isset($page) ? (int)$page : 1;
+                    $status_filter = isset($status_filter) ? urlencode($status_filter) : '';
+                    $assigned_filter = isset($assigned_filter) ? urlencode($assigned_filter) : '';
+                    $category_filter = isset($category_filter) ? urlencode($category_filter) : '';
+                    $sort_order = isset($sort_order) ? urlencode($sort_order) : '';
+
+                    // Define the number of pages to show before and after the current page
+                    $window_size = 2; // This means 2 pages before and 2 pages after the current page
+
+                    // Calculate the start and end page numbers
+                    $start = max(1, $page - $window_size);
+                    $end = min($total_pages, $page + $window_size);
+
+                    // Ensure there's always a minimum of 5 pages shown if possible
+                    if ($end - $start + 1 < 5) {
+                        if ($start == 1) {
+                            $end = min($total_pages, $start + 4);
+                        } else {
+                            $start = max(1, $end - 4);
+                        }
+                    }
+
+                    // Debugging statements
+                    echo "<!-- Debugging: total_pages=$total_pages, page=$page, start=$start, end=$end -->\n";
+
+                    // First page link
+                    if ($page > 1) {
+                        echo "<a href='dashboard.php?page=1&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Prima</a>";
+                    }
+
+                    // Previous page link
+                    if ($page > 1) {
+                        echo "<a href='dashboard.php?page=" . ($page - 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înapoi</a>";
+                    }
+
+                    // Display page numbers within the window
+                    for ($i = $start; $i <= $end; $i++) {
                         $active = ($i == $page) ? 'active' : '';
                         echo "<a href='dashboard.php?page=$i&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order' class='$active'>$i</a>";
+                    }
+
+                    // Next page link
+                    if ($page < $total_pages) {
+                        echo "<a href='dashboard.php?page=" . ($page + 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înainte</a>";
+                    }
+
+                    // Last page link
+                    if ($page < $total_pages) {
+                        echo "<a href='dashboard.php?page=$total_pages&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Ultima</a>";
                     }
                     ?>
                 </div>
