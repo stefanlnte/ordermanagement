@@ -303,6 +303,12 @@ if ($users_result->num_rows > 0) {
 
             function cancelOrder() {
                 var orderId = <?php echo $order['order_id']; ?>;
+
+                // Add confirmation prompt
+                if (!confirm("Sigur doriți să anulați comanda cu ID-ul " + orderId + "?")) {
+                    return; // Exit the function if the user clicks "Cancel"
+                }
+
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', 'cancel_order.php', true);
                 xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
