@@ -130,8 +130,8 @@ if ($users_result->num_rows > 0) {
         /* Yellow theme for Select2 */
         .select2-container--default .select2-selection--single {
             background-color: #fff;
-            border: 1px solid #d3d3d3;
-            /* Grey color for border */
+            border: 1px solid #a9a9a9;
+            /* Dark grey color for border */
             border-radius: 4px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             font-size: 16px;
@@ -155,8 +155,8 @@ if ($users_result->num_rows > 0) {
         }
 
         .select2-container--default .select2-selection--single .select2-selection__arrow b {
-            border-color: #d3d3d3 transparent transparent transparent;
-            /* Grey arrow */
+            border-color: #a9a9a9 transparent transparent transparent;
+            /* Dark grey arrow */
             border-width: 5px 4px 0 4px;
         }
 
@@ -180,8 +180,8 @@ if ($users_result->num_rows > 0) {
         }
 
         .select2-container--default .select2-search--dropdown .select2-search__field {
-            border: 1px solid #d3d3d3;
-            /* Grey color */
+            border: 1px solid #a9a9a9;
+            /* Dark grey color */
             outline: none;
             padding: 8px;
             border-radius: 4px;
@@ -194,16 +194,16 @@ if ($users_result->num_rows > 0) {
         }
 
         .select2-container--default .select2-search--dropdown .select2-search__field:focus {
-            border-color: #a9a9a9;
-            /* Dark grey color for focus */
+            border-color: #708090;
+            /* Light grey color for focus */
             box-shadow: 0 0 5px rgba(169, 169, 169, 0.5);
         }
 
         .select2-container--default .select2-selection--multiple .select2-selection__choice {
             background-color: #FFFF00;
             /* Yellow color */
-            border: 1px solid #d3d3d3;
-            /* Grey color */
+            border: 1px solid #a9a9a9;
+            /* Dark grey color */
             color: #000;
             padding: 5px 10px;
             border-radius: 4px;
