@@ -104,6 +104,138 @@ if ($users_result->num_rows > 0) {
         }
     </style>
     <link rel="stylesheet" href="style.css" />
+    <!-- Include Select2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Include Select2 JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <!-- CodeMirror JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+    <!-- Initialize Select2 lybrary -->
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2 on select elements
+            $('#status_filter, #assigned_filter, #category_filter, #sort_order, #assigned_to, #category_id').select2({
+                dropdownAutoWidth: true,
+                width: 'auto'
+            });
+        });
+    </script>
+    <!-- Custom CSS for Select2 golden theme -->
+    <style>
+        /* Yellow theme for Select2 */
+        .select2-container--default .select2-selection--single {
+            background-color: #fff;
+            border: 1px solid #d3d3d3;
+            /* Grey color for border */
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            /* Increase font size for better visibility */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #333;
+            padding-left: 12px;
+            font-size: 14px;
+            /* Adjust font size for the selected item */
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            background-color: #fff;
+            /* White background for the arrow */
+            border: none;
+            /* Remove border around the arrow */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow b {
+            border-color: #d3d3d3 transparent transparent transparent;
+            /* Grey arrow */
+            border-width: 5px 4px 0 4px;
+        }
+
+        .select2-container--default .select2-results__option {
+            padding: 12px;
+            color: #333;
+            font-size: 14px;
+            /* Adjust font size for the dropdown options */
+            white-space: nowrap;
+            /* Prevent text from wrapping */
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #FFFF00;
+            /* Yellow color */
+            color: #000;
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            border: 1px solid #d3d3d3;
+            /* Grey color */
+            outline: none;
+            padding: 8px;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 14px;
+            /* Adjust font size for the search field */
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+            border-color: #a9a9a9;
+            /* Dark grey color for focus */
+            box-shadow: 0 0 5px rgba(169, 169, 169, 0.5);
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #FFFF00;
+            /* Yellow color */
+            border: 1px solid #d3d3d3;
+            /* Grey color */
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-top: 5px;
+            margin-right: 5px;
+            white-space: nowrap;
+            /* Prevent text from wrapping */
+            font-size: 14px;
+            /* Adjust font size for multiple selection choices */
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: #000;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        /* Remove scrollbar */
+        .select2-container--default .select2-results {
+            overflow-y: hidden !important;
+            /* Remove vertical scrollbar */
+            max-width: 100% !important;
+            /* Ensure dropdown is wide enough */
+        }
+
+        .select2-container--default .select2-results__options {
+            max-width: 100% !important;
+            /* Ensure options are wide enough */
+        }
+    </style>
 </head>
 
 <body>
