@@ -14,6 +14,37 @@
   flex: 1;
   order: 2;
 }
+
+button {
+  background-color: #fff;
+  border: 1px solid #a9a9a9; /* Dark grey color for border */
+  border-radius: 4px; /* Rounded border */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-size: 14px; /* Adjust font size */
+  color: #333;
+  padding: 10px 20px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.filters {
+  display: flex;
+  justify-content: space-between; /* Distributes space around the children */
+}
+
+button:hover {
+  background-color: yellow;
+  border-color: #708090; /* Light grey color on hover */
+}
+
+button:active {
+  background-color: yellow;
+  border-color: #a9a9a9; /* Dark grey color on active */
+}
+
 /* Responsive layout for mobile devices */
 @media (min-width: 1024px) {
   .container {
