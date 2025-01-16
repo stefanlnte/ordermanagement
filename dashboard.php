@@ -365,6 +365,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             border: 1px solid #a9a9a9;
             /* Dark grey color for border */
             border-radius: 4px;
+            /* Rounded border */
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             font-size: 16px;
             /* Increase font size for better visibility */
@@ -384,6 +385,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             /* White background for the arrow */
             border: none;
             /* Remove border around the arrow */
+            border-radius: 0 4px 4px 0;
+            /* Rounded right side */
         }
 
         .select2-container--default .select2-selection--single .select2-selection__arrow b {
@@ -417,6 +420,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             outline: none;
             padding: 8px;
             border-radius: 4px;
+            /* Rounded border */
             width: 100%;
             box-sizing: border-box;
             font-size: 14px;
@@ -439,6 +443,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             color: #000;
             padding: 5px 10px;
             border-radius: 4px;
+            /* Rounded border */
             margin-top: 5px;
             margin-right: 5px;
             white-space: nowrap;
