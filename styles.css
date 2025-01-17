@@ -22,27 +22,18 @@ button {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   font-size: 14px; /* Adjust font size */
   color: #333;
-  padding: 10px;
+  padding: 5px;
   cursor: pointer;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  transition: background-color 0.3s, border-color 0.3s;
-}
-
-.filters {
-  display: flex;
-  justify-content: space-between; /* Distributes space around the children */
+  transition: 500ms;
 }
 
 button:hover {
   background-color: yellow;
   border-color: #708090; /* Light grey color on hover */
-}
-
-button:active {
-  background-color: yellow;
-  border-color: #a9a9a9; /* Dark grey color on active */
+  transition: 500ms;
 }
 
 /* Responsive layout for mobile devices */
