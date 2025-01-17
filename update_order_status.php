@@ -16,6 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $update_sql = "UPDATE orders SET status = ?, delivery_date = ? WHERE order_id = ?";
         $stmt = $conn->prepare($update_sql);
         $stmt->bind_param("ssi", $status, $delivery_date, $order_id);
+    } elseif ($status === 'cancelled') {
+        $update_sql = "UPDATE orders SET status = ? WHERE order_id = ?";
+        $stmt = $conn->prepare($update_sql);
+        $stmt->bind_param("si", $status, $order_id);
     } else {
         $update_sql = "UPDATE orders SET status = ? WHERE order_id = ?";
         $stmt = $conn->prepare($update_sql);
@@ -31,4 +35,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->close();
     $conn->close();
 }
-?>
