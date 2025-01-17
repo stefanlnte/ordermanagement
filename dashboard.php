@@ -335,18 +335,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
     <!-- Include Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-
     <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
     <!-- Include Select2 JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    <!-- CodeMirror JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
     <!-- Initialize Select2 lybrary -->
     <script>
         $(document).ready(function() {
@@ -799,19 +793,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <footer>
             <p class="footer">© Color Print</p>
         </footer>
-
-
-        <!-- Initialize CodeMirror -->
-
-        <script>
-            $(document).ready(function() {
-                        var editor = CodeMirror.fromTextArea(document.getElementById('order_details'), {
-                            extraKeys: {
-                                "Enter": function(cm) {
-                                    cm.replaceSelection("<br>\n", "end");
-                                }
-                            }));
-        </script>
         <script>
             $(document).ready(function() {
                 $("#client_search").autocomplete({
