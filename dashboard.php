@@ -350,6 +350,58 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 width: 'auto'
             });
         });
+        $(document).ready(function() {
+            $('#client_id').select2({
+                dropdownAutoWidth: true,
+                width: 'auto',
+                placeholder: 'Nume client',
+                allowClear: true,
+                ajax: {
+                    url: 'fetch_clients.php', // Update the URL to point to fetch_clients.php
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            search_clients: 1,
+                            q: params.term // search term
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                },
+                templateResult: formatClient, // custom formatting function for results
+                templateSelection: formatClientSelection // custom formatting function for selected item
+            });
+
+            // Custom formatting function for results
+            function formatClient(client) {
+                if (!client.id) {
+                    return client.text;
+                }
+
+                var $client = $(
+                    '<div class="select2-result-client">' +
+                    '<span style="font-weight: bold;">' + client.client_name + '</span>' +
+                    '<div style="margin-top: 5px; border-top: 1px solid yellow; padding-top: 5px;">' + client.client_phone + '</div>' +
+                    '</div>'
+                );
+
+                return $client;
+            }
+
+            // Custom formatting function for selected item
+            function formatClientSelection(client) {
+                if (!client.id) {
+                    return client.text;
+                }
+
+                return client.client_name;
+            }
+        });
     </script>
     <!-- Custom CSS for Select2 golden theme -->
     <style>
@@ -542,11 +594,10 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 <form id="orderForm" method="post" action="dashboard.php" autocomplete="off">
                     <input type="hidden" name="add_order" value="1">
                     <div class="form-group">
-                        <label for="client_search"><strong>Caută Client:</strong></label>
-                        <input type="text" id="client_search" name="client_search">
-                        <input type="hidden" id="client_id" name="client_id">
-                        <button type="button" id="reset_button">Resetează</button>
-                        <button type="button" id="edit_button" style="display:none;">Editează</button>
+                        <label for="client_id"><strong>Caută client:</strong></label>
+                        <select id="client_id" name="client_id" style="width: 100%;">
+                            <option value="">Caută</option>
+                        </select>
                     </div>
 
                     <div id="new_client_fields" class="form-group">

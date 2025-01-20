@@ -28,6 +28,7 @@ button {
   text-decoration: none;
   display: inline-block;
   transition: 500ms;
+  font-family: 'Poppins', sans-serif;
 }
 
 button:hover {
