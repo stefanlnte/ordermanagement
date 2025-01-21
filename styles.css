@@ -202,7 +202,7 @@ textarea {
 }
 
 .modal-content input[type='submit'] {
-  background-color: #4caf50;
+  background-color: gray;
   color: white;
   padding: 10px 15px;
   border: none;

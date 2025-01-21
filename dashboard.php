@@ -808,13 +808,13 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                 $row_classes = [];
 
                                 if ($status == 'assigned' && $status == 'completed') {
-                                    $status = 'atribuită lui ' . $row["assigned_user"];
+                                    $status = $row["assigned_user"];
                                     $row_classes[] = 'order-completed';
                                 } elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status != 'completed' && $status != 'delivered') {
                                     $status = 'comanda ta';
                                     $row_classes[] = 'order-current-user';
                                 } elseif ($status != "completed" && $status != "delivered") {
-                                    $status = 'atribuită lui ' . $row["assigned_user"];
+                                    $status = $row["assigned_user"];
                                     $row_classes[] = 'order-assigned';
                                 } elseif ($status == 'completed') {
                                     $status = 'terminată';
