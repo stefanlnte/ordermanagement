@@ -227,44 +227,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
     }
 }
 
-// Handle AJAX request for fetching client details
-if (isset($_GET['fetch_client_details']) && isset($_GET['client_id'])) {
-    $client_id = $_GET['client_id'];
-    $client_sql = "SELECT * FROM clients WHERE client_id = ?";
-    $stmt = $conn->prepare($client_sql);
-    $stmt->bind_param("i", $client_id);
-    $stmt->execute();
-    $client_result = $stmt->get_result();
-    if ($client_result->num_rows > 0) {
-        $client = $client_result->fetch_assoc();
-        echo json_encode($client);
-    } else {
-        echo json_encode(['error' => 'Client not found.']);
-    }
-    $stmt->close();
-    $conn->close();
-    exit();
-}
-
-// Handle AJAX request for searching clients
-if (isset($_GET['search_clients']) && isset($_GET['query'])) {
-    $query = $_GET['query'];
-    $client_sql = "SELECT client_id, client_name FROM clients WHERE client_name LIKE ?";
-    $stmt = $conn->prepare($client_sql);
-    $search_query = "%" . $query . "%";
-    $stmt->bind_param("s", $search_query);
-    $stmt->execute();
-    $client_result = $stmt->get_result();
-    $clients = [];
-    while ($row = $client_result->fetch_assoc()) {
-        $clients[] = $row;
-    }
-    echo json_encode($clients);
-    $stmt->close();
-    $conn->close();
-    exit();
-}
-
 // Fetch all users for the "assigned to" dropdown
 $users_sql = "SELECT user_id, username FROM users WHERE role = 'operator'";
 $users_result = $conn->query($users_sql);
@@ -386,7 +348,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 var $client = $(
                     '<div class="select2-result-client">' +
                     '<span style="font-weight: bold;">' + client.client_name + '</span>' +
-                    '<div style="margin-top: 5px; border-top: 1px solid yellow; padding-top: 5px;">' + client.client_phone + '</div>' +
+                    '<div style="margin-top: 5px; border-bottom: 2px solid yellow; padding-top: 5px;">' + client.client_phone + '</div>' +
                     '</div>'
                 );
 
@@ -844,129 +806,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <footer>
             <p class="footer">© Color Print</p>
         </footer>
-        <script>
-            $(document).ready(function() {
-                $("#client_search").autocomplete({
-                    source: function(request, response) {
-                        $.ajax({
-                            url: "dashboard.php",
-                            dataType: "json",
-                            data: {
-                                search_clients: 1,
-                                query: request.term
-                            },
-                            success: function(data) {
-                                response($.map(data, function(item) {
-                                    return {
-                                        label: item.client_name,
-                                        value: item.client_id
-                                    };
-                                }));
-                            }
-                        });
-                    },
-                    focus: function(event, ui) {
-                        $("#client_search").val(ui.item.label);
-                        return false;
-                    },
-                    select: function(event, ui) {
-                        $("#client_search").val(ui.item.label);
-                        $("#client_id").val(ui.item.value);
-                        fetchClientDetails(ui.item.value);
-                        $("#new_client_fields").hide();
-                        $("#edit_button").show();
-                        $("#save_edit_button").hide();
-                        return false;
-                    }
-                });
-
-                document.getElementById('reset_button').addEventListener('click', function() {
-                    document.getElementById('client_search').value = '';
-                    document.getElementById('client_id').value = '';
-                    document.getElementById('client_name').value = '';
-                    document.getElementById('client_phone').value = '';
-                    document.getElementById('client_email').value = '';
-                    document.getElementById('new_client_fields').style.display = 'block';
-                    document.getElementById('edit_button').style.display = 'none';
-                    document.getElementById('save_edit_button').style.display = 'none';
-                });
-
-                $("#edit_button").click(function() {
-                    $("#new_client_fields").show();
-                    $("#save_edit_button").show();
-                    $(this).hide();
-                });
-
-                $("#save_edit_button").click(function() {
-                    // Save the edited client details
-                    var client_id = $("#client_id").val();
-                    var client_name = $("#client_name").val();
-                    var client_phone = $("#client_phone").val();
-                    var client_email = $("#client_email").val();
-
-                    $.ajax({
-                        url: "update_client.php",
-                        type: "POST",
-                        data: {
-                            client_id: client_id,
-                            client_name: client_name,
-                            client_phone: client_phone,
-                            client_email: client_email
-                        },
-                        success: function(response) {
-                            var result = JSON.parse(response);
-                            if (result.success) {
-                                alert("Client details updated successfully.");
-                            } else {
-                                alert("Error updating client: " + result.error);
-                            }
-                            $("#new_client_fields").hide();
-                            $("#save_edit_button").hide();
-                            $("#edit_button").show();
-                        }
-                    });
-                });
-
-                $("#client_id").change(function() {
-                    toggleClientFields();
-                    fetchClientDetails(this.value);
-                });
-
-
-            });
-
-            function fetchClientDetails(client_id) {
-                $.ajax({
-                    url: "dashboard.php",
-                    type: "GET",
-                    data: {
-                        fetch_client_details: 1,
-                        client_id: client_id
-                    },
-                    success: function(data) {
-                        var client = JSON.parse(data);
-                        if (client.error) {
-                            alert(client.error);
-                        } else {
-                            $("#client_name").val(client.client_name);
-                            $("#client_phone").val(client.client_phone);
-                            $("#client_email").val(client.client_email);
-                            $("#new_client_fields").hide();
-                            $("#edit_button").show();
-                            $("#save_edit_button").hide();
-                        }
-                    }
-                });
-            }
-
-            function toggleClientFields() {
-                if ($("#client_id").val()) {
-                    $("#new_client_fields").hide();
-                } else {
-                    $("#new_client_fields").show();
-                }
-            }
-        </script>
 
     </body>
 
