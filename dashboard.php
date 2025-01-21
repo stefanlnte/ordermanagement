@@ -418,7 +418,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     })
                     .then(response => response.text())
                     .then(data => {
-                        alert('Client updated successfully!');
+                        alert('Client actualizat cu succes! 👍');
                         $('#editClientModal').css('display', 'none');
                         // Refresh the client dropdown
                         $('#client_id').trigger('change');
