@@ -347,7 +347,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 var $client = $(
                     '<div class="select2-result-client">' +
                     '<span style="font-weight: bold;">' + client.client_name + '</span>' +
-                    '<div style="margin-top: 5px; border-bottom: 2px solid yellow; padding-top: 5px;">' + client.client_phone + '</div>' +
+                    '<div style="font-style: normal;">' + client.client_phone + '</div>' +
                     '</div>'
                 );
 
@@ -368,8 +368,10 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 var clientId = $('#client_id').val();
                 if (clientId) {
                     $('#new_client_fields').hide();
+                    $('#edit_client_button').show();
                 } else {
                     $('#new_client_fields').show();
+                    $('#edit_client_button').hide();
                 }
             }
 
@@ -378,6 +380,59 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
             // Initial check to set the visibility based on the current selection
             toggleClientFieldsVisibility();
+
+            // Function to open the edit modal
+            function openEditModal(clientId) {
+                $('#editClientModal').css('display', 'block');
+                // Fetch client details and populate the form
+                fetch('get_client.php?client_id=' + clientId)
+                    .then(response => response.json())
+                    .then(data => {
+                        $('#edit_client_id').val(data.client_id);
+                        $('#edit_client_name').val(data.client_name);
+                        $('#edit_client_phone').val(data.client_phone);
+                        $('#edit_client_email').val(data.client_email);
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            // Close the modal when the user clicks on <span> (x)
+            $('.close').on('click', function() {
+                $('#editClientModal').css('display', 'none');
+            });
+
+            // Close the modal when the user clicks anywhere outside of the modal
+            window.onclick = function(event) {
+                if (event.target.id === 'editClientModal') {
+                    $('#editClientModal').css('display', 'none');
+                }
+            };
+
+            // Handle edit form submission
+            $('#editClientForm').on('submit', function(event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+                fetch('update_client.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        alert('Client updated successfully!');
+                        $('#editClientModal').css('display', 'none');
+                        // Refresh the client dropdown
+                        $('#client_id').trigger('change');
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+
+            // Add event listener for the edit button
+            $('#edit_client_button').on('click', function() {
+                var clientId = $('#client_id').val();
+                if (clientId) {
+                    openEditModal(clientId);
+                }
+            });
         });
     </script>
     <!-- Custom CSS for Select2 golden theme -->
@@ -571,12 +626,16 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 <form id="orderForm" method="post" action="dashboard.php" autocomplete="off">
                     <input type="hidden" name="add_order" value="1">
                     <div class="form-group">
-                        <label for="client_id"><strong>Caută client:</strong></label>
-                        <select id="client_id" name="client_id" style="width: 100%;">
-                            <option value="">Caută</option>
-                        </select>
+                        <div style="display: flex; align-items: center;">
+                            <label for="client_id"><strong>Caută client:</strong></label>
+                            <select id="client_id" name="client_id" style="width: 70%; margin-right: 10px;">
+                                <option value="">Caută</option>
+                            </select>
+                            <div id="edit_client_button" class="button" style="display:none; margin-left:10px;">
+                                <button type="button">Editează client</button>
+                            </div>
+                        </div>
                     </div>
-
                     <div id="new_client_fields" class="form-group">
                         <div class="flex-container">
                             <div class="form-group">
@@ -647,6 +706,31 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </form>
             </div>
 
+            <!-- Add this modal HTML in your main HTML file -->
+            <div id="editClientModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h2>Editează detalii</h2>
+                    <form id="editClientForm">
+                        <input type="hidden" id="edit_client_id" name="edit_client_id">
+                        <div class="form-group">
+                            <label for="edit_client_name">Nume Client:</label>
+                            <input type="text" id="edit_client_name" name="edit_client_name">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit_client_phone">Telefon Client:</label>
+                            <input type="text" id="edit_client_phone" name="edit_client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit_client_email">Email Client:</label>
+                            <input type="email" id="edit_client_email" name="edit_client_email">
+                        </div>
+                        <div class="form-group button">
+                            <input type="submit" value="Salvează Modificări">
+                        </div>
+                    </form>
+                </div>
+            </div>
 
             <div class="main-content">
                 <h2>Comenzi </h2>
