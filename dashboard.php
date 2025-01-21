@@ -305,14 +305,13 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <!-- Initialize Select2 lybrary -->
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             // Initialize Select2 on select elements
             $('#status_filter, #assigned_filter, #category_filter, #sort_order, #assigned_to, #category_id').select2({
                 dropdownAutoWidth: true,
                 width: 'auto'
             });
-        });
-        $(document).ready(function() {
+
             $('#client_id').select2({
                 dropdownAutoWidth: true,
                 width: 'auto',
@@ -363,6 +362,22 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                 return client.client_name;
             }
+
+            // Function to toggle visibility of new client fields based on client selection
+            function toggleClientFieldsVisibility() {
+                var clientId = $('#client_id').val();
+                if (clientId) {
+                    $('#new_client_fields').hide();
+                } else {
+                    $('#new_client_fields').show();
+                }
+            }
+
+            // Listen for changes on the client_id select element
+            $('#client_id').on('change', toggleClientFieldsVisibility);
+
+            // Initial check to set the visibility based on the current selection
+            toggleClientFieldsVisibility();
         });
     </script>
     <!-- Custom CSS for Select2 golden theme -->
