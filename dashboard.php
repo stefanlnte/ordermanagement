@@ -293,7 +293,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <title>Dashboard Utilizator</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
     <link rel="stylesheet" type="text/css" href="style.css">
-    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="icon" type="image/x-icon" href="https://color-print.ro/magazincp/favicon.ico" />
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -626,14 +626,14 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 <form id="orderForm" method="post" action="dashboard.php" autocomplete="off">
                     <input type="hidden" name="add_order" value="1">
                     <div class="form-group">
-                        <div style="display: flex; align-items: center;">
-                            <label for="client_id"><strong>Caută client:</strong></label>
-                            <select id="client_id" name="client_id" style="width: 70%; margin-right: 10px;">
-                                <option value="">Caută</option>
-                            </select>
-                            <div id="edit_client_button" class="button" style="display:none; margin-left:10px;">
-                                <button type="button">Editează client</button>
-                            </div>
+
+                        <label for="client_id"><strong>Caută client:</strong></label>
+                        <select id="client_id" name="client_id" style="width: 70%; margin-right: 10px;">
+                            <option value="">Caută</option>
+                        </select>
+                        <div id="edit_client_button" class="button" style="display:none; margin-top:10px;">
+                            <button type="button">Editează client</button>
+
                         </div>
                     </div>
                     <div id="new_client_fields" class="form-group">

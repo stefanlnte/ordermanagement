@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="stylelogin.css">
+    <link rel="icon" type="image/x-icon" href="https://color-print.ro/magazincp/favicon.ico" />
 </head>
+
 <body>
     <div class="login-container">
         <img src="logo.png" alt="Logo" class="logo">
@@ -20,12 +23,13 @@
                 <input type="password" id="password" name="password" required>
             </div>
             <label for="remember_me">
-        <input type="checkbox" id="remember_me" name="remember_me" checked>Ține-mă minte
-        </label>
+                <input type="checkbox" id="remember_me" name="remember_me" checked>Ține-mă minte
+            </label>
             <div class="buttonal">
-            <button type="submit">Login</button>
+                <button type="submit">Login</button>
 
         </form>
     </div>
 </body>
+
 </html>

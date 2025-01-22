@@ -104,13 +104,14 @@ if ($users_result->num_rows > 0) {
             transition: 500ms;
         }
     </style>
-
     <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/x-icon" href="https://color-print.ro/magazincp/favicon.ico" />
     <!-- Include Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 
     <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <!-- Include Select2 JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <!-- CodeMirror JavaScript -->
@@ -126,7 +127,6 @@ if ($users_result->num_rows > 0) {
             });
         });
     </script>
-
     <!-- Custom CSS for Select2 golden theme -->
     <style>
         /* Yellow theme for Select2 */
