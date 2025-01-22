@@ -700,8 +700,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                             ?>
                         </select>
                     </div>
-                    <div class="form-group button">
-                        <input type="submit" value="Adaugă Comandă" style="font-family: Poppins, sans-serif;">
+                    <div class="form-group">
+                        <input class="button" type="submit" value="Adaugă Comandă" style="font-family: Poppins, sans-serif;">
                     </div>
                 </form>
             </div>

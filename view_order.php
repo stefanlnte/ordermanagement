@@ -70,6 +70,11 @@ if ($users_result->num_rows > 0) {
             .no-print {
                 display: none;
             }
+
+            /* Add styles to remove box shadow and other non-print styles */
+            header {
+                display: none !important;
+            }
         }
 
         .small-text {
@@ -117,6 +122,182 @@ if ($users_result->num_rows > 0) {
     <!-- CodeMirror JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+    <script>
+        function editOrderDetails() {
+            console.log('editOrderDetails called');
+            document.getElementById('detalii_suplimentare_text').style.display = 'none';
+            document.getElementById('detalii_suplimentare_edit').style.display = 'block';
+            document.getElementById('total_text').style.display = 'none';
+            document.getElementById('total_edit').style.display = 'block';
+            document.querySelector('button[onclick="editOrderDetails()"]').style.display = 'none';
+            document.querySelector('button[onclick="saveOrderDetails()"]').style.display = 'inline';
+        }
+
+        function saveOrderDetails() {
+            var detaliiSuplimentare = document.getElementById('detalii_suplimentare_edit').value;
+            var total = document.getElementById('total_edit').value;
+            var orderId = <?php echo $order['order_id']; ?>;
+            console.log('Saving order details:', detaliiSuplimentare);
+            console.log('Saving total:', total);
+            console.log('Order ID:', orderId);
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'update_order_details.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    console.log('Response from server:', xhr.responseText);
+                    document.getElementById('detalii_suplimentare_text').innerText = detaliiSuplimentare;
+                    document.getElementById('detalii_suplimentare_text').style.display = 'block';
+                    document.getElementById('detalii_suplimentare_edit').style.display = 'none';
+                    document.getElementById('total_text').innerText = total == 0 ? 'N/A' : total + ' lei';
+                    document.getElementById('total_text').style.display = 'block';
+                    document.getElementById('total_edit').style.display = 'none';
+                    document.querySelector('button[onclick="editOrderDetails()"]').style.display = 'inline';
+                    document.querySelector('button[onclick="saveOrderDetails()"]').style.display = 'none';
+                }
+            };
+            xhr.send('order_id=' + orderId + '&detalii_suplimentare=' + encodeURIComponent(detaliiSuplimentare) + '&total=' + encodeURIComponent(total));
+        }
+
+        function finishOrder() {
+            var orderId = <?php echo $order['order_id']; ?>;
+            var clientPhone = '<?php echo $client_phone; ?>';
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'update_order_status.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    sendSMS(clientPhone, orderId);
+                    // Remove the button from the DOM
+                    var button = document.getElementById('finishButton');
+                    if (button) {
+                        console.log('Butonul a fost gasit si va fi sters.');
+                        button.parentNode.removeChild(button);
+                    } else {
+                        console.log('Butonul nu a fost gasit.');
+                    }
+                } else if (xhr.readyState == 4) {
+                    console.error('Cererea a esuat cu status:', xhr.status);
+                    // Opțional: Afisează un mesaj de eroare pentru utilizator
+                    showAlert('Eroare la finalizarea comenzii');
+                }
+            };
+            xhr.onerror = function() {
+                console.error('Eroare la cererea AJAX');
+                // Opțional: Afisează un mesaj de eroare pentru utilizator
+                showAlert('Eroare la finalizarea comenzii');
+            };
+            xhr.send('order_id=' + orderId + '&status=completed');
+        }
+
+        function showAlert(message) {
+            return new Promise((resolve) => {
+                alert(message);
+                resolve();
+            });
+        }
+
+        function sendSMS(clientPhone, orderId) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'send_sms.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    showAlert('Good job. Felicitări pentru terminarea comenzii. 🎉').then(() => {
+                        console.log('SMS SENT')
+                    });
+                }
+            };
+            xhr.send('to=' + clientPhone + '&order_id=' + orderId);
+        }
+
+        function deliverOrder() {
+            var orderId = <?php echo $order['order_id']; ?>;
+            var currentDate = new Date().toISOString().slice(0, 19).replace('T', ' '); // Format: YYYY-MM-DD HH:MM:SS
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'update_order_status.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    // Display the alert message first
+                    showAlert(xhr.responseText).then(() => {
+                        console.log('Comanda Livrata');
+                    });
+                } else if (xhr.readyState == 4) {
+                    // Display an error message if the request was unsuccessful
+                    showAlert('Eroare');
+                }
+            };
+            xhr.send('order_id=' + orderId + '&status=delivered&delivery_date=' + encodeURIComponent(currentDate));
+            // Remove the button from the DOM
+            var button = document.getElementById('deliverButton');
+            button.parentNode.removeChild(button);
+        }
+
+        function cancelOrder() {
+            var orderId = <?php echo $order['order_id']; ?>;
+
+            // Add confirmation prompt
+            if (!confirm("Sigur doriți să anulați comanda cu ID-ul " + orderId + "?")) {
+                return; // Exit the function if the user clicks "Cancel"
+            }
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'cancel_order.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    // Display the alert message first
+                    showAlert(xhr.responseText).then(() => {
+                        console.log('Comanda Anulată');
+                        // Optionally, redirect or refresh the page
+                        window.location.reload();
+                    });
+                } else if (xhr.readyState == 4) {
+                    // Display an error message if the request was unsuccessful
+                    showAlert('Eroare la anularea comenzii');
+                }
+            };
+            xhr.send('order_id=' + orderId);
+        }
+
+
+        function printOrder() {
+            window.print();
+        }
+    </script>
+
+    <!-- Funcție buton comanda achitată -->
+    <script>
+        function toggleAchitat() {
+            var achitatElement = document.getElementById('achitatElement');
+            if (achitatElement) {
+                // If the element exists, remove it
+                achitatElement.parentNode.removeChild(achitatElement);
+            } else {
+                // If the element does not exist, create and insert it
+                var h2Element = document.createElement('h2');
+                h2Element.id = 'achitatElement';
+                h2Element.textContent = 'Comandă achitată';
+                document.querySelector('h2').insertAdjacentElement('afterend', h2Element);
+            }
+        }
+    </script>
+    <!-- Funcție buton comandă în lucru -->
+    <script>
+        function toggleComandaLucru() {
+            var comandaLucruElement = document.getElementById('comandaLucruElement');
+            if (comandaLucruElement) {
+                comandaLucruElement.parentNode.removeChild(comandaLucruElement);
+            } else {
+                var h2Element = document.createElement('h2');
+                h2Element.id = 'comandaLucruElement';
+                h2Element.textContent = 'Comandă în lucru';
+                document.querySelector('h2').insertAdjacentElement('afterend', h2Element);
+            }
+        }
+    </script>
     <!-- Initialize Select2 lybrary -->
     <script>
         $(document).ready(function() {
@@ -246,6 +427,19 @@ if ($users_result->num_rows > 0) {
 </head>
 
 <body>
+    <header id='header'>
+        <?php if ($order['status'] != 'completed' && $order['status'] != 'cancelled'): ?>
+            <button id="finishButton" class="no-print" onclick="finishOrder(<?php echo $order['order_id']; ?>)">Comanda a fost terminată</button>
+        <?php endif; ?>
+
+        <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
+            <button id="deliverButton" class="no-print" onclick="deliverOrder()">Comanda a fost Livrată</button>
+        <?php endif; ?>
+
+        <button id="cancelButton" class="no-print" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>>Anulează Comanda</button>
+        <br>
+        <button class="no-print" href="javascript:void(0);" onclick="window.history.back();"> &#8592; Înapoi la panou comenzi</button>
+    </header>
     <h2>Comanda nr. <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
     <p><strong>Din data: </strong><?php echo $order['order_date']; ?></p>
     <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
@@ -296,217 +490,31 @@ if ($users_result->num_rows > 0) {
     </div>
 
     <hr style="width: 500px; height: 1px; background-color: black; border: none; margin: 20px 0;">
-    <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled') { ?>
-        <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
-            <div class="form-group no-print">
-                <label for="assigned_to">Atribuie comanda lui:</label>
-                <select id="assigned_to" name="assigned_to">
-                    <?php
-                    foreach ($users as $user) {
-                        $selected = ($order['assigned_to'] == $user['user_id']) ? 'selected' : '';
-                        echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
-                    }
-                    ?>
-                </select>
-                <button type="submit" name="update_user" class="no-print">Realocare strategică</button>
-            </div>
-
-            <?php if ($order['status'] != 'livrata') { ?>
-
-        </form>
-        <div class="no-print">
-            <button class="no-print" onclick="editOrderDetails()">Edit</button>
-            <button class="no-print" onclick="saveOrderDetails()" style="display:none;">Salvează modificările</button>
-            <button id="toggleAchitatButton" class="no-print" onclick="toggleAchitat()">Comandă achitată</button>
-            <button id="toggleComandaLucruButton" class="no-print" onclick="toggleComandaLucru()">Comandă în lucru</button>
-            <button class="no-print" onclick="printOrder()">Print Order</button><br>
-            <?php if ($order['status'] == 'assigned' && $order['status'] != 'livrata') { ?>
-                <button id="finishButton" class="no-print" onclick="finishOrder(<?php echo $order['order_id']; ?>)">Comanda a fost terminată</button>
-            <?php } ?>
-            <button id="deliverButton" class="no-print" onclick="deliverOrder()">Comanda a fost Livrată</button>
-        <?php } ?>
-    <?php } ?>
-    <button id="cancelButton" class="no-print" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>>Anulează Comanda</button>
-    <br>
-    <button class="no-print" href="javascript:void(0);" onclick="window.history.back();"> &#8592; Înapoi la panou comenzi</button>
-        </div><br><br>
-        <script>
-            function editOrderDetails() {
-                console.log('editOrderDetails called');
-                document.getElementById('detalii_suplimentare_text').style.display = 'none';
-                document.getElementById('detalii_suplimentare_edit').style.display = 'block';
-                document.getElementById('total_text').style.display = 'none';
-                document.getElementById('total_edit').style.display = 'block';
-                document.querySelector('button[onclick="editOrderDetails()"]').style.display = 'none';
-                document.querySelector('button[onclick="saveOrderDetails()"]').style.display = 'inline';
-            }
-
-            function saveOrderDetails() {
-                var detaliiSuplimentare = document.getElementById('detalii_suplimentare_edit').value;
-                var total = document.getElementById('total_edit').value;
-                var orderId = <?php echo $order['order_id']; ?>;
-                console.log('Saving order details:', detaliiSuplimentare);
-                console.log('Saving total:', total);
-                console.log('Order ID:', orderId);
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'update_order_details.php', true);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState == 4 && xhr.status == 200) {
-                        console.log('Response from server:', xhr.responseText);
-                        document.getElementById('detalii_suplimentare_text').innerText = detaliiSuplimentare;
-                        document.getElementById('detalii_suplimentare_text').style.display = 'block';
-                        document.getElementById('detalii_suplimentare_edit').style.display = 'none';
-                        document.getElementById('total_text').innerText = total == 0 ? 'N/A' : total + ' lei';
-                        document.getElementById('total_text').style.display = 'block';
-                        document.getElementById('total_edit').style.display = 'none';
-                        document.querySelector('button[onclick="editOrderDetails()"]').style.display = 'inline';
-                        document.querySelector('button[onclick="saveOrderDetails()"]').style.display = 'none';
-                    }
-                };
-                xhr.send('order_id=' + orderId + '&detalii_suplimentare=' + encodeURIComponent(detaliiSuplimentare) + '&total=' + encodeURIComponent(total));
-            }
-
-            function finishOrder() {
-                var orderId = <?php echo $order['order_id']; ?>;
-                var clientPhone = '<?php echo $client_phone; ?>';
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'update_order_status.php', true);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState == 4 && xhr.status == 200) {
-                        sendSMS(clientPhone, orderId);
-                        // Remove the button from the DOM
-                        var button = document.getElementById('finishButton');
-                        if (button) {
-                            console.log('Butonul a fost gasit si va fi sters.');
-                            button.parentNode.removeChild(button);
-                        } else {
-                            console.log('Butonul nu a fost gasit.');
-                        }
-                    } else if (xhr.readyState == 4) {
-                        console.error('Cererea a esuat cu status:', xhr.status);
-                        // Opțional: Afisează un mesaj de eroare pentru utilizator
-                        showAlert('Eroare la finalizarea comenzii');
-                    }
-                };
-                xhr.onerror = function() {
-                    console.error('Eroare la cererea AJAX');
-                    // Opțional: Afisează un mesaj de eroare pentru utilizator
-                    showAlert('Eroare la finalizarea comenzii');
-                };
-                xhr.send('order_id=' + orderId + '&status=completed');
-            }
-
-            function showAlert(message) {
-                return new Promise((resolve) => {
-                    alert(message);
-                    resolve();
-                });
-            }
-
-            function sendSMS(clientPhone, orderId) {
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'send_sms.php', true);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState == 4 && xhr.status == 200) {
-                        showAlert('Good job. Felicitări pentru terminarea comenzii. 🎉').then(() => {
-                            console.log('SMS SENT')
-                        });
-                    }
-                };
-                xhr.send('to=' + clientPhone + '&order_id=' + orderId);
-            }
-
-            function deliverOrder() {
-                var orderId = <?php echo $order['order_id']; ?>;
-                var currentDate = new Date().toISOString().slice(0, 19).replace('T', ' '); // Format: YYYY-MM-DD HH:MM:SS
-
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'update_order_status.php', true);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState == 4 && xhr.status == 200) {
-                        // Display the alert message first
-                        showAlert(xhr.responseText).then(() => {
-                            console.log('Comanda Livrata');
-                        });
-                    } else if (xhr.readyState == 4) {
-                        // Display an error message if the request was unsuccessful
-                        showAlert('Eroare');
-                    }
-                };
-                xhr.send('order_id=' + orderId + '&status=delivered&delivery_date=' + encodeURIComponent(currentDate));
-                // Remove the button from the DOM
-                var button = document.getElementById('deliverButton');
-                button.parentNode.removeChild(button);
-            }
-
-            function cancelOrder() {
-                var orderId = <?php echo $order['order_id']; ?>;
-
-                // Add confirmation prompt
-                if (!confirm("Sigur doriți să anulați comanda cu ID-ul " + orderId + "?")) {
-                    return; // Exit the function if the user clicks "Cancel"
+    <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled')  ?>
+    <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
+        <div class="form-group no-print">
+            <label for="assigned_to">Atribuie comanda lui:</label>
+            <select id="assigned_to" name="assigned_to">
+                <?php
+                foreach ($users as $user) {
+                    $selected = ($order['assigned_to'] == $user['user_id']) ? 'selected' : '';
+                    echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
                 }
+                ?>
+            </select>
+            <button type="submit" name="update_user" class="no-print">Realocare strategică</button>
+        </div>
 
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', 'cancel_order.php', true);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState == 4 && xhr.status == 200) {
-                        // Display the alert message first
-                        showAlert(xhr.responseText).then(() => {
-                            console.log('Comanda Anulată');
-                            // Optionally, redirect or refresh the page
-                            window.location.reload();
-                        });
-                    } else if (xhr.readyState == 4) {
-                        // Display an error message if the request was unsuccessful
-                        showAlert('Eroare la anularea comenzii');
-                    }
-                };
-                xhr.send('order_id=' + orderId);
-            }
+        <?php if ($order['status'] != 'livrata') ?>
 
-
-            function printOrder() {
-                window.print();
-            }
-        </script>
-
-        <!-- Funcție buton comanda achitată -->
-        <script>
-            function toggleAchitat() {
-                var achitatElement = document.getElementById('achitatElement');
-                if (achitatElement) {
-                    // If the element exists, remove it
-                    achitatElement.parentNode.removeChild(achitatElement);
-                } else {
-                    // If the element does not exist, create and insert it
-                    var h2Element = document.createElement('h2');
-                    h2Element.id = 'achitatElement';
-                    h2Element.textContent = 'Comandă achitată';
-                    document.querySelector('h2').insertAdjacentElement('afterend', h2Element);
-                }
-            }
-        </script>
-        <!-- Funcție buton comandă în lucru -->
-        <script>
-            function toggleComandaLucru() {
-                var comandaLucruElement = document.getElementById('comandaLucruElement');
-                if (comandaLucruElement) {
-                    comandaLucruElement.parentNode.removeChild(comandaLucruElement);
-                } else {
-                    var h2Element = document.createElement('h2');
-                    h2Element.id = 'comandaLucruElement';
-                    h2Element.textContent = 'Comandă în lucru';
-                    document.querySelector('h2').insertAdjacentElement('afterend', h2Element);
-                }
-            }
-        </script>
-
+    </form>
+    <div class="no-print">
+        <button class="no-print" onclick="editOrderDetails()">Edit</button>
+        <button class="no-print" onclick="saveOrderDetails()" style="display:none;">Salvează modificările</button>
+        <button id="toggleAchitatButton" class="no-print" onclick="toggleAchitat()">Comandă achitată</button>
+        <button id="toggleComandaLucruButton" class="no-print" onclick="toggleComandaLucru()">Comandă în lucru</button>
+        <button class="no-print" onclick="printOrder()">Print Order</button><br>
+    </div><br><br>
 </body>
 
 </html>
