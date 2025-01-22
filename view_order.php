@@ -105,7 +105,7 @@ if ($users_result->num_rows > 0) {
         }
     </style>
     <link rel="stylesheet" href="style.css" />
-    <link rel="icon" type="image/x-icon" href="https://color-print.ro/magazincp/favicon.ico" />
+    <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
     <!-- Include Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 

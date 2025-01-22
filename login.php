@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="stylelogin.css">
-    <link rel="icon" type="image/x-icon" href="https://color-print.ro/magazincp/favicon.ico" />
+    <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
 </head>
 
 <body>
