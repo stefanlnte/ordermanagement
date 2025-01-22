@@ -428,8 +428,8 @@ if ($users_result->num_rows > 0) {
 
 <body>
     <header id='header'>
-        <?php if ($order['status'] != 'completed' && $order['status'] != 'cancelled'): ?>
-            <button id="finishButton" class="no-print" onclick="finishOrder(<?php echo $order['order_id']; ?>)">Comanda a fost terminată</button>
+        <?php if ($order['status'] != 'completed' && $order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
+            <button id="finishButton" class="no-print" onclick="finishOrder()">Comanda a fost terminată</button>
         <?php endif; ?>
 
         <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
