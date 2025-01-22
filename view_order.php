@@ -290,7 +290,7 @@ if ($users_result->num_rows > 0) {
         <p>&#x1F57B 0753 581 170 &#9993 colorprint_roman@yahoo.com</p>
         <p>Program: Luni - Vineri: 08:00 – 18:00</p>
         <p>Sambata: 08:00 – 12:00 Duminica: INCHIS</p>
-        <p>---------------------------------------------------</p>
+        <p>-----------------------------------------</p>
         <p>---------------VĂ MULŢUMIM!-------------</p>
 
     </div>
@@ -308,7 +308,7 @@ if ($users_result->num_rows > 0) {
                     }
                     ?>
                 </select>
-                <button type="submit" name="update_user" class="no-print">REATRIBUIE</button>
+                <button type="submit" name="update_user" class="no-print">Realocare strategică</button>
             </div>
 
             <?php if ($order['status'] != 'livrata') { ?>
@@ -317,6 +317,9 @@ if ($users_result->num_rows > 0) {
         <div class="no-print">
             <button class="no-print" onclick="editOrderDetails()">Edit</button>
             <button class="no-print" onclick="saveOrderDetails()" style="display:none;">Salvează modificările</button>
+            <button id="toggleAchitatButton" class="no-print" onclick="toggleAchitat()">Comandă achitată</button>
+            <button id="toggleComandaLucruButton" class="no-print" onclick="toggleComandaLucru()">Comandă în lucru</button>
+            <button class="no-print" onclick="printOrder()">Print Order</button><br>
             <?php if ($order['status'] == 'assigned' && $order['status'] != 'livrata') { ?>
                 <button id="finishButton" class="no-print" onclick="finishOrder(<?php echo $order['order_id']; ?>)">Comanda a fost terminată</button>
             <?php } ?>
@@ -324,9 +327,9 @@ if ($users_result->num_rows > 0) {
         <?php } ?>
     <?php } ?>
     <button id="cancelButton" class="no-print" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>>Anulează Comanda</button>
-    <button class="no-print" onclick="printOrder()">Print Order</button><br>
+    <br>
     <button class="no-print" href="javascript:void(0);" onclick="window.history.back();"> &#8592; Înapoi la panou comenzi</button>
-        </div>
+        </div><br><br>
         <script>
             function editOrderDetails() {
                 console.log('editOrderDetails called');
@@ -470,6 +473,37 @@ if ($users_result->num_rows > 0) {
 
             function printOrder() {
                 window.print();
+            }
+        </script>
+
+        <!-- Funcție buton comanda achitată -->
+        <script>
+            function toggleAchitat() {
+                var achitatElement = document.getElementById('achitatElement');
+                if (achitatElement) {
+                    // If the element exists, remove it
+                    achitatElement.parentNode.removeChild(achitatElement);
+                } else {
+                    // If the element does not exist, create and insert it
+                    var h2Element = document.createElement('h2');
+                    h2Element.id = 'achitatElement';
+                    h2Element.textContent = 'Comandă achitată';
+                    document.querySelector('h2').insertAdjacentElement('afterend', h2Element);
+                }
+            }
+        </script>
+        <!-- Funcție buton comandă în lucru -->
+        <script>
+            function toggleComandaLucru() {
+                var comandaLucruElement = document.getElementById('comandaLucruElement');
+                if (comandaLucruElement) {
+                    comandaLucruElement.parentNode.removeChild(comandaLucruElement);
+                } else {
+                    var h2Element = document.createElement('h2');
+                    h2Element.id = 'comandaLucruElement';
+                    h2Element.textContent = 'Comandă în lucru';
+                    document.querySelector('h2').insertAdjacentElement('afterend', h2Element);
+                }
             }
         </script>
 
