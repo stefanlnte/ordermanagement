@@ -1,13 +1,13 @@
 <?php
 include 'db.php';
 
-// Delete delivered orders
-$delete_delivered_sql = "DELETE FROM orders WHERE status = 'delivered'";
-if ($conn->query($delete_delivered_sql) === TRUE) {
-    echo "Delivered orders deleted successfully.";
-} else {
-    echo "Error deleting delivered orders: " . $conn->error;
-}
+// Commented out the delete query to prevent deletion of delivered orders
+// $delete_delivered_sql = "DELETE FROM orders WHERE status = 'delivered'";
+// if ($conn->query($delete_delivered_sql) === TRUE) {
+//     echo "Delivered orders deleted successfully.";
+// } else {
+//     echo "Error deleting delivered orders: " . $conn->error;
+// }
 
 // Check the highest order number
 $max_order_sql = "SELECT MAX(order_id) as max_order_id FROM orders";
@@ -28,4 +28,3 @@ if ($max_order_id >= 200) {
 }
 
 $conn->close();
-?>

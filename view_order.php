@@ -514,7 +514,12 @@ if ($users_result->num_rows > 0) {
         <button id="toggleAchitatButton" class="no-print" onclick="toggleAchitat()">Comandă achitată</button>
         <button id="toggleComandaLucruButton" class="no-print" onclick="toggleComandaLucru()">Comandă în lucru</button>
         <button class="no-print" onclick="printOrder()">Print Order</button><br>
-    </div><br><br>
+    </div>
+    <br><br>
+    <footer class="no-print">
+        <p class="footer">© Color Print</p>
+    </footer>
+
 </body>
 
 </html>
