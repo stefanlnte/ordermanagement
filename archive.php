@@ -152,12 +152,12 @@ if ($categories_result->num_rows > 0) {
 
 <body>
     <header>
-        <h1>Archive Orders</h1>
-        <div class="button"><a href="dashboard.php">Back to Dashboard</a></div>
+        <h1 style="text-align: center;">Arhivă</h1>
+        <div style="margin-left: 10px;" class="button"><a href="dashboard.php">Înapoi la comenzi</a></div>
     </header>
     <div class="container">
         <div class="main-content">
-            <h2>Archived Orders</h2>
+            <h2>Comenzi Arhivate</h2>
             <table>
                 <thead>
                     <div class="filters">

@@ -903,7 +903,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
 
         <footer>
-            <p class="footer">© Color Print</p>
+            <p>© Color Print</p>
+            <a href="archive.php" style="text-decoration:none; color:white">Arhivă</a><br>
         </footer>
 
     </body>
