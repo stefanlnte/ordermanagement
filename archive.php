@@ -155,7 +155,7 @@ if ($categories_result->num_rows > 0) {
         <h1 style="text-align: center;">Arhivă</h1>
         <div style="margin-left: 10px;" class="button"><a href="dashboard.php">Înapoi la comenzi</a></div>
     </header>
-    <div class="container">
+    <div class="container" style="min-height: 100vh;">
         <div class="main-content">
             <h2>Comenzi Arhivate</h2>
             <table>
