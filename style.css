@@ -51,7 +51,7 @@ body {
 
 /* Hover effect */
 .button :hover {
-  background-color: yellowgreen;
+  background-color: lightgrey;
   transition: 500ms;
 }
 
@@ -71,7 +71,7 @@ input[type='submit'] {
 }
 
 input[type='submit']:hover {
-  background-color: yellowgreen;
+  background-color: lightgrey;
   transition: 500ms;
 }
 
