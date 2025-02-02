@@ -6,6 +6,50 @@ if (session_status() === PHP_SESSION_NONE) {
 
 include 'db.php';
 
+// Function to validate remember token
+function validateRememberToken($conn, $remember_token)
+{
+    $token_sql = "SELECT u.user_id, u.username 
+                  FROM users u
+                  INNER JOIN remember_tokens t ON u.user_id = t.user_id
+                  WHERE t.token = ?";
+    $stmt = $conn->prepare($token_sql);
+    if ($stmt) {
+        $stmt->bind_param("s", $remember_token);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            return $result->fetch_assoc();
+        }
+        $stmt->close();
+    }
+    return false;
+}
+
+// Check if the user is already logged in via session
+if (!isset($_SESSION['username'])) {
+    // Check if there is a "remember_token" cookie
+    if (isset($_COOKIE['remember_token'])) {
+        $remember_token = $_COOKIE['remember_token'];
+        $user = validateRememberToken($conn, $remember_token);
+
+        if ($user) {
+            $_SESSION['user_id'] = $user['user_id'];
+            $_SESSION['username'] = $user['username'];
+        } else {
+            // Invalid token, clear the cookie
+            setcookie("remember_token", "", time() - 3600, "/", "", true, true);
+        }
+    }
+
+    // If neither session nor cookie is valid, redirect to login
+    if (!isset($_SESSION['username'])) {
+        header("Location: login.php");
+        exit();
+    }
+}
+
 // Check if the request is an AJAX request
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
     if (isset($_POST['delete_order'])) {
@@ -23,17 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'])) {
         exit; // Exit to prevent further HTML output
     }
 }
-
-// Fetch all users for the "created by" dropdown
-$users_sql = "SELECT user_id, username FROM users";
-$users_result = $conn->query($users_sql);
-$users = [];
-if ($users_result->num_rows > 0) {
-    while ($row = $users_result->fetch_assoc()) {
-        $users[] = $row;
-    }
-}
-
 // Fetch all clients for the "client" dropdown
 $clients_sql = "SELECT client_id, client_name FROM clients";
 $clients_result = $conn->query($clients_sql);
@@ -43,6 +76,66 @@ if ($clients_result->num_rows > 0) {
         $clients[] = $row;
     }
 }
+
+// Fetch filter values
+$client_filter = $_GET['client_filter'] ?? '';
+$sort_order = $_GET['sort_order'] ?? 'DESC';
+$page = $_GET['page'] ?? 1;
+$limit = 18; // Number of orders per page
+$offset = ($page - 1) * $limit;
+
+// Fetch unpaid orders with filters and sorting
+$unpaid_orders_sql = "SELECT uo.*, c.client_name, us.username as creator_name FROM unpaid_orders uo 
+                      JOIN clients c ON uo.client_id = c.client_id 
+                      JOIN users us ON uo.created_by = us.user_id 
+                      WHERE 1=1";
+
+$params = [];
+$types = '';
+
+if ($client_filter) {
+    $unpaid_orders_sql .= " AND c.client_name LIKE ?";
+    $params[] = '%' . $client_filter . '%';
+    $types .= 's';
+}
+
+$unpaid_orders_sql .= " ORDER BY uo.order_date $sort_order LIMIT ? OFFSET ?";
+$params[] = $limit;
+$params[] = $offset;
+$types .= 'ii';
+
+$stmt = $conn->prepare($unpaid_orders_sql);
+$stmt->bind_param($types, ...$params);
+$stmt->execute();
+$unpaid_orders_result = $stmt->get_result();
+$unpaid_orders = [];
+if ($unpaid_orders_result->num_rows > 0) {
+    while ($row = $unpaid_orders_result->fetch_assoc()) {
+        $unpaid_orders[] = $row;
+    }
+}
+$stmt->close();
+
+// Fetch total number of unpaid orders for pagination
+$total_orders_sql = "SELECT COUNT(*) as total FROM unpaid_orders WHERE 1=1";
+
+if ($client_filter) {
+    $total_orders_sql .= " AND client_name LIKE ?";
+    $total_params[] = '%' . $client_filter . '%';
+    $total_types .= 's';
+}
+
+$total_stmt = $conn->prepare($total_orders_sql);
+if (!empty($total_types)) {
+    $total_stmt->bind_param($total_types, ...$total_params);
+}
+
+$total_stmt->execute();
+$total_result = $total_stmt->get_result();
+$total_orders = $total_result->fetch_assoc()['total'];
+$total_stmt->close();
+
+$total_pages = ceil($total_orders / $limit);
 
 // Handle form submission for adding an unpaid order
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_unpaid_order'])) {
@@ -62,25 +155,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_unpaid_order'])) 
     }
     $stmt->close();
 }
-
-// Fetch unpaid orders
-$unpaid_orders_sql = "SELECT uo.*, c.client_name, us.username as creator_name FROM unpaid_orders uo 
-                      JOIN clients c ON uo.client_id = c.client_id 
-                      JOIN users us ON uo.created_by = us.user_id";
-$unpaid_orders_result = $conn->query($unpaid_orders_sql);
-$unpaid_orders = [];
-if ($unpaid_orders_result->num_rows > 0) {
-    while ($row = $unpaid_orders_result->fetch_assoc()) {
-        $unpaid_orders[] = $row;
-    }
-}
 ?>
 
 <!DOCTYPE html>
 <html>
 
 <head>
-    <title>Comenzi Neplate</title>
+    <title>Comenzi Nefacturate</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="styles.css">
@@ -265,7 +346,7 @@ if ($unpaid_orders_result->num_rows > 0) {
                 </div>
             </form>
         </div>
-        <div class="main-content" style="height: 100vh;">
+        <div class="main-content">
             <h2>Comenzi</h2>
             <table>
                 <thead>
@@ -284,18 +365,81 @@ if ($unpaid_orders_result->num_rows > 0) {
                             <td><?php echo str_pad($order["order_id"], 3, '0', STR_PAD_LEFT); ?></td>
                             <td><?php echo $order["client_name"]; ?></td>
                             <td><?php echo $order["order_details"]; ?></td>
-                            <td><?php echo date('d.m.Y H:i', strtotime($order["order_date"])); ?></td>
+                            <td><?php
+                                setlocale(LC_TIME, 'ro_RO.UTF-8');
+                                echo strftime('%d %B %Y', strtotime($order["order_date"]));
+                                ?></td>
                             <td><?php echo $order["creator_name"]; ?></td>
                             <td><a href="#" onclick="deleteOrder(<?php echo $order['order_id']; ?>); return false;">Șterge</a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            <div class="pagination">
+                <?php
+                // Ensure all variables are set and have valid values
+                $total_pages = isset($total_pages) ? (int)$total_pages : 1;
+                $page = isset($page) ? (int)$page : 1;
+                $client_filter = isset($client_filter) ? urlencode($client_filter) : '';
+                $sort_order = isset($sort_order) ? urlencode($sort_order) : '';
+
+                // First page link
+                if ($total_pages > 5 && $page > 1) {
+                    echo "<a href='unpaid_orders.php?page=1&client_filter=$client_filter&sort_order=$sort_order'>Prima</a>";
+                }
+
+                // Previous page link
+                if ($total_pages > 5 && $page > 1) {
+                    echo "<a href='unpaid_orders.php?page=" . ($page - 1) . "&client_filter=$client_filter&sort_order=$sort_order'>Înapoi</a>";
+                }
+
+                // Define the number of pages to show before and after the current page
+                $window_size = 2; // This means 2 pages before and 2 pages after the current page
+
+                // Calculate the start and end page numbers
+                $start = 1;
+                $end = $total_pages;
+
+                if ($total_pages > 5) {
+                    $start = max(1, $page - $window_size);
+                    $end = min($total_pages, $page + $window_size);
+
+                    // Ensure there's always a minimum of 5 pages shown if possible
+                    if ($end - $start + 1 < 5) {
+                        if ($start == 1) {
+                            $end = min($total_pages, $start + 4);
+                        } else {
+                            $start = max(1, $end - 4);
+                        }
+                    }
+                }
+
+                // Display page numbers within the window
+                for ($i = $start; $i <= $end; $i++) {
+                    $active = ($i == $page) ? 'active' : '';
+                    echo "<a href='unpaid_orders.php?page=$i&client_filter=$client_filter&sort_order=$sort_order' class='$active'>$i</a>";
+                }
+
+                // Next page link
+                if ($total_pages > 5 && $page < $total_pages) {
+                    echo "<a href='unpaid_orders.php?page=" . ($page + 1) . "&client_filter=$client_filter&sort_order=$sort_order'>Înainte</a>";
+                }
+
+                // Last page link
+                if ($total_pages > 5 && $page < $total_pages) {
+                    echo "<a href='unpaid_orders.php?page=$total_pages&client_filter=$client_filter&sort_order=$sort_order'>Ultima</a>";
+                }
+                ?>
+            </div>
         </div>
+
     </div>
-    <footer>
-        <p>© Color Print</p>
-    </footer>
+
 </body>
+<footer>
+    <p>© Color Print</p>
+    <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
+    <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
+</footer>
 
 </html>

@@ -38,6 +38,11 @@ button:hover {
   transition: 500ms;
 }
 
+a {
+  text-decoration: none;
+  color: black;
+}
+
 /* Responsive layout for mobile devices */
 @media (min-width: 1024px) {
   .container {

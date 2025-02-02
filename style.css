@@ -190,11 +190,11 @@ footer {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 50px;
+  height: 75px;
   background-color: #808080; /* Setează o culoare de fundal pentru a evita suprapunerea cu conținutul */
   box-shadow: 3px 0px 9px rgba(255, 255, 0, 0.5); /* Adaugă un efect de umbră pentru a diferenția header-ul */
   color: white !important;
-  padding: 20px 40px;
+  padding: 25px;
   margin-top: 20px !important;
   margin: 0;
 }
