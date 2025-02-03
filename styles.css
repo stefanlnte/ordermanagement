@@ -54,6 +54,8 @@ a {
   .sidebar {
     flex: 0 0 250px; /* Adjust the width as needed */
     padding: 10px;
+    background-image: url('https://color-print.ro/magazincp/background.jpg');
+    background-size: fit;
   }
 
   .main-content {

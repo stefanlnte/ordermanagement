@@ -19,7 +19,8 @@ body {
   display: flex;
   top: 0;
   z-index: 1000; /* Asigură-te că este deasupra altor elemente */
-  background-color: #808080; /* Setează o culoare de fundal pentru a evita suprapunerea cu conținutul */
+  background-image: url('https://color-print.ro/magazincp/background2.jpg');
+  background-size: cover;
   box-shadow: 0 3px 6px rgba(251, 255, 0, 0.5); /* Adaugă un efect de umbră pentru a diferenția header-ul */
   color: white !important;
   padding: 10px 20px;
@@ -192,7 +193,8 @@ footer {
   align-items: center;
   justify-content: center;
   height: 75px;
-  background-color: #808080; /* Setează o culoare de fundal pentru a evita suprapunerea cu conținutul */
+  background-image: url('https://color-print.ro/magazincp/background2.jpg');
+  background-size: cover;
   box-shadow: 3px 0px 9px rgba(255, 255, 0, 0.5); /* Adaugă un efect de umbră pentru a diferenția header-ul */
   color: white !important;
   padding: 25px;
