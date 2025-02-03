@@ -310,10 +310,10 @@ if ($categories_result->num_rows > 0) {
 </head>
 
 <body>
-    <header>
-        <h1 style="text-align: center;">Arhivă</h1>
-        <div style="margin-left: 10px; margin-bottom:25px; text-align:center;" class="button"><a href="dashboard.php">Înapoi la comenzi</a></div>
+    <header id="header">
+        <div style="text-align:center;" class="button"><a href="dashboard.php">Înapoi la comenzi</a></div>
     </header>
+    <h1 style="text-align: center;">Arhivă</h1>
     <div class="container" style="min-height: 100vh;">
         <div class="main-content">
             <table>

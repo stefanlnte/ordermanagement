@@ -318,10 +318,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_unpaid_order'])) 
 </head>
 
 <body>
-    <header>
-        <h1 style="text-align: center;">Comenzi nefacturate</h1>
-        <div style="margin-left: 10px; text-align:center; margin-bottom:25px;" class="button"><a href="dashboard.php">Înapoi la comenzi</a></div>
+
+    <header id="header">
+        <div style="text-align:center;" class="button"><a href="dashboard.php">Înapoi la comenzi</a></div>
     </header>
+    <h1 style="text-align: center;">Comenzi nefacturate</h1>
     <div class="container">
         <div class="sidebar">
             <h2>Adaugă Comandă</h2>

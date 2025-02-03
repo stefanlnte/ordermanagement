@@ -17,24 +17,24 @@
 }
 
 button {
-  background-color: #fff;
-  border: 1px solid #a9a9a9; /* Dark grey color for border */
-  border-radius: 4px; /* Rounded border */
+  background-color: yellow;
+  border: 1px solid #a9a9a9;
+  border-radius: 4px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  font-size: 14px; /* Adjust font size */
+  font-size: 14px;
   color: #333;
-  padding: 5px;
+  padding: 10px;
   cursor: pointer;
   text-align: center;
   text-decoration: none;
   display: inline-block;
   transition: 500ms;
   font-family: 'Poppins', sans-serif;
+  margin: 5px;
 }
 
 button:hover {
-  background-color: yellow;
-  border-color: #708090; /* Light grey color on hover */
+  background-color: lightgrey;
   transition: 500ms;
 }
 
