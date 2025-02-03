@@ -110,6 +110,7 @@ if ($users_result->num_rows > 0) {
         }
     </style>
     <link rel="stylesheet" type="text/css" href="style.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
     <!-- Include Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
@@ -122,6 +123,7 @@ if ($users_result->num_rows > 0) {
     <!-- CodeMirror JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
         function editOrderDetails() {
             console.log('editOrderDetails called');
@@ -424,10 +426,19 @@ if ($users_result->num_rows > 0) {
             /* Ensure options are wide enough */
         }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Init AOS
+            AOS.init({
+                duration: 1000, // Adjust animation duration here
+                mirror: true // Start animation on scroll up as well
+            });
+        });
+    </script>
 </head>
 
 <body>
-    <header id='header'>
+    <header id="header" data-aos="fade-in">
         <?php if ($order['status'] != 'completed' && $order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
             <button id="finishButton" class="no-print" onclick="finishOrder()">Comanda a fost terminată</button>
         <?php endif; ?>

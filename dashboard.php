@@ -295,8 +295,10 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <!-- Include Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
     <!-- Include jQuery -->
@@ -580,12 +582,21 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             });
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Init AOS
+            AOS.init({
+                duration: 1000, // Adjust animation duration here
+                mirror: false // Start animation on scroll up as well
+            });
+        });
+    </script>
 </head>
 
 <body>
 
     <body>
-        <header id="header">
+        <header id="header" data-aos="fade-in">
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     var currentDate = new Date();
@@ -614,14 +625,13 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     document.getElementById('greeting-message').textContent = greetingMessage;
                 });
             </script>
-
             <p>
                 <span id="greeting-message"></span>, <?php echo $_SESSION['username']; ?>! Astăzi este <span id="currentdate"></span>.
             </p>
             <div class="button"><a href="logout.php">Deconectare</a> </div>
         </header>
         <div class="container">
-            <div class="sidebar">
+            <div class="sidebar" data-aos="slide-right">
                 <h2>Adaugă Comandă</h2>
                 <form id="orderForm" method="post" action="dashboard.php" autocomplete="off">
                     <input type="hidden" name="add_order" value="1">
@@ -732,7 +742,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </div>
             </div>
 
-            <div class="main-content">
+            <div class="main-content" data-aos="slide-up">
                 <h2>Comenzi </h2>
                 <table>
                     <thead>
@@ -901,13 +911,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </div>
             </div>
         </div>
-
         <footer>
             <p>© Color Print</p>
             <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
             <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
         </footer>
-
     </body>
+
 
 </html>
