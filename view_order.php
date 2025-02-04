@@ -92,7 +92,6 @@ if ($users_result->num_rows > 0) {
 
         p {
             margin: 5px 0;
-            /* Adjust the value as needed */
         }
 
         button {
@@ -107,6 +106,7 @@ if ($users_result->num_rows > 0) {
         button:hover {
             background-color: yellow;
             transition: 500ms;
+        }
         }
     </style>
     <link rel="stylesheet" type="text/css" href="style.css">
@@ -430,15 +430,15 @@ if ($users_result->num_rows > 0) {
         document.addEventListener('DOMContentLoaded', function() {
             // Init AOS
             AOS.init({
-                duration: 1000, // Adjust animation duration here
-                mirror: true // Start animation on scroll up as well
+                duration: 400, // Adjust animation duration here
+                mirror: false // Start animation on scroll up as well
             });
         });
     </script>
 </head>
 
 <body>
-    <header id="header" data-aos="fade-in">
+    <header id="header" data-aos="slide-down">
         <?php if ($order['status'] != 'completed' && $order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
             <button id="finishButton" class="no-print" onclick="finishOrder()">Comanda a fost terminată</button>
         <?php endif; ?>

@@ -53,9 +53,25 @@ a {
 
   .sidebar {
     flex: 0 0 250px; /* Adjust the width as needed */
-    padding: 10px;
+    padding: 15px;
+    position: relative; /* Required for pseudo-element */
+    margin: 15px;
+    margin-top: 30px;
+    color: white;
+    box-shadow: 2px 3px 6px rgba(255, 255, 0, 0.5);
+  }
+
+  .sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background-image: url('https://color-print.ro/magazincp/background.jpg');
     background-size: fit;
+    filter: blur(2px); /* Adjust blur intensity */
+    z-index: -1; /* Puts the blur behind the content */
   }
 
   .main-content {
@@ -124,8 +140,10 @@ tr:hover {
 .filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 5px;
   margin-bottom: 20px;
+  align-items: center;
+  justify-content: center;
 }
 
 .filters .form-group {

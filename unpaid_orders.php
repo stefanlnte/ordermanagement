@@ -162,6 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_unpaid_order'])) 
 
 <head>
     <title>Comenzi Nefacturate</title>
+    <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
     <link rel="stylesheet" type="text/css" href="styles.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link rel="stylesheet" type="text/css" href="styles.css">

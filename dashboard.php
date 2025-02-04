@@ -586,7 +586,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         document.addEventListener('DOMContentLoaded', function() {
             // Init AOS
             AOS.init({
-                duration: 1000, // Adjust animation duration here
+                duration: 400, // Adjust animation duration here
                 mirror: false // Start animation on scroll up as well
             });
         });
@@ -596,7 +596,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 <body>
 
     <body>
-        <header id="header" data-aos="fade-in">
+        <header id="header" data-aos="slide-down">
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     var currentDate = new Date();
@@ -793,8 +793,11 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                         <option value="DESC" <?php if ($sort_order == 'DESC') echo 'selected'; ?>>Descendent</option>
                                     </select>
                                 </div>
-                                <div><button type="submit">Aplică filtre</button></div>
-                                <div><button type="button" onclick="window.location.href='dashboard.php'">Resetează filtre</button></div>
+                                <div>
+                                    <button type="submit">Aplică filtre</button>
+                                    <button type="button" onclick="window.location.href='dashboard.php'">Resetează filtre</button>
+                                </div>
+
                             </form>
                         </div>
                         <tr>
