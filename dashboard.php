@@ -290,355 +290,309 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
 <head>
     <title>Dashboard Utilizator</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Include Select2 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include Select2 JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <!-- Initialize Select2 lybrary -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Select2 on select elements
+            $('#status_filter, #assigned_filter, #category_filter, #sort_order, #assigned_to, #category_id').select2({
+                dropdownAutoWidth: true,
+                width: 'auto'
+            });
 
-    <head>
-        <style>
-            body {
-                margin: 0;
-                overflow-y: scroll;
-                /* Enable vertical scrolling */
-                position: relative;
-            }
-
-            .bubble {
-                position: absolute;
-                bottom: -100px;
-                /* Start below the viewport */
-                width: 20px;
-                height: 20px;
-                border-radius: 50%;
-                background-color: rgba(255, 255, 255, 0.7);
-                /* White with some transparency */
-                animation: float 10s linear infinite;
-            }
-
-            .bubble.yellow {
-                background-color: rgba(255, 255, 0, 0.7);
-                /* Yellow with some transparency */
-            }
-
-            .bubble.silver {
-                background-color: rgba(192, 192, 192, 0.7);
-                /* Silver with some transparency */
-            }
-
-            @keyframes float {
-                0% {
-                    transform: translateY(0);
-                    opacity: 1;
-                }
-
-                100% {
-                    transform: translateY(-100vh);
-                    opacity: 0.3;
-                    /* Reduced opacity at the end */
-                }
-            }
-        </style>
-        <link rel="stylesheet" type="text/css" href="styles.css">
-        <link rel="stylesheet" type="text/css" href="style.css">
-        <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
-        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-        <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-        <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-        <!-- Include Select2 CSS -->
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-        <!-- Include jQuery -->
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <!-- Include Select2 JavaScript -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-        <!-- Initialize Select2 lybrary -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Initialize Select2 on select elements
-                $('#status_filter, #assigned_filter, #category_filter, #sort_order, #assigned_to, #category_id').select2({
-                    dropdownAutoWidth: true,
-                    width: 'auto'
-                });
-
-                $('#client_id').select2({
-                    dropdownAutoWidth: true,
-                    width: 'auto',
-                    placeholder: 'Nume client',
-                    allowClear: true,
-                    ajax: {
-                        url: 'fetch_clients.php', // Update the URL to point to fetch_clients.php
-                        dataType: 'json',
-                        delay: 250,
-                        data: function(params) {
-                            return {
-                                search_clients: 1,
-                                q: params.term // search term
-                            };
-                        },
-                        processResults: function(data) {
-                            return {
-                                results: data
-                            };
-                        },
-                        cache: true
+            $('#client_id').select2({
+                dropdownAutoWidth: true,
+                width: 'auto',
+                placeholder: 'Nume client',
+                allowClear: true,
+                ajax: {
+                    url: 'fetch_clients.php', // Update the URL to point to fetch_clients.php
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            search_clients: 1,
+                            q: params.term // search term
+                        };
                     },
-                    templateResult: formatClient, // custom formatting function for results
-                    templateSelection: formatClientSelection // custom formatting function for selected item
-                });
+                    processResults: function(data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                },
+                templateResult: formatClient, // custom formatting function for results
+                templateSelection: formatClientSelection // custom formatting function for selected item
+            });
 
-                // Custom formatting function for results
-                function formatClient(client) {
-                    if (!client.id) {
-                        return client.text;
-                    }
-
-                    var $client = $(
-                        '<div class="select2-result-client">' +
-                        '<span style="font-weight: bold;">' + client.client_name + '</span>' +
-                        '<div style="font-style: normal;">' + client.client_phone + '</div>' +
-                        '</div>'
-                    );
-
-                    return $client;
+            // Custom formatting function for results
+            function formatClient(client) {
+                if (!client.id) {
+                    return client.text;
                 }
 
-                // Custom formatting function for selected item
-                function formatClientSelection(client) {
-                    if (!client.id) {
-                        return client.text;
-                    }
+                var $client = $(
+                    '<div class="select2-result-client">' +
+                    '<span style="font-weight: bold;">' + client.client_name + '</span>' +
+                    '<div style="font-style: normal;">' + client.client_phone + '</div>' +
+                    '</div>'
+                );
 
-                    return client.client_name;
+                return $client;
+            }
+
+            // Custom formatting function for selected item
+            function formatClientSelection(client) {
+                if (!client.id) {
+                    return client.text;
                 }
 
-                // Function to toggle visibility of new client fields based on client selection
-                function toggleClientFieldsVisibility() {
-                    var clientId = $('#client_id').val();
-                    if (clientId) {
-                        $('#new_client_fields').hide();
-                        $('#edit_client_button').show();
-                    } else {
-                        $('#new_client_fields').show();
-                        $('#edit_client_button').hide();
-                    }
+                return client.client_name;
+            }
+
+            // Function to toggle visibility of new client fields based on client selection
+            function toggleClientFieldsVisibility() {
+                var clientId = $('#client_id').val();
+                if (clientId) {
+                    $('#new_client_fields').hide();
+                    $('#edit_client_button').show();
+                } else {
+                    $('#new_client_fields').show();
+                    $('#edit_client_button').hide();
                 }
+            }
 
-                // Listen for changes on the client_id select element
-                $('#client_id').on('change', toggleClientFieldsVisibility);
+            // Listen for changes on the client_id select element
+            $('#client_id').on('change', toggleClientFieldsVisibility);
 
-                // Initial check to set the visibility based on the current selection
-                toggleClientFieldsVisibility();
+            // Initial check to set the visibility based on the current selection
+            toggleClientFieldsVisibility();
 
-                // Function to open the edit modal
-                function openEditModal(clientId) {
-                    $('#editClientModal').css('display', 'block');
-                    // Fetch client details and populate the form
-                    fetch('get_client.php?client_id=' + clientId)
-                        .then(response => response.json())
-                        .then(data => {
-                            $('#edit_client_id').val(data.client_id);
-                            $('#edit_client_name').val(data.client_name);
-                            $('#edit_client_phone').val(data.client_phone);
-                            $('#edit_client_email').val(data.client_email);
-                        })
-                        .catch(error => console.error('Error:', error));
-                }
+            // Function to open the edit modal
+            function openEditModal(clientId) {
+                $('#editClientModal').css('display', 'block');
+                // Fetch client details and populate the form
+                fetch('get_client.php?client_id=' + clientId)
+                    .then(response => response.json())
+                    .then(data => {
+                        $('#edit_client_id').val(data.client_id);
+                        $('#edit_client_name').val(data.client_name);
+                        $('#edit_client_phone').val(data.client_phone);
+                        $('#edit_client_email').val(data.client_email);
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
 
-                // Close the modal when the user clicks on <span> (x)
-                $('.close').on('click', function() {
+            // Close the modal when the user clicks on <span> (x)
+            $('.close').on('click', function() {
+                $('#editClientModal').css('display', 'none');
+            });
+
+            // Close the modal when the user clicks anywhere outside of the modal
+            window.onclick = function(event) {
+                if (event.target.id === 'editClientModal') {
                     $('#editClientModal').css('display', 'none');
-                });
+                }
+            };
 
-                // Close the modal when the user clicks anywhere outside of the modal
-                window.onclick = function(event) {
-                    if (event.target.id === 'editClientModal') {
+            // Handle edit form submission
+            $('#editClientForm').on('submit', function(event) {
+                event.preventDefault();
+                var formData = new FormData(this);
+                fetch('update_client.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        alert('Client actualizat cu succes! 👍');
                         $('#editClientModal').css('display', 'none');
-                    }
-                };
-
-                // Handle edit form submission
-                $('#editClientForm').on('submit', function(event) {
-                    event.preventDefault();
-                    var formData = new FormData(this);
-                    fetch('update_client.php', {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => response.text())
-                        .then(data => {
-                            alert('Client actualizat cu succes! 👍');
-                            $('#editClientModal').css('display', 'none');
-                            // Refresh the client dropdown
-                            $('#client_id').trigger('change');
-                        })
-                        .catch(error => console.error('Error:', error));
-                });
-
-                // Add event listener for the edit button
-                $('#edit_client_button').on('click', function() {
-                    var clientId = $('#client_id').val();
-                    if (clientId) {
-                        openEditModal(clientId);
-                    }
-                });
+                        // Refresh the client dropdown
+                        $('#client_id').trigger('change');
+                    })
+                    .catch(error => console.error('Error:', error));
             });
-        </script>
-        <!-- Custom CSS for Select2 golden theme -->
-        <style>
-            /* Yellow theme for Select2 */
-            .select2-container--default .select2-selection--single {
-                background-color: #fff;
-                border: 1px solid #a9a9a9;
-                /* Dark grey color for border */
-                border-radius: 4px;
-                /* Rounded border */
-                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                font-size: 16px;
-                /* Increase font size for better visibility */
-            }
 
-            .select2-container--default .select2-selection--single .select2-selection__rendered {
-                color: #333;
-                padding-left: 5px;
-                font-size: 14px;
-                /* Adjust font size for the selected item */
-                text-align: left;
-                /* Align text to the left */
-            }
-
-            .select2-container--default .select2-selection--single .select2-selection__arrow {
-                background-color: #fff;
-                /* White background for the arrow */
-                border: none;
-                /* Remove border around the arrow */
-                border-radius: 0 4px 4px 0;
-                /* Rounded right side */
-            }
-
-            .select2-container--default .select2-selection--single .select2-selection__arrow b {
-                border-color: #a9a9a9 transparent transparent transparent;
-                /* Dark grey arrow */
-                border-width: 5px 4px 0 4px;
-            }
-
-            .select2-container--default .select2-results__option {
-                padding: 12px;
-                color: #333;
-                font-size: 14px;
-                /* Adjust font size for the dropdown options */
-                white-space: nowrap;
-                /* Prevent text from wrapping */
-                text-align: left;
-                /* Align text to the left */
-            }
-
-            .select2-container--default .select2-results__option--highlighted[aria-selected] {
-                background-color: #FFFF00;
-                /* Yellow color */
-                color: #000;
-                text-align: left;
-                /* Align text to the left */
-            }
-
-            .select2-container--default .select2-search--dropdown .select2-search__field {
-                border: 1px solid #a9a9a9;
-                /* Dark grey color */
-                outline: none;
-                padding: 8px;
-                border-radius: 4px;
-                /* Rounded border */
-                width: 100%;
-                box-sizing: border-box;
-                font-size: 14px;
-                /* Adjust font size for the search field */
-                text-align: left;
-                /* Align text to the left */
-            }
-
-            .select2-container--default .select2-search--dropdown .select2-search__field:focus {
-                border-color: #708090;
-                /* Light grey color for focus */
-                box-shadow: 0 0 5px rgba(169, 169, 169, 0.5);
-            }
-
-            .select2-container--default .select2-selection--multiple .select2-selection__choice {
-                background-color: #FFFF00;
-                /* Yellow color */
-                border: 1px solid #a9a9a9;
-                /* Dark grey color */
-                color: #000;
-                padding: 5px 10px;
-                border-radius: 4px;
-                /* Rounded border */
-                margin-top: 5px;
-                margin-right: 5px;
-                white-space: nowrap;
-                /* Prevent text from wrapping */
-                font-size: 14px;
-                /* Adjust font size for multiple selection choices */
-                text-align: left;
-                /* Align text to the left */
-            }
-
-            .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-                color: #000;
-                font-weight: bold;
-                margin-right: 5px;
-            }
-
-            /* Remove scrollbar */
-            .select2-container--default .select2-results {
-                overflow-y: hidden !important;
-                /* Remove vertical scrollbar */
-                max-width: 100% !important;
-                /* Ensure dropdown is wide enough */
-            }
-
-            .select2-container--default .select2-results__options {
-                max-width: 100% !important;
-                /* Ensure options are wide enough */
-            }
-        </style>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                document.getElementById('orderForm').addEventListener('submit', function(event) {
-                    event.preventDefault(); // Prevent the default form submission
-
-                    fetch('dashboard.php', {
-                            method: 'POST',
-                            body: new FormData(this)
-                        })
-                        .then(response => response.text())
-                        .then(data => {
-                            if (data.includes('Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ')) {
-                                alert('Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ');
-                                this.reset(); // Reset the form after successful submission
-                                // Assuming you want to navigate to view_order.php after reset
-                                const orderId = data.match(/order_id=(\d+)/)[1];
-                                window.location.href = 'view_order.php?order_id=' + orderId;
-                            } else {
-                                alert('Error adding new order: ' + data);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred while processing your request.');
-                        });
-                });
+            // Add event listener for the edit button
+            $('#edit_client_button').on('click', function() {
+                var clientId = $('#client_id').val();
+                if (clientId) {
+                    openEditModal(clientId);
+                }
             });
-        </script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Init AOS
-                AOS.init({
-                    duration: 400, // Adjust animation duration here
-                    mirror: false // Start animation on scroll up as well
-                });
+        });
+    </script>
+    <!-- Custom CSS for Select2 golden theme -->
+    <style>
+        /* Yellow theme for Select2 */
+        .select2-container--default .select2-selection--single {
+            background-color: #fff;
+            border: 1px solid #a9a9a9;
+            /* Dark grey color for border */
+            border-radius: 4px;
+            /* Rounded border */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            /* Increase font size for better visibility */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #333;
+            padding-left: 5px;
+            font-size: 14px;
+            /* Adjust font size for the selected item */
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            background-color: #fff;
+            /* White background for the arrow */
+            border: none;
+            /* Remove border around the arrow */
+            border-radius: 0 4px 4px 0;
+            /* Rounded right side */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow b {
+            border-color: #a9a9a9 transparent transparent transparent;
+            /* Dark grey arrow */
+            border-width: 5px 4px 0 4px;
+        }
+
+        .select2-container--default .select2-results__option {
+            padding: 12px;
+            color: #333;
+            font-size: 14px;
+            /* Adjust font size for the dropdown options */
+            white-space: nowrap;
+            /* Prevent text from wrapping */
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #FFFF00;
+            /* Yellow color */
+            color: #000;
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            border: 1px solid #a9a9a9;
+            /* Dark grey color */
+            outline: none;
+            padding: 8px;
+            border-radius: 4px;
+            /* Rounded border */
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 14px;
+            /* Adjust font size for the search field */
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+            border-color: #708090;
+            /* Light grey color for focus */
+            box-shadow: 0 0 5px rgba(169, 169, 169, 0.5);
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #FFFF00;
+            /* Yellow color */
+            border: 1px solid #a9a9a9;
+            /* Dark grey color */
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 4px;
+            /* Rounded border */
+            margin-top: 5px;
+            margin-right: 5px;
+            white-space: nowrap;
+            /* Prevent text from wrapping */
+            font-size: 14px;
+            /* Adjust font size for multiple selection choices */
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: #000;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        /* Remove scrollbar */
+        .select2-container--default .select2-results {
+            overflow-y: hidden !important;
+            /* Remove vertical scrollbar */
+            max-width: 100% !important;
+            /* Ensure dropdown is wide enough */
+        }
+
+        .select2-container--default .select2-results__options {
+            max-width: 100% !important;
+            /* Ensure options are wide enough */
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('orderForm').addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                fetch('dashboard.php', {
+                        method: 'POST',
+                        body: new FormData(this)
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        if (data.includes('Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ')) {
+                            alert('Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ');
+                            this.reset(); // Reset the form after successful submission
+                            // Assuming you want to navigate to view_order.php after reset
+                            const orderId = data.match(/order_id=(\d+)/)[1];
+                            window.location.href = 'view_order.php?order_id=' + orderId;
+                        } else {
+                            alert('Error adding new order: ' + data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while processing your request.');
+                    });
             });
-        </script>
-    </head>
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Init AOS
+            AOS.init({
+                duration: 400, // Adjust animation duration here
+                mirror: false // Start animation on scroll up as well
+            });
+        });
+    </script>
+</head>
 
 <body>
-    <div id="bubbles"></div>
     <header id="header" data-aos="slide-down">
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -962,34 +916,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
         <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
     </footer>
-    <script>
-        // Create bubbles
-        function createBubble() {
-            const bubble = document.createElement('div');
-            const colors = ['yellow', 'silver'];
-            bubble.className = 'bubble ' + colors[Math.floor(Math.random() * colors.length)];
-
-            // Set random size and position
-            const size = Math.random() * 10 + 10; // Reduced size
-            bubble.style.width = `${size}px`;
-            bubble.style.height = `${size}px`;
-            bubble.style.left = `${Math.random() * 100}vw`;
-
-            // Set random animation duration
-            bubble.style.animationDuration = `${Math.random() * 5 + 5}s`;
-
-            // Add bubble to the bubble container
-            document.getElementById('bubbles').appendChild(bubble);
-
-            // Remove bubble after animation ends
-            bubble.addEventListener('animationend', () => {
-                bubble.remove();
-            });
-        }
-
-        // Create bubbles continuously (reduced interval)
-        setInterval(createBubble, 2000); // interval
-    </script>
 </body>
 
 
