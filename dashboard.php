@@ -594,332 +594,330 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 </head>
 
 <body>
+    <header id="header" data-aos="slide-down">
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var currentDate = new Date();
+                var options = {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                };
+                var formattedDate = currentDate.toLocaleDateString('ro-RO', options);
+                document.getElementById('currentdate').textContent = formattedDate;
 
-    <body>
-        <header id="header" data-aos="slide-down">
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    var currentDate = new Date();
-                    var options = {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    };
-                    var formattedDate = currentDate.toLocaleDateString('ro-RO', options);
-                    document.getElementById('currentdate').textContent = formattedDate;
+                // Determinarea mesajului de întâmpinare
+                var currentHour = currentDate.getHours();
+                var greetingMessage = "";
 
-                    // Determinarea mesajului de întâmpinare
-                    var currentHour = currentDate.getHours();
-                    var greetingMessage = "";
+                if (currentHour < 12) {
+                    greetingMessage = "Bună dimineața ☕";
+                } else if (currentHour >= 12 && currentHour < 14) {
+                    greetingMessage = "Poftă bună 🍕";
+                } else {
+                    greetingMessage = "Bună ziua ⚡";
+                }
 
-                    if (currentHour < 12) {
-                        greetingMessage = "Bună dimineața ☕";
-                    } else if (currentHour >= 12 && currentHour < 14) {
-                        greetingMessage = "Poftă bună 🍕";
-                    } else {
-                        greetingMessage = "Bună ziua ⚡";
-                    }
+                // Actualizarea doar a mesajului de întâmpinare
+                document.getElementById('greeting-message').textContent = greetingMessage;
+            });
+        </script>
+        <p>
+            <span id="greeting-message"></span>, <?php echo $_SESSION['username']; ?>! Astăzi este <span id="currentdate"></span>.
+        </p>
+        <div class="button"><a href="logout.php">Deconectare</a> </div>
+    </header>
+    <div class="container">
+        <div class="sidebar" data-aos="slide-right">
+            <h2>Adaugă Comandă</h2>
+            <form id="orderForm" method="post" action="dashboard.php" autocomplete="off">
+                <input type="hidden" name="add_order" value="1">
+                <div class="form-group">
 
-                    // Actualizarea doar a mesajului de întâmpinare
-                    document.getElementById('greeting-message').textContent = greetingMessage;
-                });
-            </script>
-            <p>
-                <span id="greeting-message"></span>, <?php echo $_SESSION['username']; ?>! Astăzi este <span id="currentdate"></span>.
-            </p>
-            <div class="button"><a href="logout.php">Deconectare</a> </div>
-        </header>
-        <div class="container">
-            <div class="sidebar" data-aos="slide-right">
-                <h2>Adaugă Comandă</h2>
-                <form id="orderForm" method="post" action="dashboard.php" autocomplete="off">
-                    <input type="hidden" name="add_order" value="1">
-                    <div class="form-group">
+                    <label for="client_id"><strong>Caută client:</strong></label>
+                    <select id="client_id" name="client_id" style="width: 70%; margin-right: 10px;">
+                        <option value="">Caută</option>
+                    </select>
+                    <div id="edit_client_button" class="button" style="display:none; margin-top:10px;">
+                        <button type="button">Editează client</button>
 
-                        <label for="client_id"><strong>Caută client:</strong></label>
-                        <select id="client_id" name="client_id" style="width: 70%; margin-right: 10px;">
-                            <option value="">Caută</option>
-                        </select>
-                        <div id="edit_client_button" class="button" style="display:none; margin-top:10px;">
-                            <button type="button">Editează client</button>
-
+                    </div>
+                </div>
+                <div id="new_client_fields" class="form-group">
+                    <div class="flex-container">
+                        <div class="form-group">
+                            <label for="client_name"><strong>Nume Client:</strong></label>
+                            <input type="text" id="client_name" name="client_name">
+                        </div>
+                        <div class="form-group">
+                            <label for="client_phone"><strong>Telefon Client:</strong></label>
+                            <input type="text" id="client_phone" name="client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
+                        </div>
+                        <div class="form-group">
+                            <label for="client_email">Email Client:</label>
+                            <input type="email" id="client_email" name="client_email">
                         </div>
                     </div>
-                    <div id="new_client_fields" class="form-group">
-                        <div class="flex-container">
-                            <div class="form-group">
-                                <label for="client_name"><strong>Nume Client:</strong></label>
-                                <input type="text" id="client_name" name="client_name">
-                            </div>
-                            <div class="form-group">
-                                <label for="client_phone"><strong>Telefon Client:</strong></label>
-                                <input type="text" id="client_phone" name="client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
-                            </div>
-                            <div class="form-group">
-                                <label for="client_email">Email Client:</label>
-                                <input type="email" id="client_email" name="client_email">
-                            </div>
-                        </div>
-                        <button type="button" id="save_edit_button" style="display:none;">Salvează Modificările</button>
-                    </div>
+                    <button type="button" id="save_edit_button" style="display:none;">Salvează Modificările</button>
+                </div>
 
-                    <div class="form-group">
-                        <label for="order_details"><strong>Info Comandă:</strong></label>
-                        <textarea id="order_details" name="order_details" rows="4" cols="50"></textarea>
-                    </div>
+                <div class="form-group">
+                    <label for="order_details"><strong>Info Comandă:</strong></label>
+                    <textarea id="order_details" name="order_details" rows="4" cols="50"></textarea>
+                </div>
 
-                    <div class="form-group">
-                        <label for="avans">Avans:</label>
-                        <input type="number" id="avans" name="avans" max="9999" step="0.01">
-                    </div>
+                <div class="form-group">
+                    <label for="avans">Avans:</label>
+                    <input type="number" id="avans" name="avans" max="9999" step="0.01">
+                </div>
 
-                    <div class="form-group">
-                        <label for="total">Total:</label>
-                        <input type="number" id="total" name="total" max="9999" step="0.01">
-                    </div>
+                <div class="form-group">
+                    <label for="total">Total:</label>
+                    <input type="number" id="total" name="total" max="9999" step="0.01">
+                </div>
 
-                    <div class="form-group">
-                        <label for="due_date">Data Livrare:</label>
-                        <input type="date" id="due_date" name="due_date" required>
-                    </div>
+                <div class="form-group">
+                    <label for="due_date">Data Livrare:</label>
+                    <input type="date" id="due_date" name="due_date" required>
+                </div>
 
-                    <div class="form-group">
-                        <label for="due_time">Ora Livrare:</label>
-                        <input type="time" id="due_time" name="due_time">
-                    </div>
+                <div class="form-group">
+                    <label for="due_time">Ora Livrare:</label>
+                    <input type="time" id="due_time" name="due_time">
+                </div>
 
-                    <div class="form-group">
-                        <label for="category_id">Categorie:</label>
-                        <select id="category_id" name="category_id">
-                            <?php
-                            foreach ($categories as $category) {
-                                echo "<option value='" . $category["category_id"] . "'>" . $category["category_name"] . "</option>";
-                            }
-                            ?>
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label for="category_id">Categorie:</label>
+                    <select id="category_id" name="category_id">
+                        <?php
+                        foreach ($categories as $category) {
+                            echo "<option value='" . $category["category_id"] . "'>" . $category["category_name"] . "</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
 
+                <div class="form-group">
+                    <label for="assigned_to">Atribuie comanda lui:</label>
+                    <select id="assigned_to" name="assigned_to">
+                        <?php
+                        foreach ($users as $user) {
+                            echo "<option value='" . $user["user_id"] . "'>" . $user["username"] . "</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input class="button" type="submit" value="Adaugă Comandă" style="font-family: Poppins, sans-serif;">
+                </div>
+            </form>
+        </div>
+
+        <!-- Add this modal HTML in your main HTML file -->
+        <div id="editClientModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Editează detalii</h2>
+                <form id="editClientForm">
+                    <input type="hidden" id="edit_client_id" name="edit_client_id">
                     <div class="form-group">
-                        <label for="assigned_to">Atribuie comanda lui:</label>
-                        <select id="assigned_to" name="assigned_to">
-                            <?php
-                            foreach ($users as $user) {
-                                echo "<option value='" . $user["user_id"] . "'>" . $user["username"] . "</option>";
-                            }
-                            ?>
-                        </select>
+                        <label for="edit_client_name">Nume Client:</label>
+                        <input type="text" id="edit_client_name" name="edit_client_name">
                     </div>
                     <div class="form-group">
-                        <input class="button" type="submit" value="Adaugă Comandă" style="font-family: Poppins, sans-serif;">
+                        <label for="edit_client_phone">Telefon Client:</label>
+                        <input type="text" id="edit_client_phone" name="edit_client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_client_email">Email Client:</label>
+                        <input type="email" id="edit_client_email" name="edit_client_email">
+                    </div>
+                    <div class="form-group button">
+                        <input type="submit" value="Salvează Modificări">
                     </div>
                 </form>
             </div>
+        </div>
 
-            <!-- Add this modal HTML in your main HTML file -->
-            <div id="editClientModal" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <h2>Editează detalii</h2>
-                    <form id="editClientForm">
-                        <input type="hidden" id="edit_client_id" name="edit_client_id">
-                        <div class="form-group">
-                            <label for="edit_client_name">Nume Client:</label>
-                            <input type="text" id="edit_client_name" name="edit_client_name">
-                        </div>
-                        <div class="form-group">
-                            <label for="edit_client_phone">Telefon Client:</label>
-                            <input type="text" id="edit_client_phone" name="edit_client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
-                        </div>
-                        <div class="form-group">
-                            <label for="edit_client_email">Email Client:</label>
-                            <input type="email" id="edit_client_email" name="edit_client_email">
-                        </div>
-                        <div class="form-group button">
-                            <input type="submit" value="Salvează Modificări">
-                        </div>
-                    </form>
-                </div>
-            </div>
+        <div class="main-content" data-aos="slide-up">
+            <h2>Comenzi </h2>
+            <table>
+                <thead>
+                    <div class="filters">
+                        <form method="GET" action="dashboard.php">
+                            <div class="form-group">
+                                <label for="status_filter">Status:</label>
+                                <select id="status_filter" name="status_filter">
+                                    <option value="">Toate</option>
+                                    <option value="assigned" <?php if ($status_filter == 'assigned') echo 'selected'; ?>>Atribuit</option>
+                                    <option value="completed" <?php if ($status_filter == 'completed') echo 'selected'; ?>>Terminat</option>
+                                    <option value="delivered" <?php if ($status_filter == 'delivered') echo 'selected'; ?>>Livrat</option>
+                                    <option value="cancelled" <?php if ($status_filter == 'cancelled') echo 'selected'; ?>>Anulat</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="assigned_filter">Operator:</label>
+                                <select id="assigned_filter" name="assigned_filter">
+                                    <option value="">Toți</option>
+                                    <?php
+                                    $users_sql = "SELECT user_id, username FROM users";
+                                    $users_result = $conn->query($users_sql);
+                                    while ($user = $users_result->fetch_assoc()) {
+                                        $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
+                                        echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <!-- <label for="category_filter">Categorie</label> -->
+                                <select id="category_filter" name="category_filter">
+                                    <option value="">Toate</option>
+                                    <?php
+                                    $categories_sql = "SELECT category_id, category_name FROM categories";
+                                    $categories_result = $conn->query($categories_sql);
+                                    while ($category = $categories_result->fetch_assoc()) {
+                                        $selected = ($category_filter == $category['category_id']) ? 'selected' : '';
+                                        echo "<option value='" . $category['category_id'] . "' $selected>" . $category['category_name'] . "</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="sort_order">Ordine:</label>
+                                <select id="sort_order" name="sort_order">
+                                    <option value="ASC" <?php if ($sort_order == 'ASC') echo 'selected'; ?>>Ascendent</option>
+                                    <option value="DESC" <?php if ($sort_order == 'DESC') echo 'selected'; ?>>Descendent</option>
+                                </select>
+                            </div>
+                            <div>
+                                <button type="submit">Aplică filtre</button>
+                                <button type="button" onclick="window.location.href='dashboard.php'">Resetează filtre</button>
+                            </div>
 
-            <div class="main-content" data-aos="slide-up">
-                <h2>Comenzi </h2>
-                <table>
-                    <thead>
-                        <div class="filters">
-                            <form method="GET" action="dashboard.php">
-                                <div class="form-group">
-                                    <label for="status_filter">Status:</label>
-                                    <select id="status_filter" name="status_filter">
-                                        <option value="">Toate</option>
-                                        <option value="assigned" <?php if ($status_filter == 'assigned') echo 'selected'; ?>>Atribuit</option>
-                                        <option value="completed" <?php if ($status_filter == 'completed') echo 'selected'; ?>>Terminat</option>
-                                        <option value="delivered" <?php if ($status_filter == 'delivered') echo 'selected'; ?>>Livrat</option>
-                                        <option value="cancelled" <?php if ($status_filter == 'cancelled') echo 'selected'; ?>>Anulat</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="assigned_filter">Operator:</label>
-                                    <select id="assigned_filter" name="assigned_filter">
-                                        <option value="">Toți</option>
-                                        <?php
-                                        $users_sql = "SELECT user_id, username FROM users";
-                                        $users_result = $conn->query($users_sql);
-                                        while ($user = $users_result->fetch_assoc()) {
-                                            $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
-                                            echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <!-- <label for="category_filter">Categorie</label> -->
-                                    <select id="category_filter" name="category_filter">
-                                        <option value="">Toate</option>
-                                        <?php
-                                        $categories_sql = "SELECT category_id, category_name FROM categories";
-                                        $categories_result = $conn->query($categories_sql);
-                                        while ($category = $categories_result->fetch_assoc()) {
-                                            $selected = ($category_filter == $category['category_id']) ? 'selected' : '';
-                                            echo "<option value='" . $category['category_id'] . "' $selected>" . $category['category_name'] . "</option>";
-                                        }
-                                        ?>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="sort_order">Ordine:</label>
-                                    <select id="sort_order" name="sort_order">
-                                        <option value="ASC" <?php if ($sort_order == 'ASC') echo 'selected'; ?>>Ascendent</option>
-                                        <option value="DESC" <?php if ($sort_order == 'DESC') echo 'selected'; ?>>Descendent</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <button type="submit">Aplică filtre</button>
-                                    <button type="button" onclick="window.location.href='dashboard.php'">Resetează filtre</button>
-                                </div>
-
-                            </form>
-                        </div>
-                        <tr>
-                            <th>Nr. Comanda</th>
-                            <th>Client</th>
-                            <th>Info Comandă</th>
-                            <th>Din data</th>
-                            <th>Data livrare</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        if ($orders_result->num_rows > 0) {
-                            while ($row = $orders_result->fetch_assoc()) {
-                                $order_id = str_pad($row["order_id"], 3, '0', STR_PAD_LEFT);
-                                $order_date = formatDateWithoutYearWithDay($row["order_date"]) . ' ' . date('H:i', strtotime($row["order_time"]));
-                                //formatRemainingDays is called with delivery_date
-                                $due_date = formatRemainingDays($row["due_date"], $row["status"], $row["delivery_date"] ?? null);
-                                $status = $row["status"] ?? 'neatribuită';
-                                $row_classes = [];
-
-                                if ($status == 'assigned' && $status == 'completed') {
-                                    $status = $row["assigned_user"];
-                                    $row_classes[] = 'order-completed';
-                                } elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status != 'completed' && $status != 'delivered') {
-                                    $status = 'comanda ta';
-                                    $row_classes[] = 'order-current-user';
-                                } elseif ($status != "completed" && $status != "delivered") {
-                                    $status = $row["assigned_user"];
-                                    $row_classes[] = 'order-assigned';
-                                } elseif ($status == 'completed') {
-                                    $status = 'terminată';
-                                    $row_classes[] = 'order-completed';
-                                } else {
-                                    $status = 'livrată';
-                                    $row_classes[] = 'order-delivered';
-                                }
-
-                                $row_class = implode(' ', $row_classes);
-
-                                echo "<tr class='$row_class' onclick=\"window.location.href='view_order.php?order_id=" . $row["order_id"] . "'\">";
-                                echo "<td>" . $order_id . "</td>";
-                                echo "<td>" . $row["client_name"] . "</td>";
-                                echo "<td>" . $row["order_details"] . "</td>";
-                                echo "<td>" . $order_date . "</td>";
-                                echo "<td>" . $due_date . "</td>";
-                                echo "<td>" . $status . "</td>";
-                                echo "</tr>";
-                            }
-                        } else {
-                            echo "<tr><td colspan='6'>Nu există comenzi.</td></tr>";
-                        }
-                        ?>
-                    </tbody>
-                </table>
-                <div class="pagination">
+                        </form>
+                    </div>
+                    <tr>
+                        <th>Nr. Comanda</th>
+                        <th>Client</th>
+                        <th>Info Comandă</th>
+                        <th>Din data</th>
+                        <th>Data livrare</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
                     <?php
-                    // Ensure all variables are set and have valid values
-                    $total_pages = isset($total_pages) ? (int)$total_pages : 1;
-                    $page = isset($page) ? (int)$page : 1;
-                    $status_filter = isset($status_filter) ? urlencode($status_filter) : '';
-                    $assigned_filter = isset($assigned_filter) ? urlencode($assigned_filter) : '';
-                    $category_filter = isset($category_filter) ? urlencode($category_filter) : '';
-                    $sort_order = isset($sort_order) ? urlencode($sort_order) : '';
+                    if ($orders_result->num_rows > 0) {
+                        while ($row = $orders_result->fetch_assoc()) {
+                            $order_id = str_pad($row["order_id"], 3, '0', STR_PAD_LEFT);
+                            $order_date = formatDateWithoutYearWithDay($row["order_date"]) . ' ' . date('H:i', strtotime($row["order_time"]));
+                            //formatRemainingDays is called with delivery_date
+                            $due_date = formatRemainingDays($row["due_date"], $row["status"], $row["delivery_date"] ?? null);
+                            $status = $row["status"] ?? 'neatribuită';
+                            $row_classes = [];
 
-                    // First page link
-                    if ($total_pages > 5 && $page > 1) {
-                        echo "<a href='dashboard.php?page=1&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Prima</a>";
-                    }
-
-                    // Previous page link
-                    if ($total_pages > 5 && $page > 1) {
-                        echo "<a href='dashboard.php?page=" . ($page - 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înapoi</a>";
-                    }
-
-                    // Define the number of pages to show before and after the current page
-                    $window_size = 2; // This means 2 pages before and 2 pages after the current page
-
-                    // Calculate the start and end page numbers
-                    $start = 1;
-                    $end = $total_pages;
-
-                    if ($total_pages > 5) {
-                        $start = max(1, $page - $window_size);
-                        $end = min($total_pages, $page + $window_size);
-
-                        // Ensure there's always a minimum of 5 pages shown if possible
-                        if ($end - $start + 1 < 5) {
-                            if ($start == 1) {
-                                $end = min($total_pages, $start + 4);
+                            if ($status == 'assigned' && $status == 'completed') {
+                                $status = $row["assigned_user"];
+                                $row_classes[] = 'order-completed';
+                            } elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status != 'completed' && $status != 'delivered') {
+                                $status = 'comanda ta';
+                                $row_classes[] = 'order-current-user';
+                            } elseif ($status != "completed" && $status != "delivered") {
+                                $status = $row["assigned_user"];
+                                $row_classes[] = 'order-assigned';
+                            } elseif ($status == 'completed') {
+                                $status = 'terminată';
+                                $row_classes[] = 'order-completed';
                             } else {
-                                $start = max(1, $end - 4);
+                                $status = 'livrată';
+                                $row_classes[] = 'order-delivered';
                             }
+
+                            $row_class = implode(' ', $row_classes);
+
+                            echo "<tr class='$row_class' onclick=\"window.location.href='view_order.php?order_id=" . $row["order_id"] . "'\">";
+                            echo "<td>" . $order_id . "</td>";
+                            echo "<td>" . $row["client_name"] . "</td>";
+                            echo "<td>" . $row["order_details"] . "</td>";
+                            echo "<td>" . $order_date . "</td>";
+                            echo "<td>" . $due_date . "</td>";
+                            echo "<td>" . $status . "</td>";
+                            echo "</tr>";
                         }
-                    }
-
-                    // Display page numbers within the window
-                    for ($i = $start; $i <= $end; $i++) {
-                        $active = ($i == $page) ? 'active' : '';
-                        echo "<a href='dashboard.php?page=$i&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order' class='$active'>$i</a>";
-                    }
-
-                    // Next page link
-                    if ($total_pages > 5 && $page < $total_pages) {
-                        echo "<a href='dashboard.php?page=" . ($page + 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înainte</a>";
-                    }
-
-                    // Last page link
-                    if ($total_pages > 5 && $page < $total_pages) {
-                        echo "<a href='dashboard.php?page=$total_pages&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Ultima</a>";
+                    } else {
+                        echo "<tr><td colspan='6'>Nu există comenzi.</td></tr>";
                     }
                     ?>
-                </div>
+                </tbody>
+            </table>
+            <div class="pagination">
+                <?php
+                // Ensure all variables are set and have valid values
+                $total_pages = isset($total_pages) ? (int)$total_pages : 1;
+                $page = isset($page) ? (int)$page : 1;
+                $status_filter = isset($status_filter) ? urlencode($status_filter) : '';
+                $assigned_filter = isset($assigned_filter) ? urlencode($assigned_filter) : '';
+                $category_filter = isset($category_filter) ? urlencode($category_filter) : '';
+                $sort_order = isset($sort_order) ? urlencode($sort_order) : '';
+
+                // First page link
+                if ($total_pages > 5 && $page > 1) {
+                    echo "<a href='dashboard.php?page=1&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Prima</a>";
+                }
+
+                // Previous page link
+                if ($total_pages > 5 && $page > 1) {
+                    echo "<a href='dashboard.php?page=" . ($page - 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înapoi</a>";
+                }
+
+                // Define the number of pages to show before and after the current page
+                $window_size = 2; // This means 2 pages before and 2 pages after the current page
+
+                // Calculate the start and end page numbers
+                $start = 1;
+                $end = $total_pages;
+
+                if ($total_pages > 5) {
+                    $start = max(1, $page - $window_size);
+                    $end = min($total_pages, $page + $window_size);
+
+                    // Ensure there's always a minimum of 5 pages shown if possible
+                    if ($end - $start + 1 < 5) {
+                        if ($start == 1) {
+                            $end = min($total_pages, $start + 4);
+                        } else {
+                            $start = max(1, $end - 4);
+                        }
+                    }
+                }
+
+                // Display page numbers within the window
+                for ($i = $start; $i <= $end; $i++) {
+                    $active = ($i == $page) ? 'active' : '';
+                    echo "<a href='dashboard.php?page=$i&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order' class='$active'>$i</a>";
+                }
+
+                // Next page link
+                if ($total_pages > 5 && $page < $total_pages) {
+                    echo "<a href='dashboard.php?page=" . ($page + 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înainte</a>";
+                }
+
+                // Last page link
+                if ($total_pages > 5 && $page < $total_pages) {
+                    echo "<a href='dashboard.php?page=$total_pages&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Ultima</a>";
+                }
+                ?>
             </div>
         </div>
-        <footer>
-            <p>© Color Print</p>
-            <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
-            <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
-        </footer>
-    </body>
+    </div>
+    <footer>
+        <p>© Color Print</p>
+        <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
+        <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
+    </footer>
+</body>
 
 
 </html>
