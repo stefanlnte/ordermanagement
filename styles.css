@@ -17,24 +17,19 @@
 }
 
 button {
-  background-color: yellow;
-  border: 1px solid #a9a9a9;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  font-size: 14px;
-  color: #333;
+  border-radius: 5px;
+  border: 1px grey solid;
   padding: 10px;
+  margin: 5px;
   cursor: pointer;
   text-align: center;
   text-decoration: none;
-  display: inline-block;
   transition: 500ms;
   font-family: 'Poppins', sans-serif;
-  margin: 5px;
 }
 
 button:hover {
-  background-color: lightgrey;
+  background-color: yellow;
   transition: 500ms;
 }
 
@@ -149,6 +144,7 @@ tr:hover {
 .filters .form-group {
   flex: 1;
   min-width: 150px;
+  align-self: end;
 }
 
 .filters button {
