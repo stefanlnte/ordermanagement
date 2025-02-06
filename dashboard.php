@@ -436,6 +436,42 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             });
         });
     </script>
+
+    <!-- Function for background animation -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const numDots = 30; // Number of dots to generate
+            const colors = ["gray", "yellow"];
+            const backgroundContainer = document.createElement("div");
+            backgroundContainer.classList.add("background-container");
+            document.body.prepend(backgroundContainer);
+
+            function createDot() {
+                let dot = document.createElement("div");
+                dot.classList.add("dot");
+                let size = Math.random() * 20 + 10; // Random size between 10px and 30px
+                dot.style.width = `${size}px`;
+                dot.style.height = `${size}px`;
+                dot.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                dot.style.animationDuration = `${Math.random() * 5 + 4}s`; // Increase duration to make them stay longer
+                dot.style.animationDelay = `${Math.random() * 2}s`;
+                backgroundContainer.appendChild(dot);
+
+                function setRandomPosition() {
+                    dot.style.left = `${Math.random() * 100}vw`;
+                    dot.style.top = `${Math.random() * 100}vh`;
+                }
+
+                setRandomPosition(); // Set initial position
+                dot.addEventListener("animationiteration", setRandomPosition); // Change position on each animation loop
+            }
+
+            for (let i = 0; i < numDots; i++) {
+                createDot();
+            }
+        });
+    </script>
+
     <!-- Custom CSS for Select2 golden theme -->
     <style>
         /* Yellow theme for Select2 */
