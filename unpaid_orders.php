@@ -321,7 +321,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_unpaid_order'])) 
 <body>
 
     <header id="header">
-        <div style="text-align:center;" class="button"><a href="dashboard.php">Înapoi la comenzi</a></div>
+        <button href="javascript:void(0);" onclick="window.history.back();"> &#8592; Înapoi la panou comenzi</button>
     </header>
     <h1 style="text-align: center;">Comenzi nefacturate</h1>
     <div class="container">

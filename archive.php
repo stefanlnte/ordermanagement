@@ -311,7 +311,7 @@ if ($categories_result->num_rows > 0) {
 
 <body>
     <header id="header">
-        <div style="text-align:center;" class="button"><a href="dashboard.php">Înapoi la comenzi</a></div>
+        <button href="javascript:void(0);" onclick="window.history.back();"> &#8592; Înapoi la panou comenzi</button>
     </header>
     <h1 style="text-align: center;">Arhivă</h1>
     <div class="container" style="min-height: 100vh;">
