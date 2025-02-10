@@ -71,6 +71,12 @@ if ($users_result->num_rows > 0) {
                 display: none;
             }
 
+            html,
+            body {
+                overflow: hidden !important;
+                position: relative !important;
+            }
+
             /* Add styles to remove box shadow and other non-print styles */
             header {
                 display: none !important;
@@ -426,7 +432,7 @@ if ($users_result->num_rows > 0) {
 </head>
 
 <body>
-    <header id="header" data-aos="slide-down">
+    <header class="no-print" id="header" data-aos="slide-down">
         <?php if ($order['status'] != 'completed' && $order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
             <button id="finishButton" class="no-print" onclick="finishOrder()">Comanda a fost terminată</button>
         <?php endif; ?>
