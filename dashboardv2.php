@@ -669,12 +669,53 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         }
     </style>
 
+<script>
+function toggleVersion() {
+    const currentUrl = window.location.href;
+    const isV2 = /dashboardv2\.php/.test(currentUrl);
+    
+    if (isV2) {
+        window.location.href = currentUrl.replace('dashboardv2.php', 'dashboard.php');
+    } else {
+        window.location.href = currentUrl.replace('dashboard.php', 'dashboardv2.php');
+    }
+}
+</script>
+
+<style>
+#versionToggle {
+    background: #333;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+#versionToggle:hover {
+    background: #555;
+}
+
+#versionToggle button {
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+#versionToggle button:hover {
+    text-decoration: underline;
+}
+</style>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('orderForm').addEventListener('submit', function(event) {
                 event.preventDefault(); // Prevent the default form submission
 
-                fetch('demo.php', {
+                fetch('dashboardv2.php', {
                         method: 'POST',
                         body: new FormData(this)
                     })
@@ -701,7 +742,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         document.addEventListener('DOMContentLoaded', function() {
             // Init AOS
             AOS.init({
-                duration: 400, // Adjust animation duration here
+                duration: 600, // Adjust animation duration here
                 mirror: false // Start animation on scroll up as well
             });
         });
@@ -709,7 +750,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 </head>
 
 <body>
-    <header id="header" data-aos="slide-down">
+    <header id="header">
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 var currentDate = new Date();
@@ -746,7 +787,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <div class="container">
         <div class="sidebar" data-aos="slide-right">
             <h2>Adaugă Comandă</h2>
-            <form id="orderForm" method="post" action="demo.php" autocomplete="off">
+            <form id="orderForm" method="post" action="dashboardv2.php" autocomplete="off">
                 <input type="hidden" name="add_order" value="1">
                 <div class="form-group">
 
@@ -858,7 +899,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <div class="main-content">
             <h2 data-aos="zoom-in" style="text-align:center">Comenzi </h2>
             <div class="filters">
-                <form method="GET" action="demo.php">
+                <form method="GET" action="dashboardv2.php">
                     <div class="filter-group">
                         <label>Status:</label>
                         <select id="status_filter" name="status_filter">
@@ -910,7 +951,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                     <div class="filter-group">
                         <button type="submit">Aplică filtre</button>
-                        <button type="button" onclick="window.location.href='demo.php'">Resetează filtre</button>
+                        <button type="button" onclick="window.location.href='dashboardv2.php'">Resetează filtre</button>
                     </div>
                 </form>
             </div>
@@ -989,12 +1030,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                 // First page link
                 if ($total_pages > 5 && $page > 1) {
-                    echo "<a href='demo.php?page=1&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Prima</a>";
+                    echo "<a href='dashboardv2.php?page=1&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Prima</a>";
                 }
 
                 // Previous page link
                 if ($total_pages > 5 && $page > 1) {
-                    echo "<a href='demo.php?page=" . ($page - 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înapoi</a>";
+                    echo "<a href='dashboardv2.php?page=" . ($page - 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înapoi</a>";
                 }
 
                 // Define the number of pages to show before and after the current page
@@ -1021,27 +1062,31 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 // Display page numbers within the window
                 for ($i = $start; $i <= $end; $i++) {
                     $active = ($i == $page) ? 'active' : '';
-                    echo "<a href='demo.php?page=$i&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order' class='$active'>$i</a>";
+                    echo "<a href='dashboardv2.php?page=$i&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order' class='$active'>$i</a>";
                 }
 
                 // Next page link
                 if ($total_pages > 5 && $page < $total_pages) {
-                    echo "<a href='demo.php?page=" . ($page + 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înainte</a>";
+                    echo "<a href='dashboardv2.php?page=" . ($page + 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înainte</a>";
                 }
 
                 // Last page link
                 if ($total_pages > 5 && $page < $total_pages) {
-                    echo "<a href='demo.php?page=$total_pages&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Ultima</a>";
+                    echo "<a href='dashboardv2.php?page=$total_pages&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Ultima</a>";
                 }
                 ?>
             </div>
         </div>
     </div>
     <footer>
-        <p>© Color Print</p>
-        <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
-        <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
-    </footer>
+    <p>© Color Print</p>
+    <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
+    <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
+    <div id="versionToggle" style="position: fixed; bottom: 20px; right: 30px; background: #333; padding: 10px; border-radius: 5px; cursor: pointer;">
+        <button onclick="toggleVersion()"> Schimbă la <?php echo (basename($_SERVER['PHP_SELF']) === 'dashboardv2.php') ? 'V1' : 'V2'; ?></button>
+    </div>
+</footer>
+
 </body>
 
 

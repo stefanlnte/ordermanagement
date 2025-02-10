@@ -476,6 +476,47 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
+<script>
+function toggleVersion() {
+    const currentUrl = window.location.href;
+    const isV2 = /dashboardv2\.php/.test(currentUrl);
+    
+    if (isV2) {
+        window.location.href = currentUrl.replace('dashboardv2.php', 'dashboard.php');
+    } else {
+        window.location.href = currentUrl.replace('dashboard.php', 'dashboardv2.php');
+    }
+}
+</script>
+
+<style>
+#versionToggle {
+    background: #333;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+#versionToggle:hover {
+    background: #555;
+}
+
+#versionToggle button {
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+#versionToggle button:hover {
+    text-decoration: underline;
+}
+</style>
+
     <!-- Custom CSS for Select2 golden theme -->
     <style>
         /* Yellow theme for Select2 */
@@ -952,10 +993,14 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
     </div>
     <footer>
-        <p>© Color Print</p>
-        <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
-        <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
-    </footer>
+    <p>© Color Print</p>
+    <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
+    <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
+    <div id="versionToggle" style="position: fixed; bottom: 20px; right: 30px; background: #333; padding: 10px; border-radius: 5px; cursor: pointer;">
+        <button onclick="toggleVersion()"> Schimbă la <?php echo (basename($_SERVER['PHP_SELF']) === 'dashboardv2.php') ? 'V1' : 'V2'; ?></button>
+    </div>
+</footer>
+
 </body>
 
 
