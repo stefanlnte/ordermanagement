@@ -476,123 +476,61 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
-    <!-- Custom CSS for Select2 golden theme -->
-    <style>
-        /* Yellow theme for Select2 */
-        .select2-container--default .select2-selection--single {
-            background-color: #fff;
-            border: 1px solid #a9a9a9;
-            /* Dark grey color for border */
-            border-radius: 4px;
-            /* Rounded border */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            font-size: 16px;
-            /* Increase font size for better visibility */
-        }
+    <script>
+        function toggleVersion() {
+            const currentUrl = window.location.href;
+            const isV2 = /dashboardv2\.php/.test(currentUrl);
 
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: #333;
-            padding-left: 5px;
-            font-size: 14px;
-            /* Adjust font size for the selected item */
-            text-align: left;
-            /* Align text to the left */
+            if (isV2) {
+                window.location.href = currentUrl.replace('dashboardv2.php', 'dashboard.php');
+            } else {
+                window.location.href = currentUrl.replace('dashboard.php', 'dashboardv2.php');
+            }
         }
+    </script>
 
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            background-color: #fff;
-            /* White background for the arrow */
-            border: none;
-            /* Remove border around the arrow */
-            border-radius: 0 4px 4px 0;
-            /* Rounded right side */
-        }
+    <!-- Script for adding new order -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('orderForm').addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent the default form submission
 
-        .select2-container--default .select2-selection--single .select2-selection__arrow b {
-            border-color: #a9a9a9 transparent transparent transparent;
-            /* Dark grey arrow */
-            border-width: 5px 4px 0 4px;
-        }
+                fetch('dashboardv2.php', {
+                        method: 'POST',
+                        body: new FormData(this)
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        if (data.includes('Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ')) {
+                            alert('Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ');
+                            this.reset(); // Reset the form after successful submission
+                            // Assuming you want to navigate to view_order.php after reset
+                            const orderId = data.match(/order_id=(\d+)/)[1];
+                            window.location.href = 'view_order.php?order_id=' + orderId;
+                        } else {
+                            alert('Error adding new order: ' + data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while processing your request.');
+                    });
+            });
+        });
+    </script>
 
-        .select2-container--default .select2-results__option {
-            padding: 12px;
-            color: #333;
-            font-size: 14px;
-            /* Adjust font size for the dropdown options */
-            white-space: nowrap;
-            /* Prevent text from wrapping */
-            text-align: left;
-            /* Align text to the left */
-        }
+    <!-- AOS CSS init -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Init AOS
+            AOS.init({
+                duration: 600, // Adjust animation duration here
+                mirror: false // Start animation on scroll up as well
+            });
+        });
+    </script>
 
-        .select2-container--default .select2-results__option--highlighted[aria-selected] {
-            background-color: #FFFF00;
-            /* Yellow color */
-            color: #000;
-            text-align: left;
-            /* Align text to the left */
-        }
-
-        .select2-container--default .select2-search--dropdown .select2-search__field {
-            border: 1px solid #a9a9a9;
-            /* Dark grey color */
-            outline: none;
-            padding: 8px;
-            border-radius: 4px;
-            /* Rounded border */
-            width: 100%;
-            box-sizing: border-box;
-            font-size: 14px;
-            /* Adjust font size for the search field */
-            text-align: left;
-            /* Align text to the left */
-        }
-
-        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
-            border-color: #708090;
-            /* Light grey color for focus */
-            box-shadow: 0 0 5px rgba(169, 169, 169, 0.5);
-        }
-
-        .select2-container--default .select2-selection--multiple .select2-selection__choice {
-            background-color: #FFFF00;
-            /* Yellow color */
-            border: 1px solid #a9a9a9;
-            /* Dark grey color */
-            color: #000;
-            padding: 5px 10px;
-            border-radius: 4px;
-            /* Rounded border */
-            margin-top: 5px;
-            margin-right: 5px;
-            white-space: nowrap;
-            /* Prevent text from wrapping */
-            font-size: 14px;
-            /* Adjust font size for multiple selection choices */
-            text-align: left;
-            /* Align text to the left */
-        }
-
-        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-            color: #000;
-            font-weight: bold;
-            margin-right: 5px;
-        }
-
-        /* Remove scrollbar */
-        .select2-container--default .select2-results {
-            overflow-y: hidden !important;
-            /* Remove vertical scrollbar */
-            max-width: 100% !important;
-            /* Ensure dropdown is wide enough */
-        }
-
-        .select2-container--default .select2-results__options {
-            max-width: 100% !important;
-            /* Ensure options are wide enough */
-        }
-    </style>
-
+    <!-- Style for V2 grid cards -->
     <style>
         .order-grid {
             display: grid;
@@ -668,85 +606,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             margin-right: 5px;
         }
     </style>
-
-<script>
-function toggleVersion() {
-    const currentUrl = window.location.href;
-    const isV2 = /dashboardv2\.php/.test(currentUrl);
-    
-    if (isV2) {
-        window.location.href = currentUrl.replace('dashboardv2.php', 'dashboard.php');
-    } else {
-        window.location.href = currentUrl.replace('dashboard.php', 'dashboardv2.php');
-    }
-}
-</script>
-
-<style>
-#versionToggle {
-    background: #333;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    color: white;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-#versionToggle:hover {
-    background: #555;
-}
-
-#versionToggle button {
-    background: none;
-    color: inherit;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-}
-
-#versionToggle button:hover {
-    text-decoration: underline;
-}
-</style>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('orderForm').addEventListener('submit', function(event) {
-                event.preventDefault(); // Prevent the default form submission
-
-                fetch('dashboardv2.php', {
-                        method: 'POST',
-                        body: new FormData(this)
-                    })
-                    .then(response => response.text())
-                    .then(data => {
-                        if (data.includes('Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ')) {
-                            alert('Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ');
-                            this.reset(); // Reset the form after successful submission
-                            // Assuming you want to navigate to view_order.php after reset
-                            const orderId = data.match(/order_id=(\d+)/)[1];
-                            window.location.href = 'view_order.php?order_id=' + orderId;
-                        } else {
-                            alert('Error adding new order: ' + data);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while processing your request.');
-                    });
-            });
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Init AOS
-            AOS.init({
-                duration: 600, // Adjust animation duration here
-                mirror: false // Start animation on scroll up as well
-            });
-        });
-    </script>
 </head>
 
 <body>
@@ -1079,13 +938,13 @@ function toggleVersion() {
         </div>
     </div>
     <footer>
-    <p>© Color Print</p>
-    <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
-    <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
-    <div id="versionToggle" style="position: fixed; bottom: 20px; right: 30px; background: #333; padding: 10px; border-radius: 5px; cursor: pointer;">
-        <button onclick="toggleVersion()"> Schimbă la <?php echo (basename($_SERVER['PHP_SELF']) === 'dashboardv2.php') ? 'V1' : 'V2'; ?></button>
-    </div>
-</footer>
+        <p>© Color Print</p>
+        <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
+        <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
+        <div id="versionToggle" style="position: fixed; bottom: 20px; right: 30px; background: #333; padding: 10px; border-radius: 5px; cursor: pointer;">
+            <button onclick="toggleVersion()">Schimbă la <?php echo (basename($_SERVER['PHP_SELF']) === 'dashboardv2.php') ? 'V1' : 'V2'; ?></button>
+        </div>
+    </footer>
 
 </body>
 
