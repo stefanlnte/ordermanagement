@@ -476,6 +476,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
+    <!-- Script to toggle between V1 and V2 -->
     <script>
         function toggleVersion() {
             const currentUrl = window.location.href;
@@ -529,83 +530,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             });
         });
     </script>
-
-    <!-- Style for V2 grid cards -->
-    <style>
-        .order-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            padding: 20px;
-        }
-
-        .order-card {
-            background: #e5e7e9;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 0 px yellow;
-            transition: transform 0.2s;
-            cursor: pointer;
-        }
-
-        .order-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .order-card.completed {
-            background: #98FB98;
-            box-shadow: 0 0 10px #008000;
-        }
-
-        .order-card.assigned {
-            background: #FFFACD;
-            box-shadow: 0 0 10px #f4d03f;
-        }
-
-        .order-card.current-user {
-            background: #f5b7b1;
-            box-shadow: 0 0 10px #78281f;
-        }
-
-        .order-card td {
-            padding: 8px 0;
-            font-size: 0.9em;
-        }
-
-        th {
-            font-weight: bold;
-            text-align: left;
-            padding-bottom: 10px;
-        }
-
-        .order-status {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .order-operator {
-            color: #444;
-            font-size: 0.9em;
-        }
-
-        .filters form {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-        }
-
-        .filter-group label {
-            margin-right: 5px;
-        }
-    </style>
 </head>
 
 <body>
@@ -827,11 +751,21 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                         if ($status == 'assigned') {
                             $row_classes[] = 'assigned';
-                        } elseif ($status == 'completed') {
+                        } elseif (
+                            $status == 'completed'
+                        ) {
                             $row_classes[] = 'completed';
+                        } elseif (
+                            $status == 'delivered'
+                        ) {
+                            $row_classes[] = 'delivered';
+                        } elseif (
+                            $status == 'cancelled'
+                        ) {
+                            $row_classes[] = 'cancelled';
                         }
 
-                        if ($row["assigned_to"] == $_SESSION['user_id'] && $status != 'completed' && $status != 'delivered') {
+                        if ($row["assigned_to"] == $_SESSION['user_id'] && $status != 'completed' && $status != 'delivered' && $status != 'cancelled') {
                             $row_classes[] = 'current-user';
                         }
 
