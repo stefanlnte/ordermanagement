@@ -103,7 +103,6 @@ if ($users_result->num_rows > 0) {
 
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" type="text/css" href="styles.css">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
     <!-- Include Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
@@ -420,19 +419,10 @@ if ($users_result->num_rows > 0) {
             /* Ensure options are wide enough */
         }
     </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Init AOS
-            AOS.init({
-                duration: 400, // Adjust animation duration here
-                mirror: false // Start animation on scroll up as well
-            });
-        });
-    </script>
 </head>
 
 <body>
-    <header class="no-print" id="header" data-aos="slide-down">
+    <header class="no-print" id="header">
         <?php if ($order['status'] != 'completed' && $order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
             <button id="finishButton" class="no-print" onclick="finishOrder()">Comanda a fost terminată</button>
         <?php endif; ?>
