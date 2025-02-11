@@ -207,6 +207,14 @@ tr:hover {
   box-shadow: 0 0 10px #78281f;
 }
 
+.order-card.delivered {
+  box-shadow: 0 0 10px green;
+}
+
+.order-card.cancelled {
+  box-shadow: 0 0 10px red;
+}
+
 .order-card td {
   padding: 8px 0;
   font-size: 0.9em;
@@ -256,12 +264,6 @@ th {
 }
 .order-delivered {
   background-color: #ffffffe8;
-}
-.order-card.delivered {
-  box-shadow: 0 0 10px lightgreen;
-}
-.order-card.cancelled {
-  box-shadow: 0 0 10px #ff1a1a;
 }
 
 .filters {

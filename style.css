@@ -102,6 +102,10 @@ footer {
   overflow: hidden;
 }
 
+.background-container * {
+  pointer-events: none; /* Prevent clicks from being blocked by the cubes */
+}
+
 .cube {
   position: absolute;
   transform-origin: center;
