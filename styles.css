@@ -180,10 +180,9 @@ tr:hover {
 }
 
 .order-card {
-  background: #e5e7e9;
+  background: #f3f4f4;
   border-radius: 10px;
   padding: 15px;
-  box-shadow: 0 0 px yellow;
   transition: transform 0.2s;
   cursor: pointer;
 }
@@ -194,25 +193,30 @@ tr:hover {
 
 .order-card.completed {
   background: #98fb98;
-  box-shadow: 0 0 10px #008000;
+  box-shadow: 0 0 5px #008000;
+  border: 1px solid #008000;
 }
 
 .order-card.assigned {
   background: #fffacd;
-  box-shadow: 0 0 10px #f4d03f;
+  box-shadow: 0 0 5px #f4d03f;
+  border: 1px solid #f4d03f;
 }
 
 .order-card.current-user {
-  background: #f5b7b1;
-  box-shadow: 0 0 10px #78281f;
+  background: #f9c2bd;
+  box-shadow: 0 0 5px rgb(153, 81, 81);
+  border: 1px solid rgb(153, 81, 81);
 }
 
 .order-card.delivered {
-  box-shadow: 0 0 10px green;
+  box-shadow: 0 0 5px lightgreen;
+  border: 1px solid #008000;
 }
 
 .order-card.cancelled {
-  box-shadow: 0 0 10px red;
+  box-shadow: 0 0 5px lightcoral;
+  border: 1px solid red;
 }
 
 .order-card td {

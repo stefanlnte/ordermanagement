@@ -647,7 +647,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             /* Ensure options are wide enough */
         }
     </style>
-    
+
 </head>
 
 <body>
@@ -798,7 +798,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
 
         <div class="main-content">
-            <h2 data-aos="zoom-in" style="text-align:center">Comenzi </h2>
+            <h1 data-aos="flip-left" data-aos-duration="1000" style="text-align:center">Comenzi </h1>
             <div class="filters">
                 <form method="GET" action="dashboardv2.php">
                     <div class="filter-group">
