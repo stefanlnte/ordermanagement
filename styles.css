@@ -188,35 +188,60 @@ tr:hover {
 }
 
 .order-card:hover {
-  transform: translateY(-5px);
+  scale: 1.04;
 }
 
 .order-card.completed {
   background: #98fb98;
-  box-shadow: 0 0 5px #008000;
   border: 1px solid #008000;
+  transition: 400ms;
+}
+
+.order-card.completed:hover {
+  box-shadow: 0 0 10px #008000;
+  transition: 400ms;
 }
 
 .order-card.assigned {
   background: #fffacd;
-  box-shadow: 0 0 5px #f4d03f;
   border: 1px solid #f4d03f;
+  transition: 400ms;
+}
+
+.order-card.assigned:hover {
+  box-shadow: 0 0 10px #f4d03f;
+  transition: 400ms;
 }
 
 .order-card.current-user {
   background: #f9c2bd;
-  box-shadow: 0 0 5px rgb(153, 81, 81);
   border: 1px solid rgb(153, 81, 81);
+  transition: 400ms;
+}
+
+.order-card.current-user:hover {
+  box-shadow: 0 0 10px rgb(153, 81, 81);
+  transition: 400ms;
 }
 
 .order-card.delivered {
-  box-shadow: 0 0 5px lightgreen;
   border: 1px solid #008000;
+  transition: 400ms;
+}
+
+.order-card.delivered:hover {
+  box-shadow: 0 0 10px lightgreen;
+  transition: 400ms;
 }
 
 .order-card.cancelled {
-  box-shadow: 0 0 5px lightcoral;
   border: 1px solid red;
+  transition: 400ms;
+}
+
+.order-card.cancelled:hover {
+  box-shadow: 0 0 10px lightcoral;
+  transition: 400ms;
 }
 
 .order-card td {
