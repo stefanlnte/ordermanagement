@@ -490,6 +490,123 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         }
     </script>
 
+    <!-- Custom CSS for Select2 golden theme -->
+    <style>
+        /* Yellow theme for Select2 */
+        .select2-container--default .select2-selection--single {
+            background-color: #fff;
+            border: 1px solid #a9a9a9;
+            /* Dark grey color for border */
+            border-radius: 4px;
+            /* Rounded border */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            /* Increase font size for better visibility */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #333;
+            padding-left: 5px;
+            font-size: 14px;
+            /* Adjust font size for the selected item */
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            background-color: #fff;
+            /* White background for the arrow */
+            border: none;
+            /* Remove border around the arrow */
+            border-radius: 0 4px 4px 0;
+            /* Rounded right side */
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow b {
+            border-color: #a9a9a9 transparent transparent transparent;
+            /* Dark grey arrow */
+            border-width: 5px 4px 0 4px;
+        }
+
+        .select2-container--default .select2-results__option {
+            padding: 12px;
+            color: #333;
+            font-size: 14px;
+            /* Adjust font size for the dropdown options */
+            white-space: nowrap;
+            /* Prevent text from wrapping */
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #FFFF00;
+            /* Yellow color */
+            color: #000;
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            border: 1px solid #a9a9a9;
+            /* Dark grey color */
+            outline: none;
+            padding: 8px;
+            border-radius: 4px;
+            /* Rounded border */
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 14px;
+            /* Adjust font size for the search field */
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+            border-color: #708090;
+            /* Light grey color for focus */
+            box-shadow: 0 0 5px rgba(169, 169, 169, 0.5);
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #FFFF00;
+            /* Yellow color */
+            border: 1px solid #a9a9a9;
+            /* Dark grey color */
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 4px;
+            /* Rounded border */
+            margin-top: 5px;
+            margin-right: 5px;
+            white-space: nowrap;
+            /* Prevent text from wrapping */
+            font-size: 14px;
+            /* Adjust font size for multiple selection choices */
+            text-align: left;
+            /* Align text to the left */
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: #000;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        /* Remove scrollbar */
+        .select2-container--default .select2-results {
+            overflow-y: hidden !important;
+            /* Remove vertical scrollbar */
+            max-width: 100% !important;
+            /* Ensure dropdown is wide enough */
+        }
+
+        .select2-container--default .select2-results__options {
+            max-width: 100% !important;
+            /* Ensure options are wide enough */
+        }
+    </style>
+
     <!-- Script for adding new order -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -568,6 +685,20 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </p>
         <div class="button"><a href="logout.php">Deconectare</a> </div>
     </header>
+
+    <div class="image-container" style="width: 100%; height: 300px; position: relative;">
+        <img src="https://color-print.ro/magazincp/header.webp"
+            alt="Main Image"
+            style="width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1;">
+        <div class="image-overlay"></div>
+        <object data-aos="fade-left"
+            data-aos-anchor="#example-anchor"
+            data-aos-offset="500"
+            data-aos-duration="1000" type="image/svg+xml" data="https://color-print.ro/magazincp/comenzi.svg"
+            style="width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; z-index: 2; object-fit: contain;">
+        </object>
+
+    </div>
     <div class="container">
         <div class="sidebar" data-aos="slide-right">
             <h2>Adaugă Comandă</h2>
@@ -681,13 +812,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
 
         <div class="main-content" data-aos="slide-up">
-            <h2>Comenzi </h2>
             <table>
                 <thead>
                     <div class="filters">
                         <form method="GET" action="dashboard.php">
-                            <div class="form-group">
-                                <label for="status_filter">Status:</label>
+                            <div class="filter-group">
+                                <label>Status:</label>
                                 <select id="status_filter" name="status_filter">
                                     <option value="">Toate</option>
                                     <option value="assigned" <?php if ($status_filter == 'assigned') echo 'selected'; ?>>Atribuit</option>
@@ -696,8 +826,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                     <option value="cancelled" <?php if ($status_filter == 'cancelled') echo 'selected'; ?>>Anulat</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label for="assigned_filter">Operator:</label>
+
+                            <div class="filter-group">
+                                <label>Operator:</label>
                                 <select id="assigned_filter" name="assigned_filter">
                                     <option value="">Toți</option>
                                     <?php
@@ -710,8 +841,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                     ?>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <!-- <label for="category_filter">Categorie</label> -->
+
+                            <div class="filter-group">
+                                <label>Categorie:</label>
                                 <select id="category_filter" name="category_filter">
                                     <option value="">Toate</option>
                                     <?php
@@ -724,18 +856,19 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                     ?>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label for="sort_order">Ordine:</label>
+
+                            <div class="filter-group">
+                                <label>Ordine:</label>
                                 <select id="sort_order" name="sort_order">
                                     <option value="ASC" <?php if ($sort_order == 'ASC') echo 'selected'; ?>>Ascendent</option>
                                     <option value="DESC" <?php if ($sort_order == 'DESC') echo 'selected'; ?>>Descendent</option>
                                 </select>
                             </div>
-                            <div>
+
+                            <div class="filter-group">
                                 <button type="submit">Aplică filtre</button>
                                 <button type="button" onclick="window.location.href='dashboard.php'">Resetează filtre</button>
                             </div>
-
                         </form>
                     </div>
                     <tr>
