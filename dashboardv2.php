@@ -651,7 +651,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 </head>
 
 <body>
-    <header id="header" data-aos="slide-down">
+    <header id="header" data-aos="fade-in">
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 var currentDate = new Date();
