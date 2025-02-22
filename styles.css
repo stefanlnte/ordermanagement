@@ -19,7 +19,6 @@
   bottom: 0;
   right: 0;
   background-color: rgba(0, 0, 0, 0.6);
-  border-radius: 10px; /* Match the image border-radius if any */
   z-index: 2;
 }
 
