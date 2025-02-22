@@ -651,7 +651,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 </head>
 
 <body>
-    <header id="header" data-aos="fade-in">
+    <header id="header" data-aos="slide-down">
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 var currentDate = new Date();
@@ -814,61 +814,61 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <div class="main-content" data-aos="slide-up">
             <table>
                 <thead>
-                    <div class="filters" style="margin-bottom: 20px" ;
-                        <form method=" GET" action="dashboard.php">
-                        <div class="filter-group">
-                            <label>Status:</label>
-                            <select id="status_filter" name="status_filter">
-                                <option value="">Toate</option>
-                                <option value="assigned" <?php if ($status_filter == 'assigned') echo 'selected'; ?>>Atribuit</option>
-                                <option value="completed" <?php if ($status_filter == 'completed') echo 'selected'; ?>>Terminat</option>
-                                <option value="delivered" <?php if ($status_filter == 'delivered') echo 'selected'; ?>>Livrat</option>
-                                <option value="cancelled" <?php if ($status_filter == 'cancelled') echo 'selected'; ?>>Anulat</option>
-                            </select>
-                        </div>
+                    <div class="filters">
+                        <form method="GET" action="dashboard.php">
+                            <div class="filter-group">
+                                <label>Status:</label>
+                                <select id="status_filter" name="status_filter">
+                                    <option value="">Toate</option>
+                                    <option value="assigned" <?php if ($status_filter == 'assigned') echo 'selected'; ?>>Atribuit</option>
+                                    <option value="completed" <?php if ($status_filter == 'completed') echo 'selected'; ?>>Terminat</option>
+                                    <option value="delivered" <?php if ($status_filter == 'delivered') echo 'selected'; ?>>Livrat</option>
+                                    <option value="cancelled" <?php if ($status_filter == 'cancelled') echo 'selected'; ?>>Anulat</option>
+                                </select>
+                            </div>
 
-                        <div class="filter-group">
-                            <label>Operator:</label>
-                            <select id="assigned_filter" name="assigned_filter">
-                                <option value="">Toți</option>
-                                <?php
-                                $users_sql = "SELECT user_id, username FROM users";
-                                $users_result = $conn->query($users_sql);
-                                while ($user = $users_result->fetch_assoc()) {
-                                    $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
-                                    echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
-                                }
-                                ?>
-                            </select>
-                        </div>
+                            <div class="filter-group">
+                                <label>Operator:</label>
+                                <select id="assigned_filter" name="assigned_filter">
+                                    <option value="">Toți</option>
+                                    <?php
+                                    $users_sql = "SELECT user_id, username FROM users";
+                                    $users_result = $conn->query($users_sql);
+                                    while ($user = $users_result->fetch_assoc()) {
+                                        $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
+                                        echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
 
-                        <div class="filter-group">
-                            <label>Categorie:</label>
-                            <select id="category_filter" name="category_filter">
-                                <option value="">Toate</option>
-                                <?php
-                                $categories_sql = "SELECT category_id, category_name FROM categories";
-                                $categories_result = $conn->query($categories_sql);
-                                while ($category = $categories_result->fetch_assoc()) {
-                                    $selected = ($category_filter == $category['category_id']) ? 'selected' : '';
-                                    echo "<option value='" . $category['category_id'] . "' $selected>" . $category['category_name'] . "</option>";
-                                }
-                                ?>
-                            </select>
-                        </div>
+                            <div class="filter-group">
+                                <label>Categorie:</label>
+                                <select id="category_filter" name="category_filter">
+                                    <option value="">Toate</option>
+                                    <?php
+                                    $categories_sql = "SELECT category_id, category_name FROM categories";
+                                    $categories_result = $conn->query($categories_sql);
+                                    while ($category = $categories_result->fetch_assoc()) {
+                                        $selected = ($category_filter == $category['category_id']) ? 'selected' : '';
+                                        echo "<option value='" . $category['category_id'] . "' $selected>" . $category['category_name'] . "</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
 
-                        <div class="filter-group">
-                            <label>Ordine:</label>
-                            <select id="sort_order" name="sort_order">
-                                <option value="ASC" <?php if ($sort_order == 'ASC') echo 'selected'; ?>>Ascendent</option>
-                                <option value="DESC" <?php if ($sort_order == 'DESC') echo 'selected'; ?>>Descendent</option>
-                            </select>
-                        </div>
+                            <div class="filter-group">
+                                <label>Ordine:</label>
+                                <select id="sort_order" name="sort_order">
+                                    <option value="ASC" <?php if ($sort_order == 'ASC') echo 'selected'; ?>>Ascendent</option>
+                                    <option value="DESC" <?php if ($sort_order == 'DESC') echo 'selected'; ?>>Descendent</option>
+                                </select>
+                            </div>
 
-                        <div class="filter-group">
-                            <button type="submit">Aplică filtre</button>
-                            <button type="button" onclick="window.location.href='dashboard.php'">Resetează filtre</button>
-                        </div>
+                            <div class="filter-group">
+                                <button type="submit">Aplică filtre</button>
+                                <button type="button" onclick="window.location.href='dashboard.php'">Resetează filtre</button>
+                            </div>
                         </form>
                     </div>
                     <tr>
