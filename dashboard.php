@@ -642,7 +642,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         document.addEventListener('DOMContentLoaded', function() {
             // Init AOS
             AOS.init({
-                duration: 400, // Adjust animation duration here
+                duration: 1000, // Adjust animation duration here
                 mirror: false // Start animation on scroll up as well
             });
         });
@@ -651,7 +651,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 </head>
 
 <body>
-    <header id="header" data-aos="slide-down">
+    <header id="header">
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 var currentDate = new Date();
@@ -680,10 +680,10 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 document.getElementById('greeting-message').textContent = greetingMessage;
             });
         </script>
-        <p>
+        <p data-aos="zoom-down">
             <span id="greeting-message"></span>, <?php echo ucwords($_SESSION['username']); ?>! Astăzi este <span id="currentdate"></span>.
         </p>
-        <div class="button"><a href="logout.php">Deconectare</a> </div>
+        <div class="button" data-aos="zoom-down"><a href="logout.php">Deconectare</a> </div>
     </header>
 
     <div class="image-container" style="width: 100%; height: 300px; position: relative;">
@@ -694,7 +694,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <object data-aos="fade-left"
             data-aos-anchor="#example-anchor"
             data-aos-offset="500"
-            data-aos-duration="1000" type="image/svg+xml" data="https://color-print.ro/magazincp/comenzi.svg"
+            type="image/svg+xml" data="https://color-print.ro/magazincp/comenzi.svg"
             style="width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; z-index: 2; object-fit: contain;">
         </object>
 
