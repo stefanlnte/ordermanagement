@@ -685,6 +685,18 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </p>
         <div class="button"><a href="logout.php">Deconectare</a> </div>
     </header>
+
+    <div class="image-container" style="width: 100%; height: 300px; position: relative;">
+        <img src="https://color-print.ro/magazincp/header.webp"
+            alt="Main Image"
+            style="width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1;">
+        <div class="image-overlay"></div>
+        <object type="image/svg+xml" data="https://color-print.ro/magazincp/comenzi.svg"
+            style="width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; z-index: 2; object-fit: contain;">
+        </object>
+    </div>
+
+
     <div class="container">
         <div class="sidebar" data-aos="slide-right">
             <h2>Adaugă Comandă</h2>
@@ -798,7 +810,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
 
         <div class="main-content">
-            <h1 data-aos="flip-left" data-aos-duration="1000" style="text-align:center">Comenzi </h1>
             <div class="filters">
                 <form method="GET" action="dashboardv2.php">
                     <div class="filter-group">

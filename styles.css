@@ -6,6 +6,23 @@
   min-height: 100vh;
 }
 
+.image-container {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 10px; /* Match the image border-radius if any */
+  z-index: 2;
+}
+
 .sidebar {
   flex: 1;
   order: 1;
@@ -194,54 +211,54 @@ tr:hover {
 .order-card.completed {
   background: #98fb98;
   border: 1px solid #008000;
-  transition: 400ms;
+  transition: 200ms;
 }
 
 .order-card.completed:hover {
   box-shadow: 0 0 10px #008000;
-  transition: 400ms;
+  transition: 200ms;
 }
 
 .order-card.assigned {
   background: #fffacd;
   border: 1px solid #f4d03f;
-  transition: 400ms;
+  transition: 200ms;
 }
 
 .order-card.assigned:hover {
   box-shadow: 0 0 10px #f4d03f;
-  transition: 400ms;
+  transition: 200ms;
 }
 
 .order-card.current-user {
   background: #f9c2bd;
   border: 1px solid rgb(153, 81, 81);
-  transition: 400ms;
+  transition: 200ms;
 }
 
 .order-card.current-user:hover {
   box-shadow: 0 0 10px rgb(153, 81, 81);
-  transition: 400ms;
+  transition: 200ms;
 }
 
 .order-card.delivered {
-  border: 1px solid #008000;
-  transition: 400ms;
+  border: 1px solid lightgreen;
+  transition: 200ms;
 }
 
 .order-card.delivered:hover {
-  box-shadow: 0 0 10px lightgreen;
-  transition: 400ms;
+  box-shadow: 0 0 10px green;
+  transition: 200ms;
 }
 
 .order-card.cancelled {
   border: 1px solid red;
-  transition: 400ms;
+  transition: 200ms;
 }
 
 .order-card.cancelled:hover {
   box-shadow: 0 0 10px lightcoral;
-  transition: 400ms;
+  transition: 200ms;
 }
 
 .order-card td {
@@ -299,7 +316,7 @@ th {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  margin-bottom: 20px;
+  margin-top: 10px;
   align-items: center;
   justify-content: center;
 }
