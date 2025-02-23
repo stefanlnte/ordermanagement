@@ -525,7 +525,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         document.addEventListener('DOMContentLoaded', function() {
             // Init AOS
             AOS.init({
-                duration: 1000, // Adjust animation duration here
+                duration: 800, // Adjust animation duration here
                 mirror: false // Start animation on scroll up as well
             });
         });
@@ -686,20 +686,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <div class="button" data-aos="fade-in"><a href="logout.php">Deconectare</a> </div>
     </header>
 
-    <div class="image-container" style="width: 100%; height: 300px; position: relative;">
-        <img src="https://color-print.ro/magazincp/header.webp"
-            alt="Main Image"
-            style="width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1;">
-        <div class="image-overlay"></div>
-        <object data-aos="fade-left"
-            data-aos-anchor="#example-anchor"
-            data-aos-offset="500"
-            type="image/svg+xml" data="https://color-print.ro/magazincp/comenzi.svg"
-            style="width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; z-index: 2; object-fit: contain;">
-        </object>
-    </div>
-
-
     <div class="container">
         <div class="sidebar" data-aos="slide-right">
             <h2>Adaugă Comandă</h2>
@@ -813,6 +799,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
 
         <div class="main-content">
+            <h1 data-aos="zoom-in" style="text-align:center">Comenzi</h1>
             <div class="filters">
                 <form method="GET" action="dashboardv2.php">
                     <div class="filter-group">
