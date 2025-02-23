@@ -294,14 +294,14 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- Include AOS CSS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <!-- Include Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
     <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <!-- Include Select2 JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <!-- Initialize Select2 lybrary -->
@@ -685,6 +685,18 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </p>
         <div class="button" data-aos="fade-in"><a href="logout.php">Deconectare</a> </div>
     </header>
+    <div class="image-container" style="width: 100%; height: 300px; position: relative;">
+        <img src="https://color-print.ro/magazincp/header.webp"
+            alt="Main Image"
+            style="width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1;">
+        <div class="image-overlay"></div>
+        <object data-aos="fade-left"
+            data-aos-anchor="#example-anchor"
+            data-aos-offset="500"
+            type="image/svg+xml" data="https://color-print.ro/magazincp/comenzi.svg"
+            style="width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; z-index: 2; object-fit: contain;">
+        </object>
+    </div>
 
     <div class="container">
         <div class="sidebar" data-aos="slide-right">
@@ -799,7 +811,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
 
         <div class="main-content">
-            <h1 data-aos="zoom-in" style="text-align:center">Comenzi</h1>
             <div class="filters">
                 <form method="GET" action="dashboardv2.php">
                     <div class="filter-group">
