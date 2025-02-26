@@ -1,8 +1,8 @@
 <?php
 include 'db.php';
 
-$username = 'user';
-$password = 'parola';
+$username = ;
+$password = ;
 $role = 'OPERATOR';
 
 // Hash the password
