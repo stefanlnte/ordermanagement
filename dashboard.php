@@ -832,11 +832,14 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                 <select id="assigned_filter" name="assigned_filter">
                                     <option value="">Toți</option>
                                     <?php
-                                    $users_sql = "SELECT user_id, username FROM users";
+                                    $users_sql = "SELECT user_id, username FROM users WHERE user_id != 4";
                                     $users_result = $conn->query($users_sql);
-                                    while ($user = $users_result->fetch_assoc()) {
-                                        $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
-                                        echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
+
+                                    if ($users_result->num_rows > 0) {
+                                        while ($user = $users_result->fetch_assoc()) {
+                                            $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
+                                            echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
+                                        }
                                     }
                                     ?>
                                 </select>

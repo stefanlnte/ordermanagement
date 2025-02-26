@@ -491,9 +491,14 @@ if ($users_result->num_rows > 0) {
                 <label for="assigned_to">Atribuie comanda lui:</label>
                 <select id="assigned_to" name="assigned_to">
                     <?php
-                    foreach ($users as $user) {
-                        $selected = ($order['assigned_to'] == $user['user_id']) ? 'selected' : '';
-                        echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
+                    $users_sql = "SELECT user_id, username FROM users WHERE user_id != 4";
+                    $users_result = $conn->query($users_sql);
+
+                    if ($users_result->num_rows > 0) {
+                        while ($user = $users_result->fetch_assoc()) {
+                            $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
+                            echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
+                        }
                     }
                     ?>
                 </select>
