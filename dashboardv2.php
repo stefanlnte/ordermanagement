@@ -227,16 +227,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
     }
 }
 
-// Fetch all users for the "assigned to" dropdown
-$users_sql = "SELECT user_id, username FROM users WHERE role = 'operator'";
-$users_result = $conn->query($users_sql);
-$users = [];
-if ($users_result->num_rows > 0) {
-    while ($row = $users_result->fetch_assoc()) {
-        $users[] = $row;
-    }
-}
-
 // Fetch categories
 $categories_sql = "SELECT * FROM categories";
 $categories_result = $conn->query($categories_sql);
@@ -772,8 +762,14 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <label for="assigned_to">Atribuie comanda lui:</label>
                     <select id="assigned_to" name="assigned_to">
                         <?php
-                        foreach ($users as $user) {
-                            echo "<option value='" . $user["user_id"] . "'>" . $user["username"] . "</option>";
+                        $users_sql = "SELECT user_id, username FROM users WHERE user_id != 4";
+                        $users_result = $conn->query($users_sql);
+
+                        if ($users_result->num_rows > 0) {
+                            while ($user = $users_result->fetch_assoc()) {
+                                $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
+                                echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
+                            }
                         }
                         ?>
                     </select>
