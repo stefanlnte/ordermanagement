@@ -427,45 +427,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
-    <!-- Function for background animation -->
-    <script>
-        // Function for background animation with cubes
-        document.addEventListener("DOMContentLoaded", function() {
-            const numCubes = 20; // Number of cubes to generate
-            const colors = ["gray", "yellow"]; // Array with two colors
-            const backgroundContainer = document.createElement("div");
-            backgroundContainer.classList.add("background-container");
-            document.body.prepend(backgroundContainer);
-
-            function createCube() {
-                let cube = document.createElement("div");
-                cube.classList.add("cube");
-                let size = Math.random() * 10 + 5; // Random size between 5px and 15px
-                cube.style.width = `${size}px`;
-                cube.style.height = `${size}px`;
-
-                // Randomly assign a color (grey or yellow)
-                cube.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-
-                cube.style.animationDuration = `${Math.random() * 8 + 8}s`; // Random duration (8 to 16 seconds)
-                cube.style.animationDelay = `${Math.random() * 4}s`; // Random delay (up to 4 seconds)
-                backgroundContainer.appendChild(cube);
-
-                function setRandomPosition() {
-                    cube.style.left = `${Math.random() * 100}vw`; // Random horizontal position
-                    cube.style.top = `${Math.random() * 100}vh`; // Random vertical position
-                }
-
-                setRandomPosition(); // Set initial position
-                cube.addEventListener("animationiteration", setRandomPosition); // Change position on each loop
-            }
-
-            for (let i = 0; i < numCubes; i++) {
-                createCube();
-            }
-        });
-    </script>
-
     <!-- Script to toggle between V1 and V2 -->
     <script>
         function toggleVersion() {
