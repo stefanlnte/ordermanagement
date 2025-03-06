@@ -17,13 +17,6 @@ body {
   z-index: 1;
 }
 
-body {
-  background-image: url('./background.svg');
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
 a {
   text-decoration: none;
   color: black;
