@@ -436,7 +436,8 @@ if ($users_result->num_rows > 0) {
     </header>
     <div style="min-height: 100vh;">
         <h2>Comanda nr. <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
-        <p><strong>Din data: </strong><?php echo $order['order_date']; ?></p>
+        <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
+        <p><strong>Scadentă: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
         <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
         <p><strong>Nume client: </strong><?php echo $client_name; ?></p>
         <p><strong>Contact client: </strong><?php echo $client_phone; ?></p>

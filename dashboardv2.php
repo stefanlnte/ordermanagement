@@ -255,6 +255,9 @@ function formatDateWithoutYearWithDay($dateString)
 // updated to show the delivery date if the order is marked as delivered in data livrare
 function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 {
+    // Set the time zone to Romania's time zone
+    date_default_timezone_set('Europe/Bucharest');
+
     if ($status === 'delivered' && $deliveryDate) {
         $deliveryDateObj = new DateTime($deliveryDate);
         return formatDateWithoutYearWithDay($deliveryDateObj->format('Y-m-d'));
@@ -262,8 +265,13 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
     $currentDate = new DateTime();
     $dueDateObj = new DateTime($dueDate);
+
+    // Calculate the difference between dates
     $interval = $currentDate->diff($dueDateObj);
     $daysDiff = (int)$interval->format('%r%a');
+
+    // Get the time difference
+    $timeDiff = $currentDate->diff($dueDateObj)->format('%H:%I');
 
     if ($daysDiff === 0) {
         return "Astăzi";
