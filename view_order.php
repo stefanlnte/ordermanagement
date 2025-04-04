@@ -519,7 +519,8 @@ if ($users_result->num_rows > 0) {
     </div>
     <br><br>
     <footer class="no-print">
-        <p>© Color Print</p>
+        <p style="font-size: larger;">© Color Print</p>
+        <a href="dashboard.php" style="text-decoration: none; color: white;">Acasă</a>
         <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
         <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
     </footer>
