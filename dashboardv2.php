@@ -264,18 +264,26 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     }
 
     $currentDate = new DateTime();
-    $dueDateObj = new DateTime($dueDate);
+    $dueDateObj = DateTime::createFromFormat('Y-m-d', $dueDate);
 
-    // Calculate the difference between dates
-    $interval = $currentDate->diff($dueDateObj);
-    $daysDiff = (int)$interval->format('%r%a');
+    // Calculate the difference between dates (only considering the date part, not time)
+    $currentDay = $currentDate->format('Y-m-d');
+    $dueDay = $dueDateObj->format('Y-m-d');
+
+    $currentDayTimestamp = strtotime($currentDay);
+    $dueDayTimestamp = strtotime($dueDay);
+
+    // Cast to integer to remove decimal precision
+    $daysDiff = intval(($dueDayTimestamp - $currentDayTimestamp) / 86400);
 
     // Get the time difference
     $timeDiff = $currentDate->diff($dueDateObj)->format('%H:%I');
 
     if ($daysDiff === 0) {
         return "Astăzi";
-    } elseif ($daysDiff > 0) {
+    } elseif ($daysDiff === 1) {
+        return "Mâine";
+    } elseif ($daysDiff > 1) {
         return "$daysDiff zile rămase";
     } else {
         return "Termen depășit cu " . abs($daysDiff) . " zile";
