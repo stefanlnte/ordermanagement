@@ -978,7 +978,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
     </div>
     <footer>
-        <p>© Color Print</p>
+        <p style="font-size: larger;">© Color Print</p>
+        <a href="dashboard.php" style="text-decoration: none; color: white;">Acasă</a>
         <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
         <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
         <div id="versionToggle" style="position: fixed; bottom: 20px; right: 30px; background: #333; padding: 10px; border-radius: 5px; cursor: pointer;">

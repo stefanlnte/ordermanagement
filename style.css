@@ -47,12 +47,11 @@ footer {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 75px;
+  height: 100px;
   background-image: url('https://color-print.ro/magazincp/background2.jpg');
-  background-size: cover;
-  box-shadow: 3px 0px 9px rgba(255, 255, 0, 0.5); /* Adaugă un efect de umbră pentru a diferenția header-ul */
+  background-size: 150%;
   color: white !important;
-  padding: 25px;
-  margin-top: 20px !important;
-  margin: 0;
+  padding: 40px;
+  margin: 0 !important;
+  font-size: medium;
 }
