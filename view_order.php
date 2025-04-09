@@ -442,7 +442,7 @@ if ($users_result->num_rows > 0) {
         <p><strong>Nume client: </strong><?php echo $client_name; ?></p>
         <p><strong>Contact client: </strong><?php echo $client_phone; ?></p>
         <p><strong>Comanda initiala: </strong><br><span id="order_details_text"><?php echo nl2br(htmlspecialchars($order['order_details'])); ?></span></p>
-        <p><strong>Detalii suplimentare: </strong><br><span id="detalii_suplimentare_text"><?php echo ($order['detalii_suplimentare']); ?></span></p>
+        <p><strong>Detalii suplimentare: </strong><br><span id="detalii_suplimentare_text"><?php echo nl2br(htmlspecialchars($order['detalii_suplimentare'])); ?></span></p>
         <textarea id="detalii_suplimentare_edit" style="display:none;"><?php echo $order['detalii_suplimentare']; ?></textarea>
         <p>Avans: <?php echo $order['avans']; ?> lei</p>
         <p>Total: <span id="total_text"><?php echo $order['total'] == 0 ? 'N/A' : $order['total'] . ' lei'; ?></span></p>
