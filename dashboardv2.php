@@ -170,8 +170,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
         $due_date = $_POST['due_date'];
         $due_time = $_POST['due_time'];
         $category_id = $_POST['category_id'];
-        $avans = $_POST['avans'];
-        $total = $_POST['total'];
+        $avans = (float)($_POST['avans'] ?? 0);
+        $total = (float)($_POST['total'] ?? 0);
         $assigned_to = $_POST['assigned_to'];
 
         // Debugging: Check if client ID is set
@@ -212,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
         // Insert new order
         $order_sql = "INSERT INTO orders (client_id, order_details, due_date, due_time, category_id, avans, total, assigned_to) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($order_sql);
-        $stmt->bind_param("issssdii", $client_id, $order_details, $due_date, $due_time, $category_id, $avans, $total, $assigned_to);
+        $stmt->bind_param("issssddi", $client_id, $order_details, $due_date, $due_time, $category_id, $avans, $total, $assigned_to);
         if ($stmt->execute()) {
             $last_order_id = $stmt->insert_id; // Get the last inserted order ID
             echo "Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ";
