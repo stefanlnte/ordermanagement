@@ -68,7 +68,8 @@ if ($users_result->num_rows > 0) {
     <style>
         @media print {
             .no-print {
-                display: none;
+                display: none !important;
+                visibility: hidden !important;
             }
 
             html,
@@ -77,27 +78,22 @@ if ($users_result->num_rows > 0) {
                 position: relative !important;
             }
 
-            /* Add styles to remove box shadow and other non-print styles */
+            /* Remove box shadow and other non-print styles */
             header {
                 display: none !important;
+                visibility: hidden !important;
             }
-        }
 
-        .small-text {
-            font-size: 70%;
-            /* Adjust the percentage as needed */
-        }
+            /* Add these new styles to target the specific elements */
+            .order-options {
+                display: none !important;
+                visibility: hidden !important;
+            }
 
-        .headerlogo {
-            width: 250px;
-        }
-
-        .order_id_large {
-            font-size: 150%;
-        }
-
-        p {
-            margin: 5px 0;
+            /* Reset background colors to prevent shadows */
+            .order-options * {
+                background-color: transparent !important;
+            }
         }
     </style>
 
@@ -434,6 +430,39 @@ if ($users_result->num_rows > 0) {
         <br>
         <button class="no-print" href="javascript:void(0);" onclick="window.history.back();"> &#8592; Înapoi la panou comenzi</button>
     </header>
+    <div class="order-options">
+        <h1 style="font-size: larger;">Opțiuni suplimentare</h1>
+        <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled')  ?>
+        <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
+            <div class="form-group no-print">
+                <label for="assigned_to">Atribuie comanda lui:</label>
+                <select id="assigned_to" name="assigned_to">
+                    <?php
+                    $users_sql = "SELECT user_id, username FROM users WHERE user_id != 4";
+                    $users_result = $conn->query($users_sql);
+
+                    if ($users_result->num_rows > 0) {
+                        while ($user = $users_result->fetch_assoc()) {
+                            $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
+                            echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
+                        }
+                    }
+                    ?>
+                </select>
+                <button type="submit" name="update_user" class="no-print">Realocare strategică</button>
+            </div>
+
+            <?php if ($order['status'] != 'livrata') ?>
+
+        </form>
+        <div class="no-print">
+            <button class="no-print" onclick="editOrderDetails()">Edit</button>
+            <button class="no-print" onclick="saveOrderDetails()" style="display:none;">Salvează modificările</button>
+            <button id="toggleAchitatButton" class="no-print" onclick="toggleAchitat()">Comandă achitată</button>
+            <button id="toggleComandaLucruButton" class="no-print" onclick="toggleComandaLucru()">Comandă în lucru</button>
+            <button class="no-print" onclick="printOrder()">Print Order</button><br>
+        </div>
+    </div>
     <div style="min-height: 100vh;">
         <h2>Comanda nr. <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
         <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
@@ -483,38 +512,6 @@ if ($users_result->num_rows > 0) {
             <p>-----------------------------------------</p>
             <p>---------------VĂ MULŢUMIM!-------------</p>
 
-        </div>
-
-        <hr style="width: 500px; height: 1px; background-color: black; border: none; margin: 20px 0;">
-        <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled')  ?>
-        <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
-            <div class="form-group no-print">
-                <label for="assigned_to">Atribuie comanda lui:</label>
-                <select id="assigned_to" name="assigned_to">
-                    <?php
-                    $users_sql = "SELECT user_id, username FROM users WHERE user_id != 4";
-                    $users_result = $conn->query($users_sql);
-
-                    if ($users_result->num_rows > 0) {
-                        while ($user = $users_result->fetch_assoc()) {
-                            $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
-                            echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
-                        }
-                    }
-                    ?>
-                </select>
-                <button type="submit" name="update_user" class="no-print">Realocare strategică</button>
-            </div>
-
-            <?php if ($order['status'] != 'livrata') ?>
-
-        </form>
-        <div class="no-print">
-            <button class="no-print" onclick="editOrderDetails()">Edit</button>
-            <button class="no-print" onclick="saveOrderDetails()" style="display:none;">Salvează modificările</button>
-            <button id="toggleAchitatButton" class="no-print" onclick="toggleAchitat()">Comandă achitată</button>
-            <button id="toggleComandaLucruButton" class="no-print" onclick="toggleComandaLucru()">Comandă în lucru</button>
-            <button class="no-print" onclick="printOrder()">Print Order</button><br>
         </div>
     </div>
     <br><br>
