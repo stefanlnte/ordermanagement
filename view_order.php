@@ -26,9 +26,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
     $stmt->close();
 }
 
-// Fetch order details including assigned_to and status
-$order_sql = "SELECT o.*, u.username as assigned_user FROM orders o 
+// Fetch order details including assigned_to, created_by, and status
+$order_sql = "SELECT o.*, 
+                   u.username as assigned_user,
+                   cu.username as created_user 
+              FROM orders o 
               LEFT JOIN users u ON o.assigned_to = u.user_id 
+              LEFT JOIN users cu ON o.created_by = cu.user_id 
               WHERE o.order_id = ?";
 $stmt = $conn->prepare($order_sql);
 $stmt->bind_param("i", $order_id);
@@ -468,6 +472,7 @@ if ($users_result->num_rows > 0) {
         <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
         <p><strong>Scadentă: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
         <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
+        <p><strong>Responsabil: </strong><?php echo ucwords($order['created_user']); ?></p>
         <p><strong>Nume client: </strong><?php echo $client_name; ?></p>
         <p><strong>Contact client: </strong><?php echo $client_phone; ?></p>
         <p><strong>Comanda initiala: </strong><br><span id="order_details_text"><?php echo nl2br(htmlspecialchars($order['order_details'])); ?></span></p>

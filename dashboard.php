@@ -159,6 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
     $avans = $_POST['avans'];
     $total = $_POST['total'];
     $assigned_to = $_POST['assigned_to'];
+    $created_by = $_SESSION['user_id'];
 
     // Check if client exists or create a new client
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
@@ -210,9 +211,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
         }
 
         // Insert new order
-        $order_sql = "INSERT INTO orders (client_id, order_details, due_date, due_time, category_id, avans, total, assigned_to) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $created_by = $_SESSION['user_id'];
+        $assigned_to = $_POST['assigned_to'];
+
+        // Update your order SQL query
+        $order_sql = "INSERT INTO orders 
+              (client_id, order_details, due_date, due_time, category_id, avans, total, assigned_to, created_by) 
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($order_sql);
-        $stmt->bind_param("issssddi", $client_id, $order_details, $due_date, $due_time, $category_id, $avans, $total, $assigned_to);
+        $stmt->bind_param("issssddii", $client_id, $order_details, $due_date, $due_time, $category_id, $avans, $total, $assigned_to, $created_by);
         if ($stmt->execute()) {
             $last_order_id = $stmt->insert_id; // Get the last inserted order ID
             echo "Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ";
