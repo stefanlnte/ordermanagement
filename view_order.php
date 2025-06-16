@@ -513,7 +513,7 @@ if ($users_result->num_rows > 0) {
             <p>(langa Biblioteca Municipala si Farmacia 32)</p>
             <p>&#x1F57B 0753 581 170 &#9993 colorprint_roman@yahoo.com</p>
             <p>Program: Luni - Vineri: 08:00 – 18:00</p>
-            <p>Sambata: 08:00 – 12:00 Duminica: INCHIS</p>
+            <p>Sambata: 09:00 – 12:00 Duminica: INCHIS</p>
             <p>-----------------------------------------</p>
             <p>---------------VĂ MULŢUMIM!-------------</p>
 
