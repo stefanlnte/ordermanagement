@@ -4,11 +4,14 @@ include 'db.php'; // Include your database connection file
 // Get the search term from the AJAX request
 $searchTerm = $_GET['q'];
 
-// Prepare the SQL query to fetch clients based on the search term
-$query = "SELECT client_id, client_name, client_phone FROM clients WHERE client_name LIKE ?";
+// Prepare the SQL query to fetch clients based on the search term (name OR phone)
+$query = "SELECT client_id, client_name, client_phone 
+          FROM clients 
+          WHERE client_name LIKE ? OR client_phone LIKE ?";
+
 $stmt = $conn->prepare($query);
-$searchTerm = "%" . $searchTerm . "%";
-$stmt->bind_param("s", $searchTerm);
+$searchWildcard = "%" . $searchTerm . "%";
+$stmt->bind_param("ss", $searchWildcard, $searchWildcard);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -21,7 +24,8 @@ while ($row = $result->fetch_assoc()) {
         'id' => $row['client_id'],
         'client_name' => $row['client_name'],
         'client_phone' => $row['client_phone'],
-        'text' => $row['client_name']
+        // Show both name + phone in the dropdown text for clarity
+        'text' => $row['client_name'] . " (" . $row['client_phone'] . ")"
     ];
 }
 
