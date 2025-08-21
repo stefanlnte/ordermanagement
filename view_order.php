@@ -126,6 +126,18 @@ if ($users_result->num_rows > 0) {
             document.querySelector('button[onclick="saveOrderDetails()"]').style.display = 'inline';
         }
 
+        function togglePin(orderId, pinState) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'toggle_pin.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    location.reload();
+                }
+            };
+            xhr.send('order_id=' + orderId + '&is_pinned=' + pinState);
+        }
+
         function saveOrderDetails() {
             var detaliiSuplimentare = document.getElementById('detalii_suplimentare_edit').value;
             var total = document.getElementById('total_edit').value;
@@ -422,6 +434,11 @@ if ($users_result->num_rows > 0) {
 
 <body>
     <header class="no-print" id="header">
+        <?php if ($order['is_pinned'] == 1): ?>
+            <button class="no-print" onclick="togglePin(<?= $order['order_id'] ?>, 0)">Unpin Order 📌</button>
+        <?php else: ?>
+            <button class="no-print" onclick="togglePin(<?= $order['order_id'] ?>, 1)">Pin Order 📌</button>
+        <?php endif; ?>
         <?php if ($order['status'] != 'completed' && $order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
             <button id="finishButton" class="no-print" onclick="finishOrder()">Comanda a fost terminată</button>
         <?php endif; ?>

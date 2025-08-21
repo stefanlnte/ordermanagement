@@ -489,3 +489,51 @@ textarea {
   align-items: center;
   gap: 10px;
 }
+
+/* Container for pinned cards */
+.pinned-feed {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(250px, 1fr)
+  ); /* responsive columns */
+  gap: 15px;
+  margin: 15px;
+}
+
+/* Make the whole card clickable without losing styles */
+.pinned-card-link {
+  display: block;
+  text-decoration: none;
+  flex: 1 1 220px;
+  max-width: 300px;
+}
+
+/* Card base style with Material Design feel */
+.pinned-card {
+  background-color: #d32f2f; /* Material red 700 */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  color: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Card header text */
+.pinned-card .card-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* Body text inside the card */
+.pinned-card .card-body p {
+  margin: 4px 0;
+  font-size: 0.95rem;
+}
+
+/* Hover effect to lift the card */
+.pinned-card-link:hover .pinned-card {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}

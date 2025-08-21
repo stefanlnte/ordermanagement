@@ -60,6 +60,16 @@ if (!isset($_SESSION['username'])) {
     }
 }
 
+$pinned_sql = "SELECT order_id, due_date, assigned_to, u.username AS operator
+               FROM orders 
+               LEFT JOIN users u ON orders.assigned_to = u.user_id
+               WHERE is_pinned = 1
+               ORDER BY due_date ASC
+               LIMIT 5";
+
+$pinned_result = $conn->query($pinned_sql);
+
+
 // Fetch filter values
 $status_filter = $_GET['status_filter'] ?? '';
 $assigned_filter = $_GET['assigned_filter'] ?? '';
@@ -674,6 +684,27 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
     </div>
 
+    <div class="pinned-section">
+        <?php if ($pinned_result && $pinned_result->num_rows > 0): ?>
+            <h2 style="margin-left:20px;">📌 Comenzi urgente</h2>
+            <div class="pinned-feed">
+                <?php while ($pin = $pinned_result->fetch_assoc()): ?>
+                    <a href="view_order.php?order_id=<?= $pin['order_id']; ?>" class="pinned-card-link">
+                        <div class="card pinned-card">
+                            <div class="card-header">
+                                Comanda #<?= $pin['order_id']; ?>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Operator:</strong> <?= htmlspecialchars($pin['operator']); ?></p>
+                                <p><strong>Termen:</strong> <?= date('d-m-Y', strtotime($pin['due_date'])); ?></p>
+                            </div>
+                        </div>
+                    </a>
+                <?php endwhile; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
     <div class="container">
         <div class="sidebar" data-aos="slide-right">
             <h2>Adaugă Comandă</h2>
@@ -765,6 +796,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </div>
             </form>
         </div>
+
+
 
         <!-- Add this modal HTML in your main HTML file -->
         <div id="editClientModal" class="modal" style="display: none;">
