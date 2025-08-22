@@ -26,6 +26,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
     $stmt->close();
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_due_date'])) {
+    $new_due_date = $_POST['new_due_date'];
+    $update_due_sql = "UPDATE orders SET due_date = ? WHERE order_id = ?";
+    $stmt = $conn->prepare($update_due_sql);
+    $stmt->bind_param("si", $new_due_date, $order_id);
+    if ($stmt->execute()) {
+        echo "<script>
+        alert('Data scadentă a fost actualizată cu succes!');
+        window.location.href = 'view_order.php?order_id={$order_id}';
+    </script>";
+        exit;
+    } else {
+        echo "Error updating due date: " . $stmt->error;
+    }
+    $stmt->close();
+}
+
 // Fetch order details including assigned_to, created_by, and status
 $order_sql = "SELECT o.*, 
                    u.username as assigned_user,
@@ -455,6 +472,12 @@ if ($users_result->num_rows > 0) {
         <h1 style="font-size: larger;">Opțiuni suplimentare</h1>
         <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled')  ?>
         <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
+            <label for="new_due_date">Extinde data scadentă:</label>
+            <input type="date" id="new_due_date" name="new_due_date"
+                value="<?php echo date('Y-m-d', strtotime($order['due_date'])); ?>">
+            <button type="submit" name="update_due_date">Actualizează data</button>
+        </form>
+        <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
             <div class="form-group no-print">
                 <label for="assigned_to">Atribuie comanda lui:</label>
                 <select id="assigned_to" name="assigned_to">
@@ -474,7 +497,6 @@ if ($users_result->num_rows > 0) {
             </div>
 
             <?php if ($order['status'] != 'livrata') ?>
-
         </form>
         <div class="no-print">
             <button class="no-print" onclick="editOrderDetails()">Edit</button>

@@ -66,7 +66,7 @@ $pinned_sql = "SELECT o.order_id, o.due_date, o.assigned_to, u.username AS opera
                JOIN clients c ON o.client_id = c.client_id
                WHERE o.is_pinned = 1
                ORDER BY o.due_date ASC
-               LIMIT 5";
+               LIMIT 10";
 
 $pinned_result = $conn->query($pinned_sql);
 

@@ -184,6 +184,7 @@ tr:hover {
 .pagination a:hover {
   background-color: #ddd;
 }
+
 .form-group {
   margin-bottom: 10px;
 }
@@ -454,7 +455,8 @@ textarea {
   max-width: 700px;
   margin: 20px auto;
   padding: 20px;
-  background-color: #fff5e6;
+  background: linear-gradient(to right, #000000, #b8860b);
+  color: white;
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   text-align: center; /* Center text within the container */
@@ -493,12 +495,12 @@ textarea {
 /* Container for pinned cards */
 .pinned-feed {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(250px, 1fr)
-  ); /* responsive columns */
-  gap: 15px;
-  margin: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+  max-height: 300px; /* Prevent overflow */
+  overflow-y: auto;
+  padding: 10px;
+  margin-left: 5px;
 }
 
 /* Make the whole card clickable without losing styles */
@@ -512,7 +514,6 @@ textarea {
 /* Card base style with Material Design feel */
 .pinned-card {
   background: linear-gradient(135deg, #000000, #434343); /* Black gradient */
-  border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
   padding: 16px;
   color: #fff;
@@ -536,4 +537,12 @@ textarea {
 .pinned-card-link:hover .pinned-card {
   transform: translateY(-4px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
+}
+
+#new_due_date {
+  height: 32px !important; /* pick your exact target height */
+  padding: 2px 6px !important; /* less vertical padding */
+  font-size: 14px;
+  line-height: 1.2 !important;
+  border-radius: 5px;
 }
