@@ -540,7 +540,7 @@ textarea {
 }
 
 #new_due_date {
-  height: 32px !important; /* pick your exact target height */
+  height: 24px !important; /* pick your exact target height */
   padding: 2px 6px !important; /* less vertical padding */
   font-size: 14px;
   line-height: 1.2 !important;

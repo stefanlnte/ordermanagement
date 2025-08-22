@@ -472,11 +472,14 @@ if ($users_result->num_rows > 0) {
         <h1 style="font-size: larger;">Opțiuni suplimentare</h1>
         <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled')  ?>
         <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
-            <label for="new_due_date">Extinde data scadentă:</label>
-            <input type="date" id="new_due_date" name="new_due_date"
-                value="<?php echo date('Y-m-d', strtotime($order['due_date'])); ?>">
-            <button type="submit" name="update_due_date">Actualizează data</button>
+            <div class="form-group">
+                <label for="new_due_date">Extinde data scadentă:</label>
+                <input type="date" id="new_due_date" name="new_due_date"
+                    value="<?php echo date('Y-m-d', strtotime($order['due_date'])); ?>">
+                <button type="submit" name="update_due_date">Actualizează data</button>
+            </div>
         </form>
+
         <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
             <div class="form-group no-print">
                 <label for="assigned_to">Atribuie comanda lui:</label>
@@ -495,9 +498,8 @@ if ($users_result->num_rows > 0) {
                 </select>
                 <button type="submit" name="update_user" class="no-print">Realocare strategică</button>
             </div>
-
-            <?php if ($order['status'] != 'livrata') ?>
         </form>
+        <?php if ($order['status'] != 'livrata') ?>
         <div class="no-print">
             <button class="no-print" onclick="editOrderDetails()">Edit</button>
             <button class="no-print" onclick="saveOrderDetails()" style="display:none;">Salvează modificările</button>
