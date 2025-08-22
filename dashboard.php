@@ -60,11 +60,12 @@ if (!isset($_SESSION['username'])) {
     }
 }
 
-$pinned_sql = "SELECT order_id, due_date, assigned_to, u.username AS operator
-               FROM orders 
-               LEFT JOIN users u ON orders.assigned_to = u.user_id
-               WHERE is_pinned = 1
-               ORDER BY due_date ASC
+$pinned_sql = "SELECT o.order_id, o.due_date, o.assigned_to, u.username AS operator, c.client_name
+               FROM orders o
+               LEFT JOIN users u ON o.assigned_to = u.user_id
+               JOIN clients c ON o.client_id = c.client_id
+               WHERE o.is_pinned = 1
+               ORDER BY o.due_date ASC
                LIMIT 5";
 
 $pinned_result = $conn->query($pinned_sql);
@@ -696,7 +697,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                             </div>
                             <div class="card-body">
                                 <p><strong>Operator:</strong> <?= htmlspecialchars($pin['operator']); ?></p>
-                                <p><strong>Termen:</strong> <?= date('d-m-Y', strtotime($pin['due_date'])); ?></p>
+                                <p><strong>Client:</strong> <?= htmlspecialchars($pin['client_name']); ?></p>
                             </div>
                         </div>
                     </a>

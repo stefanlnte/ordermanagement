@@ -491,7 +491,19 @@ if ($users_result->num_rows > 0) {
         <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
         <p><strong>Responsabil: </strong><?php echo ucwords($order['created_user']); ?></p>
         <p><strong>Nume client: </strong><?php echo $client_name; ?></p>
-        <p><strong>Contact client: </strong><?php echo $client_phone; ?></p>
+        <?php
+        $countryCode = "+4";
+        $waNumber = $countryCode . preg_replace('/\D/', '', $client_phone); // Remove non-digits
+        $waLink = "https://wa.me/" . urlencode($waNumber);
+        ?>
+
+        <p><strong>Contact client: </strong>
+            <?php echo htmlspecialchars($client_phone); ?>
+            <a href="<?php echo $waLink; ?>" target="_blank" class="no-print"
+                style="margin-left:10px; text-decoration:none;">
+                📱 WhatsApp
+            </a>
+        </p>
         <p><strong>Comanda initiala: </strong><br><span id="order_details_text"><?php echo nl2br(htmlspecialchars($order['order_details'])); ?></span></p>
         <p><strong>Detalii suplimentare: </strong><br><span id="detalii_suplimentare_text"><?php echo nl2br(htmlspecialchars($order['detalii_suplimentare'])); ?></span></p>
         <textarea id="detalii_suplimentare_edit" style="display:none;"><?php echo $order['detalii_suplimentare']; ?></textarea>

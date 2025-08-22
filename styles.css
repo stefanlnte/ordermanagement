@@ -511,9 +511,9 @@ textarea {
 
 /* Card base style with Material Design feel */
 .pinned-card {
-  background-color: #d32f2f; /* Material red 700 */
+  background: linear-gradient(135deg, #000000, #434343); /* Black gradient */
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
   padding: 16px;
   color: #fff;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -535,5 +535,5 @@ textarea {
 /* Hover effect to lift the card */
 .pinned-card-link:hover .pinned-card {
   transform: translateY(-4px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
 }
