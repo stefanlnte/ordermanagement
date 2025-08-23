@@ -292,18 +292,18 @@ if ($users_result->num_rows > 0) {
 
     <!-- Funcție buton comanda achitată -->
     <script>
-        function toggleAchitat() {
-            var achitatElement = document.getElementById('achitatElement');
-            if (achitatElement) {
-                // If the element exists, remove it
-                achitatElement.parentNode.removeChild(achitatElement);
-            } else {
-                // If the element does not exist, create and insert it
-                var h2Element = document.createElement('h2');
-                h2Element.id = 'achitatElement';
-                h2Element.textContent = 'Comandă achitată';
-                document.querySelector('h2').insertAdjacentElement('afterend', h2Element);
-            }
+        function toggleAchitat(orderId, currentState) {
+            var newState = currentState === 1 ? 0 : 1;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'update_achitat.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    location.reload(); // refresh to see permanent state
+                }
+            };
+            xhr.send('order_id=' + orderId + '&is_achitat=' + newState);
         }
     </script>
     <!-- Funcție buton comandă în lucru -->
@@ -503,13 +503,21 @@ if ($users_result->num_rows > 0) {
         <div class="no-print">
             <button class="no-print" onclick="editOrderDetails()">Edit</button>
             <button class="no-print" onclick="saveOrderDetails()" style="display:none;">Salvează modificările</button>
-            <button id="toggleAchitatButton" class="no-print" onclick="toggleAchitat()">Comandă achitată</button>
+            <button
+                id="toggleAchitatButton"
+                class="no-print"
+                onclick="toggleAchitat(<?= $order['order_id'] ?>, <?= (int)$order['is_achitat'] ?>)">
+                <?= $order['is_achitat'] ? 'Marchează ca neachitat' : 'Comandă achitată' ?>
+            </button>
             <button id="toggleComandaLucruButton" class="no-print" onclick="toggleComandaLucru()">Comandă în lucru</button>
             <button class="no-print" onclick="printOrder()">Print Order</button><br>
         </div>
     </div>
     <div style="min-height: 100vh;">
         <h2>Comanda nr. <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
+        <?php if ($order['is_achitat'] == 1): ?>
+            <h2>Comandă achitată</h2>
+        <?php endif; ?>
         <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
         <p><strong>Scadentă: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
         <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>

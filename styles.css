@@ -455,7 +455,7 @@ textarea {
   max-width: 700px;
   margin: 20px auto;
   padding: 20px;
-  background: linear-gradient(to right, #000000, #b8860b);
+  background: linear-gradient(135deg, #000000, #434343); /* Black gradient */
   color: white;
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
