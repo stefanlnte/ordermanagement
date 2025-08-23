@@ -461,6 +461,52 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
+    <!-- Date picker -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const select = document.getElementById('datePickerSelect');
+            const today = new Date();
+
+            // Configurable range: e.g., 1 year ahead
+            const daysToGenerate = 365;
+
+            for (let i = 0; i < daysToGenerate; i++) {
+                const date = new Date();
+                date.setDate(today.getDate() + i);
+
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+
+                // Pretty label: "Sat, 23 Aug 2025"
+                const label = date.toLocaleDateString('ro-RO', {
+                    weekday: 'short',
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                const option = new Option(label, `${year}-${month}-${day}`);
+
+                // Preselect today
+                if (i === 0) {
+                    option.selected = true;
+                }
+
+                select.add(option);
+            }
+
+            // Optional: style with Select2 for searchable, smooth UI
+            if (typeof $ !== 'undefined' && $.fn.select2) {
+                $(select).select2({
+                    placeholder: "Alege o dată",
+                    dropdownAutoWidth: true,
+                    width: 'auto'
+                });
+            }
+        });
+    </script>
+
     <!-- Script to toggle between V1 and V2 -->
     <script>
         function toggleVersion() {
@@ -756,13 +802,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </div>
 
                 <div class="form-group">
-                    <label for="due_date">Data Livrare:</label>
-                    <input type="date" id="due_date" name="due_date" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="due_time">Ora Livrare:</label>
-                    <input type="time" id="due_time" name="due_time">
+                    <label for="datePickerSelect"><strong>Data Livrare:</strong></label>
+                    <select id="datePickerSelect" name="due_date"></select>
                 </div>
 
                 <div class="form-group">

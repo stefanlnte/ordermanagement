@@ -290,6 +290,42 @@ if ($users_result->num_rows > 0) {
         }
     </script>
 
+    <!-- Select2 date picker -->
+    <script>
+        $(document).ready(function() {
+            const select = document.getElementById('new_due_date_select');
+            const today = new Date();
+            const daysToGenerate = 365; // sau cât ai nevoie
+
+            for (let i = 0; i < daysToGenerate; i++) {
+                const d = new Date();
+                d.setDate(today.getDate() + i);
+
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+
+                const label = d.toLocaleDateString('ro-RO', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                });
+
+                const option = new Option(label, `${year}-${month}-${day}`);
+                if (i === 0) option.selected = true;
+                select.add(option);
+            }
+
+            // Activează Select2 cu același look ca restul
+            $('#new_due_date_select').select2({
+                dropdownAutoWidth: true,
+                width: 'auto',
+                placeholder: "Selectează data"
+            });
+        });
+    </script>
+
     <!-- Funcție buton comanda achitată -->
     <script>
         function toggleAchitat(orderId, currentState) {
@@ -473,9 +509,8 @@ if ($users_result->num_rows > 0) {
         <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled')  ?>
         <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
             <div class="form-group">
-                <label for="new_due_date">Extinde data scadentă:</label>
-                <input type="date" id="new_due_date" name="new_due_date"
-                    value="<?php echo date('Y-m-d', strtotime($order['due_date'])); ?>">
+                <label for="new_due_date_select">Extinde data scadentă:</label>
+                <select id="new_due_date_select" name="new_due_date"></select>
                 <button type="submit" name="update_due_date">Actualizează data</button>
             </div>
         </form>
