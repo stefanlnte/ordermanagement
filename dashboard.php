@@ -467,36 +467,42 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             const select = document.getElementById('datePickerSelect');
             const today = new Date();
 
-            // Configurable range: e.g., 1 year ahead
-            const daysToGenerate = 365;
+            const daysToGenerate = 90; // only 90 days ahead
 
-            for (let i = 0; i < daysToGenerate; i++) {
+            let daysAdded = 0;
+            let i = 0;
+
+            while (daysAdded < daysToGenerate) {
                 const date = new Date();
                 date.setDate(today.getDate() + i);
 
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
+                // Skip Sundays (getDay() === 0 means Sunday)
+                if (date.getDay() !== 0) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
 
-                // Pretty label: "Sat, 23 Aug 2025"
-                const label = date.toLocaleDateString('ro-RO', {
-                    weekday: 'short',
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                });
+                    const label = date.toLocaleDateString('ro-RO', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
 
-                const option = new Option(label, `${year}-${month}-${day}`);
+                    const option = new Option(label, `${year}-${month}-${day}`);
 
-                // Preselect today
-                if (i === 0) {
-                    option.selected = true;
+                    if (daysAdded === 0) {
+                        option.selected = true;
+                    }
+
+                    select.add(option);
+                    daysAdded++;
                 }
 
-                select.add(option);
+                i++;
             }
 
-            // Optional: style with Select2 for searchable, smooth UI
+            // Optional: Select2 styling
             if (typeof $ !== 'undefined' && $.fn.select2) {
                 $(select).select2({
                     placeholder: "Alege o dată",
