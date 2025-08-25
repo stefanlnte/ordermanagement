@@ -126,9 +126,37 @@ if ($users_result->num_rows > 0) {
         }
     </style>
 
+    <!-- Whatsapp Icon -->
+    <style>
+        .whatsapp-icon {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #25D366;
+            /* Verde oficial WhatsApp */
+            color: white;
+            border-radius: 50%;
+            /* Face iconița rotundă */
+            width: 32px;
+            /* Dimensiune */
+            height: 32px;
+            font-size: 18px;
+            text-decoration: none;
+        }
+
+        .whatsapp-icon:hover {
+            background-color: #20b85d;
+            /* Ușor mai închis la hover */
+        }
+    </style>
+
+
+
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" type="text/css" href="styles.css">
     <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
+    <!-- Include Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Include Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
 
@@ -571,12 +599,10 @@ if ($users_result->num_rows > 0) {
         $waNumber = $countryCode . preg_replace('/\D/', '', $client_phone); // Remove non-digits
         $waLink = "https://wa.me/" . urlencode($waNumber);
         ?>
-
         <p><strong>Contact client: </strong>
             <?php echo htmlspecialchars($client_phone); ?>
-            <a href="<?php echo $waLink; ?>" target="_blank" class="no-print"
-                style="margin-left:10px; text-decoration:none;">
-                📱 WhatsApp
+            <a href="<?php echo $waLink; ?>" target="_blank" class="no-print whatsapp-icon">
+                <i class="fab fa-whatsapp"></i>
             </a>
         </p>
         <p><strong>Comanda initiala: </strong><br><span id="order_details_text"><?php echo nl2br(htmlspecialchars($order['order_details'])); ?></span></p>
