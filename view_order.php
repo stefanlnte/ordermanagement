@@ -97,6 +97,14 @@ if ($users_result->num_rows > 0) {
             body {
                 overflow: hidden !important;
                 position: relative !important;
+                line-height: 1.1;
+                font-size: 13px;
+            }
+
+            p {
+                margin-top: 0;
+                margin-bottom: 5px;
+                line-height: 1.1;
             }
 
             /* Remove box shadow and other non-print styles */
@@ -605,12 +613,11 @@ if ($users_result->num_rows > 0) {
             </svg>
         </div>
         <div class="contact-info small-text">
-            <p>Str. Roman Musat, Nr. 21, Roman, jud. Neamt</p>
-            <p>(langa Biblioteca Municipala si Farmacia 32)</p>
+            <p>Str. Roman Mușat, Nr. 21, Roman, jud. Neamț</p>
+            <p>(lângă Biblioteca Municipală și Farmacia 32)</p>
             <p>&#x1F57B 0753 581 170 &#9993 colorprint_roman@yahoo.com</p>
             <p>Program: Luni - Vineri: 08:00 – 18:00</p>
-            <p>Sambata: 09:00 – 12:00 Duminica: INCHIS</p>
-            <p>-----------------------------------------</p>
+            <p>Sâmbătă: 09:00 – 12:00 Duminică: ÎNCHIS</p>
             <p>---------------VĂ MULŢUMIM!-------------</p>
 
         </div>
@@ -618,7 +625,7 @@ if ($users_result->num_rows > 0) {
     <br><br>
     <footer class="no-print">
         <p style="font-size: larger;">© Color Print</p>
-        <a href="dashboard.php" style="text-decoration: none; color: white;">Acasă</a>
+        <a href="dashboard.php" style="text-decoration: none; color: white;">Dashboard</a>
         <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
         <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
     </footer>

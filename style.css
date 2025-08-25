@@ -27,8 +27,11 @@ a {
   display: flex;
   top: 0;
   z-index: 1000; /* Asigură-te că este deasupra altor elemente */
-  background-image: url('https://color-print.ro/magazincp/background2.jpg');
-  background-size: cover;
+  /* background: linear-gradient(45deg, black, gray); */
+  background: radial-gradient(circle at top left, grey 0%, transparent 40%),
+              radial-gradient(circle at bottom right, grey 0%, transparent 40%),
+              linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+  background-blend-mode: screen, normal;
   box-shadow: 0 3px 6px rgba(251, 255, 0, 0.5); /* Adaugă un efect de umbră pentru a diferenția header-ul */
   color: white !important;
   padding: 10px 20px;
@@ -48,8 +51,10 @@ footer {
   align-items: center;
   justify-content: center;
   height: 100px;
-  background-image: url('https://color-print.ro/magazincp/background2.jpg');
-  background-size: 150%;
+  background: radial-gradient(circle at top left, grey 0%, transparent 40%),
+              radial-gradient(circle at bottom right, grey 0%, transparent 40%),
+              linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+  background-blend-mode: screen, normal;
   color: white !important;
   padding: 40px;
   margin-top: 20px !important;
