@@ -585,11 +585,6 @@ if ($users_result->num_rows > 0) {
             padding: 2px;
         }
 
-        #tabelComanda th:first-child,
-        #tabelComanda td:first-child {
-            width: calc(80mm - 20mm);
-        }
-
         #tabelComanda th:nth-child(2),
         #tabelComanda td:nth-child(2),
         #tabelComanda th:nth-child(3),
@@ -665,7 +660,7 @@ if ($users_result->num_rows > 0) {
         }
 
         .zonaAdaugareArticole {
-            width: 95mm;
+            width: 125mm;
             margin-left: 5px;
             padding: 10px;
             background-color: #fdfdfd;
@@ -675,10 +670,24 @@ if ($users_result->num_rows > 0) {
             font-family: 'Segoe UI', sans-serif;
         }
 
+        .zonaAdaugareArticole td:first-child,
+        .zonaAdaugareArticole th:first-child {
+            white-space: normal;
+            /* allow wrapping onto multiple lines */
+            overflow: visible;
+            /* don’t hide extra text */
+            text-overflow: clip;
+            /* no ellipsis */
+        }
+
         #tabelComanda {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 10px;
+            table-layout: fixed;
+            /* prevent auto-expansion */
+            width: 125mm;
+
         }
 
         #tabelComanda th,
@@ -688,6 +697,37 @@ if ($users_result->num_rows > 0) {
             border: 1px solid #ddd;
             font-size: 13px;
         }
+
+        #tabelComanda th:first-child,
+        #tabelComanda td:first-child {
+            overflow: hidden;
+            /* ascunde partea care nu încape */
+            text-overflow: ellipsis;
+            /* afișează "..." la final */
+            white-space: nowrap;
+            /* tot textul pe un singur rând */
+        }
+
+        /* 1) Tabele: nu mai permite extinderea; trunchiază denumirea cu "..." */
+        #tabelBon {
+            table-layout: fixed;
+            /* important pentru a nu-și schimba lățimea coloanele */
+            width: 80mm;
+            /* dacă vrei fix 80mm; poți pune 95mm dacă preferi */
+        }
+
+        /* Coloanele numerice își păstrează lățimea fixă (deja le ai), iar prima coloană ia restul */
+        #tabelBon th:first-child,
+        #tabelBon td:first-child {
+            overflow: hidden;
+            /* ascunde excesul */
+            text-overflow: ellipsis;
+            /* afișează "..." la final */
+            white-space: nowrap;
+            /* pe un singur rând */
+        }
+
+
 
         .formularAdaugare {
             display: flex;
