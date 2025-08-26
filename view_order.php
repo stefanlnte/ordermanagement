@@ -1032,6 +1032,7 @@ if ($users_result->num_rows > 0) {
     <p><strong>Avans:</strong> <span id="avansJs"><?php echo number_format($order['avans'], 2); ?></span> lei</p>
     <p><strong>Rest de plată:</strong> <span id="restJs">0.00</span> lei</p>
     <div class="zonaAdaugareArticole no-print">
+        <h3>Adaugă articole/servicii:</h3>
         <table id="tabelComanda">
             <thead>
                 <tr>
