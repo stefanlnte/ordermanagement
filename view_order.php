@@ -423,6 +423,37 @@ if ($users_result->num_rows > 0) {
         });
     </script>
 
+    <!-- Calculeaza total comanda -->
+    <script>
+        function calculeazaTotalComanda() {
+            let total = 0;
+
+            // Suma articolelor din tabel
+            document.querySelectorAll("#tabelComanda tbody tr").forEach(row => {
+                const cantitate = parseFloat(row.cells[1]?.textContent) || 0;
+                const pret = parseFloat(row.cells[2]?.textContent) || 0;
+                total += cantitate * pret;
+            });
+
+            // Avansul vine direct din PHP (span)
+            const avans = parseFloat(document.getElementById("avansJs").textContent) || 0;
+
+            // Calcul rest
+            const rest = total - avans;
+
+            // Afișare valori
+            document.getElementById("totalJs").textContent = total.toFixed(2);
+            document.getElementById("restJs").textContent = rest.toFixed(2);
+        }
+
+        // Recalculare inițială
+        document.addEventListener("DOMContentLoaded", calculeazaTotalComanda);
+
+        // Dacă actualizezi articolele prin AJAX, apelează calculeazaTotalComanda() la final
+    </script>
+
+
+
     <!-- Custom CSS for Select2 golden theme -->
     <style>
         /* Yellow theme for Select2 */
@@ -976,16 +1007,9 @@ if ($users_result->num_rows > 0) {
         </form>
         <button id="saveChangesBtn" class="no-print" onclick="window.location.href='view_order.php?order_id=<?php echo $order_id; ?>'">💾 Salvează modificările</button>
     </div>
-    <p><strong>Total:</strong> <span id="totalPret"><?php echo number_format($total, 2); ?></span> lei</p>
-    <p>Avans: <?php echo $order['avans']; ?> lei</p>
-    <p>Total: <span id="total_text"><?php echo $order['total'] == 0 ? 'N/A' : $order['total'] . ' lei'; ?></span></p>
-    <input type="number" id="total_edit" style="display:none;" value="<?php echo $order['total']; ?>" step="0.01">
-    <?php
-    $rest_de_plata = $order['total'] - $order['avans'];
-    if ($rest_de_plata > 0) {
-        echo "<p>Rest de Plata: $rest_de_plata lei</p>";
-    }
-    ?>
+    <p><strong>Total comandă:</strong> <span id="totalJs">0.00</span> lei</p>
+    <p><strong>Avans:</strong> <span id="avansJs"><?php echo number_format($order['avans'], 2); ?></span> lei</p>
+    <p><strong>Rest de plată:</strong> <span id="restJs">0.00</span> lei</p>
     <br>
     <div>
         <svg height="80px" clip-rule="evenodd" fill-rule="evenodd" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" version="1.1" viewBox="0 0 386 148.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
