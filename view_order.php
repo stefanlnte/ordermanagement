@@ -666,7 +666,7 @@ if ($users_result->num_rows > 0) {
 
         .zonaAdaugareArticole {
             width: 95mm;
-            margin: 0 auto;
+            margin-left: 5px;
             padding: 10px;
             background-color: #fdfdfd;
             border: 1px solid #ccc;
@@ -966,7 +966,9 @@ if ($users_result->num_rows > 0) {
         </table>
     <?php endif; ?>
     <br>
-
+    <p><strong>Total comandă:</strong> <span id="totalJs">0.00</span> lei</p>
+    <p><strong>Avans:</strong> <span id="avansJs"><?php echo number_format($order['avans'], 2); ?></span> lei</p>
+    <p><strong>Rest de plată:</strong> <span id="restJs">0.00</span> lei</p>
     <div class="zonaAdaugareArticole no-print">
         <table id="tabelComanda">
             <thead>
@@ -1007,10 +1009,6 @@ if ($users_result->num_rows > 0) {
         </form>
         <button id="saveChangesBtn" class="no-print" onclick="window.location.href='view_order.php?order_id=<?php echo $order_id; ?>'">💾 Salvează modificările</button>
     </div>
-    <p><strong>Total comandă:</strong> <span id="totalJs">0.00</span> lei</p>
-    <p><strong>Avans:</strong> <span id="avansJs"><?php echo number_format($order['avans'], 2); ?></span> lei</p>
-    <p><strong>Rest de plată:</strong> <span id="restJs">0.00</span> lei</p>
-    <br>
     <div>
         <svg height="80px" clip-rule="evenodd" fill-rule="evenodd" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" version="1.1" viewBox="0 0 386 148.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
             <defs>
