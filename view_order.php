@@ -590,7 +590,8 @@ if ($users_result->num_rows > 0) {
         #tabelComanda th:nth-child(3),
         #tabelComanda td:nth-child(3) {
             width: 10mm;
-            text-align: right;
+            text-align: center;
+            vertical-align: middle;
         }
 
         #tabelComanda th:last-child,
@@ -645,20 +646,6 @@ if ($users_result->num_rows > 0) {
             /* puțin mai mare pentru vizibilitate */
         }
 
-        /* 3. Cantitate & Preț – look similar cu Select2 */
-        #tabelComanda td:nth-child(2),
-        #tabelComanda td:nth-child(3),
-        #tabelComanda th:nth-child(2),
-        #tabelComanda th:nth-child(3) {
-            border: 1px solid #a9a9a9;
-            /* gri închis */
-            border-radius: 4px;
-            background-color: #fff;
-            padding: 4px 6px;
-            font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
         .zonaAdaugareArticole {
             width: 125mm;
             margin-left: 5px;
@@ -706,6 +693,41 @@ if ($users_result->num_rows > 0) {
             /* afișează "..." la final */
             white-space: nowrap;
             /* tot textul pe un singur rând */
+        }
+
+        #cantitate,
+        #pret {
+            width: 18mm !important;
+            text-align: center;
+        }
+
+
+        #tabelComanda th:last-child,
+        #tabelComanda td:last-child {
+            width: 12mm;
+            text-align: center;
+        }
+
+        .stergeArticol {
+            background-color: #dc3545;
+            /* Bootstrap red */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            /* circular button */
+            width: 20px;
+            height: 20px;
+            font-size: 14px;
+            line-height: 18px;
+            text-align: center;
+            cursor: pointer;
+            padding: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .stergeArticol:hover {
+            background-color: #c82333;
+            /* darker red on hover */
         }
 
         /* 1) Tabele: nu mai permite extinderea; trunchiază denumirea cu "..." */
