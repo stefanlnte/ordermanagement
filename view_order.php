@@ -86,72 +86,6 @@ if ($users_result->num_rows > 0) {
 
 <head>
     <title>View Order</title>
-    <style>
-        @media print {
-            .no-print {
-                display: none !important;
-                visibility: hidden !important;
-            }
-
-            html,
-            body {
-                overflow: hidden !important;
-                position: relative !important;
-                line-height: 1.1;
-                font-size: 13px;
-            }
-
-            p {
-                margin-top: 0;
-                margin-bottom: 5px;
-                line-height: 1.1;
-            }
-
-            /* Remove box shadow and other non-print styles */
-            header {
-                display: none !important;
-                visibility: hidden !important;
-            }
-
-            /* Add these new styles to target the specific elements */
-            .order-options {
-                display: none !important;
-                visibility: hidden !important;
-            }
-
-            /* Reset background colors to prevent shadows */
-            .order-options * {
-                background-color: transparent !important;
-            }
-        }
-    </style>
-
-    <!-- Whatsapp Icon -->
-    <style>
-        .whatsapp-icon {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #25D366;
-            /* Verde oficial WhatsApp */
-            color: white;
-            border-radius: 50%;
-            /* Face iconița rotundă */
-            width: 32px;
-            /* Dimensiune */
-            height: 32px;
-            font-size: 18px;
-            text-decoration: none;
-        }
-
-        .whatsapp-icon:hover {
-            background-color: #20b85d;
-            /* Ușor mai închis la hover */
-        }
-    </style>
-
-
-
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" type="text/css" href="styles.css">
     <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
@@ -403,6 +337,8 @@ if ($users_result->num_rows > 0) {
             });
         });
     </script>
+
+
     <!-- Custom CSS for Select2 golden theme -->
     <style>
         /* Yellow theme for Select2 */
@@ -519,6 +455,74 @@ if ($users_result->num_rows > 0) {
             /* Ensure options are wide enough */
         }
     </style>
+     <!-- Print styles -->
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            html,
+            body {
+                overflow: hidden !important;
+                position: relative !important;
+                line-height: 1.1;
+                font-size: 13px;
+            }
+
+            p {
+                margin-top: 0;
+                margin-bottom: 5px;
+                line-height: 1.1;
+            }
+
+            /* Remove box shadow and other non-print styles */
+            header {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            /* Add these new styles to target the specific elements */
+            .order-options {
+                display: none !important;
+                visibility: hidden !important;
+            }
+
+            /* Reset background colors to prevent shadows */
+            .order-options * {
+                background-color: transparent !important;
+            }
+        }
+         p {
+                margin-top: 0;
+                margin-bottom: 10px;
+            }
+    </style>
+
+    <!-- Whatsapp Icon -->
+    <style>
+        .whatsapp-icon {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #25D366;
+            /* Verde oficial WhatsApp */
+            color: white;
+            border-radius: 50%;
+            /* Face iconița rotundă */
+            width: 32px;
+            /* Dimensiune */
+            height: 32px;
+            font-size: 18px;
+            text-decoration: none;
+        }
+
+        .whatsapp-icon:hover {
+            background-color: #20b85d;
+            /* Ușor mai închis la hover */
+        }
+    </style>
 </head>
 
 <body>
@@ -617,6 +621,7 @@ if ($users_result->num_rows > 0) {
             echo "<p>Rest de Plata: $rest_de_plata lei</p>";
         }
         ?>
+        <br>
         <div>
             <svg height="80px" clip-rule="evenodd" fill-rule="evenodd" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" version="1.1" viewBox="0 0 386 148.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -639,12 +644,13 @@ if ($users_result->num_rows > 0) {
             </svg>
         </div>
         <div class="contact-info small-text">
-            <p>Str. Roman Mușat, Nr. 21, Roman, jud. Neamț</p>
-            <p>(lângă Biblioteca Municipală și Farmacia 32)</p>
-            <p>&#x1F57B 0753 581 170 &#9993 colorprint_roman@yahoo.com</p>
+            <p>Str. Roman Mușat, Nr. 21, Roman</p>
+            <p>(lângă Biblioteca Municipală și Farm. 32)</p>
+            <p>&#x1F57B   0753 581 170 </p>
+            <p>&#9993 colorprint_roman@yahoo.com</p>
             <p>Program: Luni - Vineri: 08:00 – 18:00</p>
             <p>Sâmbătă: 09:00 – 12:00 Duminică: ÎNCHIS</p>
-            <p>---------------VĂ MULŢUMIM!-------------</p>
+            <p>-------------VĂ MULŢUMIM!------------</p>
 
         </div>
     </div>

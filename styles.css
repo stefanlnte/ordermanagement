@@ -496,11 +496,12 @@ textarea {
 .pinned-feed {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
-  max-height: 300px; /* Prevent overflow */
-  overflow-y: auto;
+  grid-auto-rows: 1fr; /* 👈 This makes all rows equal height */
+  gap: 10px;
+  max-height: none;
   padding: 10px;
   margin-left: 5px;
+  margin-bottom: 15px;
 }
 
 /* Make the whole card clickable without losing styles */
@@ -508,16 +509,20 @@ textarea {
   display: block;
   text-decoration: none;
   flex: 1 1 220px;
-  max-width: 300px;
+  max-width: 250px;
 }
 
 /* Card base style with Material Design feel */
 .pinned-card {
   background: linear-gradient(135deg, #000000, #434343); /* Black gradient */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  padding: 10px;
   color: #fff;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: 250ms;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
 }
 
 /* Card header text */
@@ -534,9 +539,10 @@ textarea {
 }
 
 /* Hover effect to lift the card */
-.pinned-card-link:hover .pinned-card {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
+.pinned-card:hover {
+  box-shadow: 0 0 6px 2px yellow;
+  scale: 1.03;
+  transition: 250ms;
 }
 
 #new_due_date {
