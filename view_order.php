@@ -959,7 +959,7 @@ if ($users_result->num_rows > 0) {
                     <tr>
                         <td><?= htmlspecialchars($art['denumire']) ?></td>
                         <td><?= $art['cantitate'] ?></td>
-                        <td><?= number_format($art['pret'], 2) ?> lei</td>
+                        <td><?= number_format($art['pret'], 2) ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -1003,6 +1003,7 @@ if ($users_result->num_rows > 0) {
                 }
                 ?>
             </select>
+            <br>
             <input type="number" name="cantitate" id="cantitate" placeholder="Cant" style="width: 10mm;">
             <input type="number" name="pret" id="pret" placeholder="Preț" style="width: 10mm;" step="0.01">
             <button type="submit">Adaugă</button>
@@ -1010,6 +1011,7 @@ if ($users_result->num_rows > 0) {
         <button id="saveChangesBtn" class="no-print" onclick="window.location.href='view_order.php?order_id=<?php echo $order_id; ?>'">💾 Salvează modificările</button>
     </div>
     <div>
+        <br>
         <svg height="80px" clip-rule="evenodd" fill-rule="evenodd" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" version="1.1" viewBox="0 0 386 148.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <style>
