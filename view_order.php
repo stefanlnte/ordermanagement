@@ -103,6 +103,10 @@ if ($users_result->num_rows > 0) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
     <script>
+        const currentOrderId = <?= (int)$_GET['order_id'] ?>;
+    </script>
+
+    <script>
         function editOrderDetails() {
             console.log('editOrderDetails called');
             document.getElementById('detalii_suplimentare_text').style.display = 'none';
@@ -258,6 +262,93 @@ if ($users_result->num_rows > 0) {
         function printOrder() {
             window.print();
         }
+
+        // Fills the articles for orders 
+        function loadOrderArticles(orderId) {
+            $.getJSON(`fetch_order_articles.php?order_id=${orderId}`, function(data) {
+                const tbody = $('#bonTableBody');
+                tbody.empty();
+                let total = 0;
+
+                data.forEach(row => {
+                    const qty = Number(row.quantity);
+                    const unit = Number(row.price_per_unit);
+                    total += qty * unit;
+
+                    tbody.append(`
+        <tr data-id="${row.id}">
+          <td>${row.name}</td>
+          <td>${qty}</td>
+          <td>${unit.toFixed(2)}</td>
+          <td><button type="button" class="removeArticle">✖</button></td>
+        </tr>
+      `);
+                });
+
+                $('#totalPrice').text(total.toFixed(2) + ' lei');
+            });
+        }
+
+        $('#addArticleForm').on('submit', function(e) {
+            e.preventDefault();
+            $.post('add_article.php', $(this).serialize(), function() {
+                loadOrderArticles(currentOrderId); // refresh the table
+            });
+        });
+
+        $(document).ready(function() {
+            loadOrderArticles(currentOrderId);
+        });
+
+        $('#articleSelect').on('select2:select', function(e) {
+            const data = e.params.data;
+            if (data.price !== undefined) {
+                $('#price').val(data.price); // existing
+            } else {
+                $('#price').val(''); // new entry → blank so you can type
+            }
+        });
+
+        $(document).on('submit', '#addArticleForm', function(e) {
+            e.preventDefault();
+
+            const form = this;
+            $.ajax({
+                url: $(form).attr('action'),
+                method: 'POST',
+                data: $(form).serialize(),
+                success: function(resp) {
+                    // Optional: check JSON response if you return JSON
+                    loadOrderArticles(currentOrderId);
+                    // Reset for the next add (optional)
+                    $('#articleSelect').val(null).trigger('change');
+                    $('#quantity').val(1);
+                    $('#price').val('');
+                },
+                error: function(xhr) {
+                    alert(xhr.responseText || 'Eroare la adăugarea articolului.');
+                }
+            });
+        });
+
+        $(document).on('click', '.removeArticle', function() {
+            const row = $(this).closest('tr');
+            const id = row.data('id');
+
+            if (!id) {
+                alert('Missing row id; cannot delete.');
+                return;
+            }
+            if (!confirm('Remove this article?')) return;
+
+            $.post('delete_article.php', {
+                id
+            }, function() {
+                loadOrderArticles(currentOrderId);
+            }).fail(function(xhr) {
+                alert(xhr.responseText || 'Could not delete article.');
+            });
+        });
     </script>
 
     <!-- Select2 date picker -->
@@ -334,6 +425,35 @@ if ($users_result->num_rows > 0) {
             $('#status_filter, #assigned_filter, #category_filter, #sort_order, #assigned_to, #category_id').select2({
                 dropdownAutoWidth: true,
                 width: 'auto'
+            });
+        });
+        // Init for add article
+        $(document).ready(function() {
+            $('#articleSelect').select2({
+                tags: true, // allow new entries
+                ajax: {
+                    url: 'fetch_articles.php',
+                    dataType: 'json',
+                    processResults: function(data) {
+                        return {
+                            results: data.map(item => ({
+                                id: item.id, // numeric for existing items
+                                text: `${item.name} (${item.price} lei)`,
+                                price: item.price
+                            }))
+                        };
+                    }
+                }
+            });
+
+            // Autofill price for existing items (clear if none)
+            $('#articleSelect').on('select2:select', function(e) {
+                const data = e.params.data;
+                if (data.price !== undefined) {
+                    $('#price').val(data.price);
+                } else {
+                    $('#price').val('');
+                }
             });
         });
     </script>
@@ -455,7 +575,8 @@ if ($users_result->num_rows > 0) {
             /* Ensure options are wide enough */
         }
     </style>
-     <!-- Print styles -->
+
+    <!-- Print styles -->
     <style>
         @media print {
             .no-print {
@@ -494,10 +615,11 @@ if ($users_result->num_rows > 0) {
                 background-color: transparent !important;
             }
         }
-         p {
-                margin-top: 0;
-                margin-bottom: 10px;
-            }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
     </style>
 
     <!-- Whatsapp Icon -->
@@ -612,8 +734,64 @@ if ($users_result->num_rows > 0) {
         <p><strong>Comanda initiala: </strong><br><span id="order_details_text"><?php echo nl2br(htmlspecialchars($order['order_details'])); ?></span></p>
         <p><strong>Detalii suplimentare: </strong><br><span id="detalii_suplimentare_text"><?php echo nl2br(htmlspecialchars($order['detalii_suplimentare'])); ?></span></p>
         <textarea id="detalii_suplimentare_edit" style="display:none;"><?php echo $order['detalii_suplimentare']; ?></textarea>
+
+        <!-- Articole -->
+        <table id="bonTable">
+            <thead>
+                <tr>
+                    <th>Article</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody id="bonTableBody">
+                <?php
+                $stmt = $conn->prepare("
+    SELECT a.name, oa.quantity, oa.price_per_unit
+    FROM order_articles oa
+    JOIN articles a ON oa.article_id = a.id
+    WHERE oa.order_id = ?
+");
+                $stmt->bind_param('i', $order_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                if ($result->num_rows > 0) {
+                    $total = 0;
+                    while ($row = $result->fetch_assoc()) {
+                        $total += $row['quantity'] * $row['price_per_unit'];
+                        echo '<tr>';
+                        echo '<td>' . htmlspecialchars($row['name']) . '</td>';
+                        echo '<td>' . (int)$row['quantity'] . '</td>';
+                        echo '<td>' . number_format($row['price_per_unit'], 2) . '</td>';
+                        echo '</tr>';
+                    }
+                } else {
+                    echo '<tr><td colspan="3">No articles found</td></tr>';
+                }
+                $stmt->close();
+                ?>
+            </tbody>
+        </table>
+
+        <!-- Add article form -->
+        <div class="no-print add-article-form">
+            <form id="addArticleForm" method="post" action="add_article.php">
+                <select id="articleSelect" name="article_id" style="width: 300px;"></select>
+
+                <!-- Optional visible price if you’ll support adding new items -->
+                <input type="text" id="price" name="price" placeholder="Price" style="width:80px;">
+
+                <input type="number" id="quantity" name="quantity" min="1" value="1">
+                <input type="hidden" name="order_id" value="<?= (int)$order_id ?>">
+                <button type="submit">Add Article</button>
+            </form>
+        </div>
+
         <p>Avans: <?php echo $order['avans']; ?> lei</p>
-        <p>Total: <span id="total_text"><?php echo $order['total'] == 0 ? 'N/A' : $order['total'] . ' lei'; ?></span></p>
+        <div id="totalWrapper">
+            <strong>Total:</strong> <span id="totalPrice">0.00</span>
+        </div>
         <input type="number" id="total_edit" style="display:none;" value="<?php echo $order['total']; ?>" step="0.01">
         <?php
         $rest_de_plata = $order['total'] - $order['avans'];
@@ -646,7 +824,7 @@ if ($users_result->num_rows > 0) {
         <div class="contact-info small-text">
             <p>Str. Roman Mușat, Nr. 21, Roman</p>
             <p>(lângă Biblioteca Municipală și Farm. 32)</p>
-            <p>&#x1F57B   0753 581 170 </p>
+            <p>&#x1F57B 0753 581 170 </p>
             <p>&#9993 colorprint_roman@yahoo.com</p>
             <p>Program: Luni - Vineri: 08:00 – 18:00</p>
             <p>Sâmbătă: 09:00 – 12:00 Duminică: ÎNCHIS</p>
