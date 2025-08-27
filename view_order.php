@@ -643,14 +643,21 @@ if ($users_result->num_rows > 0) {
             text-align: center;
         }
 
-        #bonTable thead th:nth-child(4),
-        #bonTable tbody td:nth-child(4) {
-            display: flex;
-            justify-content: center;
-            /* horizontal center */
-            align-items: center;
-            /* vertical center */
+        #bonTableBody>tr>td:nth-child(4) {
+            text-align: center;
+            /* horizontal centering */
+            vertical-align: middle;
+            /* vertical centering (works for table cells) */
             padding: 3px;
+        }
+
+        #bonTable>thead>tr>th:nth-child(4) {
+            padding: 3px;
+        }
+
+        #bonTableBody>tr>td:nth-child(4)>button {
+            display: block;
+            margin: auto;
         }
 
         /* Article column takes the remainder so 1+2+3 = 80mm total */
@@ -674,8 +681,6 @@ if ($users_result->num_rows > 0) {
             font-weight: bold;
             color: #fff;
             background: linear-gradient(135deg, #e74c3c, #c0392b);
-            border: none;
-            border-radius: 4px;
             padding: 2px 6px;
             cursor: pointer;
             transition: transform 0.15s ease, background 0.3s ease;
