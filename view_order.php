@@ -740,19 +740,25 @@ if ($users_result->num_rows > 0) {
             letter-spacing: 0.5px;
             text-transform: uppercase;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: 200 ms;
         }
 
         .add-article-form button:hover {
-            background-color: #fbc02d;
+            background-color: black;
+            color: yellow;
             /* darker yellow on hover */
             transform: translateY(-2px);
+            transition: 200 ms;
         }
 
         .add-article-form button:active {
             background-color: gold;
             /* press effect */
             transform: translateY(0);
+        }
+
+        #bonTable>thead>tr>th:nth-child(4) {
+            border: none;
         }
 
         /* Hide delete controls when printing */
