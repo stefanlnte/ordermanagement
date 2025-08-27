@@ -576,6 +576,7 @@ if ($users_result->num_rows > 0) {
         }
     </style>
 
+    <!-- Stil pentru adauga aricol -->
     <style>
         /* Make column widths predictable */
         #bonTable {
@@ -583,6 +584,8 @@ if ($users_result->num_rows > 0) {
             table-layout: fixed;
             width: auto;
             /* allow the 4th column to extend beyond 80mm */
+            vertical-align: middle;
+            text-align: left;
             max-width: none;
         }
 
@@ -591,7 +594,8 @@ if ($users_result->num_rows > 0) {
             padding: 0;
             /* keep the first 3 columns totaling exactly 80mm */
             white-space: nowrap;
-            vertical-align: top;
+            vertical-align: middle;
+            text-align: left;
         }
 
         /* Qty column: >= 4 characters wide */
@@ -599,7 +603,7 @@ if ($users_result->num_rows > 0) {
         #bonTable tbody td:nth-child(2) {
             width: 4.5ch;
             /* room for 4 chars comfortably */
-            text-align: right;
+            text-align: center;
         }
 
         /* Price column: >= 4 characters wide */
@@ -607,7 +611,7 @@ if ($users_result->num_rows > 0) {
         #bonTable tbody td:nth-child(3) {
             width: 4.5ch;
             /* room for 4 chars comfortably */
-            text-align: right;
+            text-align: center;
         }
 
         /* Article column takes the remainder so 1+2+3 = 80mm total */
@@ -624,6 +628,88 @@ if ($users_result->num_rows > 0) {
         #bonTable tbody td:nth-child(4) {
             width: auto;
             text-align: left;
+        }
+
+        .removeArticle {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: none;
+            border-radius: 4px;
+            padding: 2px 6px;
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.3s ease;
+        }
+
+        .removeArticle:hover {
+            background: linear-gradient(135deg, #ff6f61, #e74c3c);
+            transform: scale(1.1);
+        }
+
+        /* Material Design Gray & Yellow Theme */
+        .add-article-form {
+            background-color: #f5f5f5;
+            /* light gray background */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin-left: 10px !important;
+        }
+
+        .add-article-form form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .add-article-form select,
+        .add-article-form input[type="text"],
+        .add-article-form input[type="number"] {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #e0e0e0;
+            /* medium gray */
+            font-size: 14px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .add-article-form select:focus,
+        .add-article-form input:focus {
+            background-color: #fffde7;
+            /* pale yellow focus */
+            box-shadow: 0 0 0 2px yellow;
+            /* vibrant yellow outline */
+            outline: none;
+        }
+
+        .add-article-form button {
+            padding: 12px;
+            background-color: yellow;
+            /* material yellow */
+            color: #212121;
+            /* dark gray text */
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .add-article-form button:hover {
+            background-color: #fbc02d;
+            /* darker yellow on hover */
+            transform: translateY(-2px);
+        }
+
+        .add-article-form button:active {
+            background-color: gold;
+            /* press effect */
+            transform: translateY(0);
         }
 
         /* Hide delete controls when printing */
@@ -799,43 +885,50 @@ if ($users_result->num_rows > 0) {
         <textarea id="detalii_suplimentare_edit" style="display:none;"><?php echo $order['detalii_suplimentare']; ?></textarea>
 
         <!-- Articole -->
-        <table id="bonTable">
-            <thead>
-                <tr>
-                    <th>Article</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                </tr>
-            </thead>
-            <tbody id="bonTableBody">
-                <?php
-                $stmt = $conn->prepare("
+        <?php
+        $stmt = $conn->prepare("
     SELECT a.name, oa.quantity, oa.price_per_unit
     FROM order_articles oa
     JOIN articles a ON oa.article_id = a.id
     WHERE oa.order_id = ?
 ");
-                $stmt->bind_param('i', $order_id);
-                $stmt->execute();
-                $result = $stmt->get_result();
+        $stmt->bind_param('i', $order_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-                if ($result->num_rows > 0) {
-                    $total = 0;
-                    while ($row = $result->fetch_assoc()) {
-                        $total += $row['quantity'] * $row['price_per_unit'];
-                        echo '<tr>';
-                        echo '<td>' . htmlspecialchars($row['name']) . '</td>';
-                        echo '<td>' . (int)$row['quantity'] . '</td>';
-                        echo '<td>' . number_format($row['price_per_unit'], 2) . '</td>';
-                        echo '</tr>';
-                    }
-                } else {
-                    echo '<tr><td colspan="3">No articles found</td></tr>';
-                }
-                $stmt->close();
-                ?>
-            </tbody>
-        </table>
+        echo '<table id="bonTable">
+    <thead>
+        <tr>
+            <th>Article</th>
+            <th>Cant</th>
+            <th>Preț</th>
+        </tr>
+    </thead>
+    <tbody id="bonTableBody">';
+
+        $hasRows = false;
+        $total = 0;
+
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $hasRows = true;
+                $total += $row['quantity'] * $row['price_per_unit'];
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') . '</td>';
+                echo '<td>' . (int)$row['quantity'] . '</td>';
+                echo '<td>' . number_format((float)$row['price_per_unit'], 2) . '</td>';
+                echo '</tr>';
+            }
+        }
+
+        if (!$hasRows) {
+            echo '<tr><td colspan="3" style="text-align:center;">Nu există articole</td></tr>';
+        }
+
+        echo '</tbody></table>';
+
+        $stmt->close();
+        ?>
 
         <!-- Add article form -->
         <div class="no-print add-article-form">
@@ -847,7 +940,7 @@ if ($users_result->num_rows > 0) {
 
                 <input type="number" id="quantity" name="quantity" min="1" value="1">
                 <input type="hidden" name="order_id" value="<?= (int)$order_id ?>">
-                <button type="submit">Add Article</button>
+                <button type="submit">Adaugă Article</button>
             </form>
         </div>
 
