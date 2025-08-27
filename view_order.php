@@ -643,6 +643,16 @@ if ($users_result->num_rows > 0) {
             text-align: center;
         }
 
+        #bonTable thead th:nth-child(4),
+        #bonTable tbody td:nth-child(4) {
+            display: flex;
+            justify-content: center;
+            /* horizontal center */
+            align-items: center;
+            /* vertical center */
+            padding: 3px;
+        }
+
         /* Article column takes the remainder so 1+2+3 = 80mm total */
         #bonTable thead th:nth-child(1),
         #bonTable tbody td:nth-child(1) {
@@ -932,9 +942,10 @@ if ($users_result->num_rows > 0) {
         echo '<table id="bonTable">
     <thead>
         <tr>
-            <th>Article</th>
+            <th>Articole</th>
             <th>Cant</th>
             <th>Preț</th>
+            <th>Șterge</th>
         </tr>
     </thead>
     <tbody id="bonTableBody">';
@@ -971,9 +982,9 @@ if ($users_result->num_rows > 0) {
                 </select>
 
                 <!-- Optional visible price if you’ll support adding new items -->
-                <input type="text" id="price" name="price" placeholder="Price" style="width:80px;">
+                <input type="text" id="price" name="price" placeholder="Preț" style="width:80px;">
 
-                <input type="number" id="quantity" name="quantity" min="1" value="1">
+                <input type="number" id="quantity" name="quantity" min="1" value="" placeholder="Cantitate">
                 <input type="hidden" name="order_id" value="<?= (int)$order_id ?>">
                 <button type="submit">Adaugă Articol</button>
             </form>
