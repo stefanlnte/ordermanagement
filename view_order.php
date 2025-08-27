@@ -352,7 +352,7 @@ if ($users_result->num_rows > 0) {
                 alert('Missing row id; cannot delete.');
                 return;
             }
-            if (!confirm('Remove this article?')) return;
+            if (!confirm('Șterge acest articol?')) return;
 
             $.post('delete_article.php', {
                 id
@@ -363,6 +363,20 @@ if ($users_result->num_rows > 0) {
             });
         });
     </script>
+
+    <script>
+        window.addEventListener('beforeprint', () => {
+            const table = document.getElementById('bonTable');
+            const hasRows = table.querySelectorAll('tbody tr').length > 0;
+            if (!hasRows) {
+                table.classList.add('no-print');
+            } else {
+                table.classList.remove('no-print');
+            }
+        });
+    </script>
+
+
 
     <!-- Select2 date picker -->
     <script>
