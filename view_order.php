@@ -298,7 +298,9 @@ if ($users_result->num_rows > 0) {
       `);
                 });
 
-                $('#totalPrice').text(total.toFixed(2) + ' lei');
+                const avans = parseFloat("<?= $order['avans'] ?>") || 0;
+                const totalMinusAvans = total - avans;
+                $('#totalPrice').text(totalMinusAvans.toFixed(2) + ' lei');
             });
         }
 
