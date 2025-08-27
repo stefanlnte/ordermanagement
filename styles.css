@@ -1,8 +1,25 @@
-/* Default layout for larger screens */
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: 100vh;
+}
+
+/* Header image */
+.image-container {
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 2;
 }
 
 .sidebar {
@@ -16,23 +33,75 @@
 }
 
 button {
-  background-color: #fff;
+  border-radius: 5px;
+  border: 1px grey solid;
+  padding: 10px;
+  margin: 5px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: 500ms;
+  font-family: 'Poppins', sans-serif;
+}
+
+button:hover {
+  background-color: yellow;
+  transition: 500ms;
+}
+
+/* Link buttons */
+.button a {
+  background-color: yellow;
   border: 1px solid #a9a9a9; /* Dark grey color for border */
   border-radius: 4px; /* Rounded border */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   font-size: 14px; /* Adjust font size */
   color: #333;
-  padding: 5px;
+  padding: 10px;
   cursor: pointer;
   text-align: center;
   text-decoration: none;
   display: inline-block;
   transition: 500ms;
+  font-family: 'Poppins', sans-serif;
 }
 
-button:hover {
+/* Hover effect */
+.button :hover {
+  background-color: lightgrey;
+  transition: 500ms;
+}
+
+input[type='submit'] {
   background-color: yellow;
-  border-color: #708090; /* Light grey color on hover */
+  border: none;
+  border-radius: 4px; /* Rounded border */
+  font-size: 14px; /* Adjust font size */
+  color: #333;
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  transition: 500ms;
+  font-family: 'Poppins', sans-serif;
+}
+
+input[type='submit']:hover {
+  background-color: lightgrey;
+  transition: 500ms;
+}
+
+/* table effect */
+body > div.container > div.main-content > table > tbody > tr {
+  transition: 500ms;
+}
+
+#orderForm {
+  width: auto;
+}
+
+div.pagination :hover {
   transition: 500ms;
 }
 
@@ -46,7 +115,26 @@ button:hover {
 
   .sidebar {
     flex: 0 0 250px; /* Adjust the width as needed */
-    padding: 10px;
+    padding: 15px;
+    position: relative; /* Required for pseudo-element */
+    margin: 15px;
+    margin-top: 30px;
+    color: white;
+    box-shadow: 2px 3px 6px rgba(255, 255, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.5); /* Optional: Helps visibility */
+  }
+
+  .sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://color-print.ro/magazincp/background.jpg');
+    background-size: cover;
+    filter: blur(1px); /* Adjust blur intensity */
+    z-index: -1; /* Puts the blur behind the content */
   }
 
   .main-content {
@@ -96,10 +184,122 @@ tr:hover {
 .pagination a:hover {
   background-color: #ddd;
 }
+
 .form-group {
   margin-bottom: 10px;
 }
+
 /* New styles for order statuses */
+.order-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.order-card {
+  background: #f3f4f4;
+  border-radius: 10px;
+  padding: 15px;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.order-card:hover {
+  scale: 1.04;
+}
+
+.order-card.completed {
+  background: #98fb98;
+  border: 1px solid #008000;
+  transition: 200ms;
+}
+
+.order-card.completed:hover {
+  box-shadow: 0 0 10px #008000;
+  transition: 200ms;
+}
+
+.order-card.assigned {
+  background: #fffacd;
+  border: 1px solid #f4d03f;
+  transition: 200ms;
+}
+
+.order-card.assigned:hover {
+  box-shadow: 0 0 10px #f4d03f;
+  transition: 200ms;
+}
+
+.order-card.current-user {
+  background: #f9c2bd;
+  border: 1px solid rgb(153, 81, 81);
+  transition: 200ms;
+}
+
+.order-card.current-user:hover {
+  box-shadow: 0 0 10px rgb(153, 81, 81);
+  transition: 200ms;
+}
+
+.order-card.delivered {
+  border: 1px solid lightgreen;
+  transition: 200ms;
+}
+
+.order-card.delivered:hover {
+  box-shadow: 0 0 10px green;
+  transition: 200ms;
+}
+
+.order-card.cancelled {
+  border: 1px solid red;
+  transition: 200ms;
+}
+
+.order-card.cancelled:hover {
+  box-shadow: 0 0 10px lightcoral;
+  transition: 200ms;
+}
+
+.order-card td {
+  padding: 8px 0;
+  font-size: 0.9em;
+}
+
+th {
+  font-weight: bold;
+  text-align: left;
+  padding-bottom: 10px;
+}
+
+.order-status {
+  font-weight: bold;
+  color: #333;
+}
+
+.order-operator {
+  color: #444;
+  font-size: 0.9em;
+}
+
+.filters form {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+}
+
+.filter-group label {
+  margin-right: 5px;
+}
 .order-assigned {
   background-color: #fffacd; /* Light yellow */
 }
@@ -112,16 +312,20 @@ tr:hover {
 .order-delivered {
   background-color: #ffffffe8;
 }
+
 .filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 5px;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
 }
 
 .filters .form-group {
   flex: 1;
   min-width: 150px;
+  align-self: end;
 }
 
 .filters button {
@@ -132,4 +336,219 @@ textarea {
   max-width: fit-content; /* Adjust the width as needed */
   word-wrap: break-word;
   white-space: normal;
+}
+
+/* Modal styles */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1000; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+  max-width: 600px; /* Maximum width */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Additional styling for modal form */
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content .form-group {
+  margin-bottom: 15px;
+}
+
+.modal-content label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.modal-content input[type='text'],
+.modal-content input[type='email'],
+.modal-content input[type='number'],
+.modal-content select {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modal-content input[type='submit'] {
+  background-color: lightgrey;
+  color: black;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.modal-content input[type='submit']:hover {
+  background-color: yellow;
+  color: #333;
+}
+
+/* Toggle between V1 and V2 */
+#versionToggle {
+  background: #333;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+#versionToggle:hover {
+  background: #555;
+}
+
+#versionToggle button {
+  background: none;
+  color: inherit;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+#versionToggle button:hover {
+  text-decoration: underline;
+}
+
+/* View Order options */
+.order-options {
+  display: flex;
+  align-items: center; /* Center items horizontally */
+  justify-content: center; /* Center items vertically */
+  flex-direction: column; /* Stack items vertically */
+  max-width: 700px;
+  margin: 20px auto;
+  padding: 20px;
+  background: linear-gradient(135deg, #000000, #434343); /* Black gradient */
+  color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center; /* Center text within the container */
+  box-sizing: border-box;
+}
+
+.order-options form {
+  display: inline-flex; /* Keeps form elements inline and centered */
+  gap: 10px; /* Space between form elements */
+  width: fit-content; /* Only take as much space as needed */
+}
+
+.order-options .form-group {
+  width: 100%; /* Ensure the form group uses available space */
+  margin: 0;
+}
+
+.order-options select {
+  padding: 8px;
+  border-radius: 5px;
+}
+
+.order-options button {
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Optional: Add a break between long text */
+.order-options .form-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Container for pinned cards */
+.pinned-feed {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-auto-rows: 1fr; /* 👈 This makes all rows equal height */
+  gap: 10px;
+  max-height: none;
+  padding: 10px;
+  margin-left: 5px;
+  margin-bottom: 15px;
+}
+
+/* Make the whole card clickable without losing styles */
+.pinned-card-link {
+  display: block;
+  text-decoration: none;
+  flex: 1 1 220px;
+  max-width: 250px;
+}
+
+/* Card base style with Material Design feel */
+.pinned-card {
+  background: linear-gradient(135deg, #000000, #434343); /* Black gradient */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  color: #fff;
+  transition: 250ms;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+/* Card header text */
+.pinned-card .card-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* Body text inside the card */
+.pinned-card .card-body p {
+  margin: 4px 0;
+  font-size: 0.95rem;
+}
+
+/* Hover effect to lift the card */
+.pinned-card:hover {
+  box-shadow: 0 0 6px 2px yellow;
+  scale: 1.03;
+  transition: 250ms;
+}
+
+#new_due_date {
+  height: 24px !important; /* pick your exact target height */
+  padding: 2px 6px !important; /* less vertical padding */
+  font-size: 14px;
+  line-height: 1.2 !important;
+  border-radius: 5px;
 }

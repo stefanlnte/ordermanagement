@@ -1,29 +1,20 @@
 <?php
+// update_client.php
+// Used to edit client details in the add order form
 include 'db.php';
 
-$response = [];
+$client_id = $_POST['edit_client_id'];
+$client_name = $_POST['edit_client_name'];
+$client_phone = $_POST['edit_client_phone'];
+$client_email = $_POST['edit_client_email'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $client_id = $_POST['client_id'];
-    $client_name = $_POST['client_name'];
-    $client_phone = $_POST['client_phone'];
-    $client_email = $_POST['client_email'];
-
-    $update_client_sql = "UPDATE clients SET client_name = ?, client_phone = ?, client_email = ? WHERE client_id = ?";
-    $stmt = $conn->prepare($update_client_sql);
+if ($client_id) {
+    $sql = "UPDATE clients SET client_name = ?, client_phone = ?, client_email = ? WHERE client_id = ?";
+    $stmt = $conn->prepare($sql);
     $stmt->bind_param("sssi", $client_name, $client_phone, $client_email, $client_id);
-
     if ($stmt->execute()) {
-        $response['success'] = true;
+        echo "Client updated successfully!";
     } else {
-        $response['error'] = "Error updating client: " . $stmt->error;
+        echo "Error updating client: " . $stmt->error;
     }
-
-    $stmt->close();
-} else {
-    $response['error'] = "Invalid request method.";
 }
-
-$conn->close();
-echo json_encode($response);
-?>
