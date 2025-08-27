@@ -108,13 +108,52 @@ if ($users_result->num_rows > 0) {
 
     <script>
         function editOrderDetails() {
-            console.log('editOrderDetails called');
-            document.getElementById('detalii_suplimentare_text').style.display = 'none';
-            document.getElementById('detalii_suplimentare_edit').style.display = 'block';
-            document.getElementById('total_text').style.display = 'none';
-            document.getElementById('total_edit').style.display = 'block';
-            document.querySelector('button[onclick="editOrderDetails()"]').style.display = 'none';
-            document.querySelector('button[onclick="saveOrderDetails()"]').style.display = 'inline';
+            // Ascunde textul afișat
+            const suplText = document.getElementById('detalii_suplimentare_text');
+            if (suplText) suplText.style.display = 'none';
+
+            // Arată zona de editare
+            const suplEdit = document.getElementById('detalii_suplimentare_edit');
+            if (suplEdit) suplEdit.style.display = 'block';
+
+            // Butoane
+            const btnEdit = document.querySelector('button[onclick="editOrderDetails()"]');
+            const btnSave = document.querySelector('button[onclick="saveOrderDetails()"]');
+            if (btnEdit) btnEdit.style.display = 'none';
+            if (btnSave) btnSave.style.display = 'inline';
+        }
+
+        function saveOrderDetails() {
+            const suplEdit = document.getElementById('detalii_suplimentare_edit');
+            const detaliiSuplimentare = suplEdit ? suplEdit.value : '';
+            const orderId = <?php echo (int)$order['order_id']; ?>;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'update_order_details.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const suplText = document.getElementById('detalii_suplimentare_text');
+                        if (suplText) {
+                            suplText.innerText = detaliiSuplimentare;
+                            suplText.style.display = 'block';
+                        }
+                        if (suplEdit) suplEdit.style.display = 'none';
+
+                        const btnEdit = document.querySelector('button[onclick="editOrderDetails()"]');
+                        const btnSave = document.querySelector('button[onclick="saveOrderDetails()"]');
+                        if (btnEdit) btnEdit.style.display = 'inline';
+                        if (btnSave) btnSave.style.display = 'none';
+                    } else {
+                        alert('Eroare la salvare: ' + (xhr.responseText || xhr.status));
+                    }
+                }
+            };
+            xhr.send(
+                'order_id=' + encodeURIComponent(orderId) +
+                '&detalii_suplimentare=' + encodeURIComponent(detaliiSuplimentare)
+            );
         }
 
         function togglePin(orderId, pinState) {
@@ -127,32 +166,6 @@ if ($users_result->num_rows > 0) {
                 }
             };
             xhr.send('order_id=' + orderId + '&is_pinned=' + pinState);
-        }
-
-        function saveOrderDetails() {
-            var detaliiSuplimentare = document.getElementById('detalii_suplimentare_edit').value;
-            var total = document.getElementById('total_edit').value;
-            var orderId = <?php echo $order['order_id']; ?>;
-            console.log('Saving order details:', detaliiSuplimentare);
-            console.log('Saving total:', total);
-            console.log('Order ID:', orderId);
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'update_order_details.php', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    console.log('Response from server:', xhr.responseText);
-                    document.getElementById('detalii_suplimentare_text').innerText = detaliiSuplimentare;
-                    document.getElementById('detalii_suplimentare_text').style.display = 'block';
-                    document.getElementById('detalii_suplimentare_edit').style.display = 'none';
-                    document.getElementById('total_text').innerText = total == 0 ? 'N/A' : total + ' lei';
-                    document.getElementById('total_text').style.display = 'block';
-                    document.getElementById('total_edit').style.display = 'none';
-                    document.querySelector('button[onclick="editOrderDetails()"]').style.display = 'inline';
-                    document.querySelector('button[onclick="saveOrderDetails()"]').style.display = 'none';
-                }
-            };
-            xhr.send('order_id=' + orderId + '&detalii_suplimentare=' + encodeURIComponent(detaliiSuplimentare) + '&total=' + encodeURIComponent(total));
         }
 
         function finishOrder() {
@@ -631,7 +644,7 @@ if ($users_result->num_rows > 0) {
         }
 
         .removeArticle {
-            font-size: 1.1em;
+            font-size: 1em;
             font-weight: bold;
             color: #fff;
             background: linear-gradient(135deg, #e74c3c, #c0392b);
@@ -644,16 +657,20 @@ if ($users_result->num_rows > 0) {
 
         .removeArticle:hover {
             background: linear-gradient(135deg, #ff6f61, #e74c3c);
-            transform: scale(1.1);
+            transform: scale(1.05);
+        }
+
+        body>div:nth-child(3)>div.no-print.add-article-form {
+            margin: 25px !important;
         }
 
         /* Material Design Gray & Yellow Theme */
         .add-article-form {
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #1a1a1aff, gray);
             /* light gray background */
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 6px yellow;
             max-width: 400px;
             margin-left: 10px !important;
         }
@@ -933,17 +950,19 @@ if ($users_result->num_rows > 0) {
         <!-- Add article form -->
         <div class="no-print add-article-form">
             <form id="addArticleForm" method="post" action="add_article.php">
-                <select id="articleSelect" name="article_id" style="width: 300px;"></select>
+                <select id="articleSelect" name="article_id" style="width: 300px;">
+                    <option value="" disabled selected>Caută sau adaugă articol</option>
+                </select>
 
                 <!-- Optional visible price if you’ll support adding new items -->
                 <input type="text" id="price" name="price" placeholder="Price" style="width:80px;">
 
                 <input type="number" id="quantity" name="quantity" min="1" value="1">
                 <input type="hidden" name="order_id" value="<?= (int)$order_id ?>">
-                <button type="submit">Adaugă Article</button>
+                <button type="submit">Adaugă Articol</button>
             </form>
         </div>
-
+        <br>
         <p>Avans: <?php echo $order['avans']; ?> lei</p>
         <div id="totalWrapper">
             <strong>Total:</strong> <span id="totalPrice">0.00</span>
