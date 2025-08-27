@@ -576,6 +576,69 @@ if ($users_result->num_rows > 0) {
         }
     </style>
 
+    <style>
+        /* Make column widths predictable */
+        #bonTable {
+            border-collapse: collapse;
+            table-layout: fixed;
+            width: auto;
+            /* allow the 4th column to extend beyond 80mm */
+            max-width: none;
+        }
+
+        #bonTable th,
+        #bonTable td {
+            padding: 0;
+            /* keep the first 3 columns totaling exactly 80mm */
+            white-space: nowrap;
+            vertical-align: top;
+        }
+
+        /* Qty column: >= 4 characters wide */
+        #bonTable thead th:nth-child(2),
+        #bonTable tbody td:nth-child(2) {
+            width: 4.5ch;
+            /* room for 4 chars comfortably */
+            text-align: right;
+        }
+
+        /* Price column: >= 4 characters wide */
+        #bonTable thead th:nth-child(3),
+        #bonTable tbody td:nth-child(3) {
+            width: 4.5ch;
+            /* room for 4 chars comfortably */
+            text-align: right;
+        }
+
+        /* Article column takes the remainder so 1+2+3 = 80mm total */
+        #bonTable thead th:nth-child(1),
+        #bonTable tbody td:nth-child(1) {
+            width: calc(80mm - 9ch);
+            /* 9ch = 4.5ch + 4.5ch for Qty+Price */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 4th column (delete) – no fixed width; sits after the 80mm block */
+        #bonTable thead th:nth-child(4),
+        #bonTable tbody td:nth-child(4) {
+            width: auto;
+            text-align: left;
+        }
+
+        /* Hide delete controls when printing */
+        @media print {
+
+            #bonTable td:nth-child(4),
+            #bonTable th:nth-child(4),
+            #bonTable .removeArticle,
+            #bonTable .no-print {
+                display: none !important;
+                visibility: hidden !important;
+            }
+        }
+    </style>
+
     <!-- Print styles -->
     <style>
         @media print {
