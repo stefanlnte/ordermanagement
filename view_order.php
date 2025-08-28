@@ -278,31 +278,61 @@ if ($users_result->num_rows > 0) {
 
         // Fills the articles for orders 
         function loadOrderArticles(orderId) {
-            $.getJSON(`fetch_order_articles.php?order_id=${orderId}`, function(data) {
-                const tbody = $('#bonTableBody');
-                tbody.empty();
-                let total = 0;
+            const $table = $('#bonTable');
+            const $tbody = $('#bonTableBody');
+            const emptyNote = document.getElementById('emptyNote');
 
+            //  — Hide the PHP placeholder up front (if present) —
+            if (emptyNote) {
+                emptyNote.style.display = 'none';
+            }
+
+            $.getJSON(`fetch_order_articles.php?order_id=${orderId}`, data => {
+                $tbody.empty();
+
+                if (!data.length) {
+                    // no AJAX rows → leave the PHP note visible
+                    if (emptyNote) {
+                        emptyNote.style.display = 'block';
+                    }
+                    $table.addClass('no-print');
+                    $('#totalPrice').text('0.00 lei');
+                    return;
+                }
+
+                // we have real rows → build them
+                $table.removeClass('no-print');
+                let total = 0;
                 data.forEach(row => {
                     const qty = Number(row.quantity);
                     const unit = Number(row.price_per_unit);
                     total += qty * unit;
 
-                    tbody.append(`
+                    $tbody.append(`
         <tr data-id="${row.id}">
           <td>${row.name}</td>
           <td>${qty}</td>
           <td>${unit.toFixed(2)}</td>
-          <td><button type="button" class="removeArticle">✖</button></td>
+          <td><button class="removeArticle">✖</button></td>
         </tr>
       `);
                 });
 
                 const avans = parseFloat("<?= $order['avans'] ?>") || 0;
-                const totalMinusAvans = total - avans;
-                $('#totalPrice').text(totalMinusAvans.toFixed(2) + ' lei');
+                $('#totalPrice').text((total - avans).toFixed(2) + ' lei');
             });
         }
+
+        $(document).ready(() => {
+            loadOrderArticles(currentOrderId);
+        });
+
+        $('#addArticleForm').on('submit', function(e) {
+            e.preventDefault();
+            $.post('add_article.php', $(this).serialize(), () => {
+                loadOrderArticles(currentOrderId);
+            });
+        });
 
         $('#addArticleForm').on('submit', function(e) {
             e.preventDefault();
@@ -1023,14 +1053,23 @@ if ($users_result->num_rows > 0) {
             }
         }
 
-        if (!$hasRows) {
-            echo '<tr><td colspan="3" style="text-align:center;">Nu există articole</td></tr>';
-        }
-
         echo '</tbody></table>';
 
         $stmt->close();
         ?>
+        <?php if (! $hasRows): ?>
+            <p
+                id="emptyNote"
+                class="no-print empty-note"
+                style="
+      width: 80mm;         /* same width as your columns block */
+      text-align: left;  /* center the text inside that 80 mm */
+    ">
+                Nu există articole
+            </p>
+        <?php endif; ?>
+
+
 
         <!-- Add article form -->
         <div class="no-print add-article-form">
