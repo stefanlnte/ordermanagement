@@ -5,27 +5,6 @@ ini_set('display_errors', 1);
 
 include 'db.php'; // Include the database connection file
 
-// ID-ul comenzii curente (poate vine din URL: view_orders.php?id=...)
-$comanda_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-// Selectăm articolele deja adăugate pentru această comandă
-$sql = "
-    SELECT ca.id, a.denumire, ca.cantitate, ca.pret 
-    FROM comenzi_articole ca
-    JOIN articole a ON ca.articol_id = a.id
-    WHERE ca.comanda_id = $comanda_id
-";
-$res = $conn->query($sql);
-
-$articole_existente = [];
-$total = 0;
-
-while ($row = $res->fetch_assoc()) {
-    $subtotal = $row['cantitate'] * $row['pret'];
-    $total += $subtotal;
-    $articole_existente[] = $row;
-}
-
 $order_id = $_GET['order_id'] ?? null;
 if (!$order_id) {
     echo "Order ID not provided.";
@@ -508,100 +487,57 @@ if ($users_result->num_rows > 0) {
         });
     </script>
 
-    <!-- JavaScript pentru Select2 și actualizare total -->
+    <!-- Function to edit prices -->
     <script>
-        $(document).ready(function() {
-            $('#articolSelect').select2({
-                tags: true,
-                placeholder: "Selectează sau adaugă articol",
-                width: 'resolve'
-            });
-
-            $('#articolSelect').on('select2:select', function(e) {
-                var pret = $(e.params.data.element).data('pret');
-                if (pret) {
-                    $('input[name="pret"]').val(pret);
-                }
-            });
-
-            $('#adaugaArticolForm').submit(function(e) {
-                e.preventDefault();
-                $.post('adauga_articol.php', $(this).serialize() + '&comanda_id=<?= $comanda_id ?>', function(data) {
-                    $('#tabelComanda tbody').html(data.rows);
-                    $('#totalPret').text(data.total);
-                }, 'json');
-            });
-
-            $(document).on('click', '.stergeArticol', function() {
-                $.post('sterge_articol.php', {
-                    id: $(this).data('id'),
-                    comanda_id: <?= $comanda_id ?>
-                }, function(data) {
-                    $('#tabelComanda tbody').html(data.rows);
-                    $('#totalPret').text(data.total);
-                }, 'json');
-            });
-        });
-        // Script JS pentru calcul automat
         document.addEventListener('DOMContentLoaded', function() {
-            const cantitate = document.getElementById('cantitate');
-            const pret = document.getElementById('pret');
-            const total = document.getElementById('total');
+            const btn = document.getElementById('updateDefaultPriceBtn');
+            const priceInput = document.getElementById('price');
+            const articleSelect = document.getElementById('articleSelect');
 
-            function calculeazaTotal() {
-                const qty = parseFloat(cantitate.value) || 0;
-                const price = parseFloat(pret.value) || 0;
-                total.value = (qty * price).toFixed(2);
-            }
+            if (!btn) return; // no button found
 
-            cantitate.addEventListener('input', calculeazaTotal);
-            pret.addEventListener('input', calculeazaTotal);
-        });
-    </script>
+            btn.addEventListener('click', function() {
+                const articleId = articleSelect.value;
+                const newPrice = priceInput.value.trim();
 
-    <script>
-        document.getElementById('saveChangesBtn').addEventListener('click', function() {
-            $.post('view_order.php', {
-                comanda_id: <?= $comanda_id ?>,
-                actiune: 'refresh'
-            }, function(data) {
-                $('#tabelBon tbody').html(data.rows);
-                $('#totalPret').text(data.total);
-                alert("Modificările au fost salvate!");
-            }, 'json');
-        });
-    </script>
+                // Don’t update if it’s a new typed‑in tag or no selection
+                if (!articleId || isNaN(Number(articleId))) {
+                    alert('Selectează un articol existent înainte de a actualiza prețul implicit.');
+                    return;
+                }
 
-    <!-- Calculeaza total comanda -->
-    <script>
-        function calculeazaTotalComanda() {
-            let total = 0;
+                if (newPrice === '' || isNaN(Number(newPrice))) {
+                    alert('Introdu un preț numeric valid.');
+                    return;
+                }
 
-            // Suma articolelor din tabel
-            document.querySelectorAll("#tabelComanda tbody tr").forEach(row => {
-                const cantitate = parseFloat(row.cells[1]?.textContent) || 0;
-                const pret = parseFloat(row.cells[2]?.textContent) || 0;
-                total += cantitate * pret;
+                fetch('update_default_price.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: 'article_id=' + encodeURIComponent(articleId) +
+                            '&price=' + encodeURIComponent(newPrice)
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.success) {
+                            alert('Prețul implicit a fost actualizat.');
+                            // Optional: refresh Select2 display text with the new price
+                            const selected = $('#articleSelect').select2('data')[0];
+                            if (selected && selected.name) {
+                                selected.price = parseFloat(newPrice);
+                                selected.text = `${selected.name} (${selected.price.toFixed(2)} lei)`;
+                                $('#articleSelect').trigger('change.select2');
+                            }
+                        } else {
+                            alert(data && data.error ? data.error : 'Eroare la actualizarea prețului.');
+                        }
+                    })
+                    .catch(() => alert('Eroare de rețea la actualizarea prețului.'));
             });
-
-            // Avansul vine direct din PHP (span)
-            const avans = parseFloat(document.getElementById("avansJs").textContent) || 0;
-
-            // Calcul rest
-            const rest = total - avans;
-
-            // Afișare valori
-            document.getElementById("totalJs").textContent = total.toFixed(2);
-            document.getElementById("restJs").textContent = rest.toFixed(2);
-        }
-
-        // Recalculare inițială
-        document.addEventListener("DOMContentLoaded", calculeazaTotalComanda);
-
-        // Dacă actualizezi articolele prin AJAX, apelează calculeazaTotalComanda() la final
+        });
     </script>
-
-
 
     <!-- Custom CSS for Select2 golden theme -->
     <style>
@@ -719,7 +655,6 @@ if ($users_result->num_rows > 0) {
             /* Ensure options are wide enough */
         }
     </style>
-
 
     <!-- Stil pentru adauga aricol -->
     <style>
@@ -865,7 +800,7 @@ if ($users_result->num_rows > 0) {
         }
 
         .add-article-form button:hover {
-            background-color: black;
+            background-color: MediumSeaGreen;
             color: yellow;
             /* darker yellow on hover */
             transform: translateY(-2px);
@@ -892,283 +827,6 @@ if ($users_result->num_rows > 0) {
                 display: none !important;
                 visibility: hidden !important;
             }
-
-    <!-- Style tabel comanda -->
-    <style>
-        #tabelComanda {
-            width: 80mm;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-
-        #tabelComanda th,
-        #tabelComanda td {
-            border: 1px solid #000;
-            padding: 2px;
-        }
-
-        #tabelComanda th:nth-child(2),
-        #tabelComanda td:nth-child(2),
-        #tabelComanda th:nth-child(3),
-        #tabelComanda td:nth-child(3) {
-            width: 10mm;
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        #tabelComanda th:last-child,
-        #tabelComanda td:last-child {
-            width: 8mm;
-            text-align: center;
-        }
-
-        #tabelBon {
-            width: 80mm;
-            border-collapse: collapse;
-            font-size: 12px;
-            margin-top: 10px;
-        }
-
-        #tabelBon th,
-        #tabelBon td {
-            border: 1px solid #000;
-            padding: 2px;
-        }
-
-        #tabelBon th:first-child,
-        #tabelBon td:first-child {
-            width: calc(80mm - 20mm);
-            /* spațiu mare pentru denumire */
-            text-align: left;
-        }
-
-        #tabelBon th:nth-child(2),
-        #tabelBon td:nth-child(2),
-        #tabelBon th:nth-child(3),
-        #tabelBon td:nth-child(3) {
-            width: 10mm;
-            text-align: right;
-        }
-
-        /* 1. Toate celulele centrate */
-        #tabelComanda th,
-        #tabelComanda td,
-        #tabelBon th,
-        #tabelBon td {
-            text-align: center;
-            vertical-align: middle;
-        }
-
-        /* 2. Mărim #tabelComanda */
-        #tabelComanda {
-            width: 95mm;
-            /* în loc de 80mm */
-            border-collapse: collapse;
-            font-size: 13px;
-            /* puțin mai mare pentru vizibilitate */
-        }
-
-        .zonaAdaugareArticole {
-            width: 125mm;
-            margin-left: 5px;
-            padding: 10px;
-            background-color: #fdfdfd;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        .zonaAdaugareArticole td:first-child,
-        .zonaAdaugareArticole th:first-child {
-            white-space: normal;
-            /* allow wrapping onto multiple lines */
-            overflow: visible;
-            /* don’t hide extra text */
-            text-overflow: clip;
-            /* no ellipsis */
-        }
-
-        #tabelComanda {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-            table-layout: fixed;
-            /* prevent auto-expansion */
-            width: 125mm;
-
-        }
-
-        #tabelComanda th,
-        #tabelComanda td {
-            text-align: center;
-            padding: 6px;
-            border: 1px solid #ddd;
-            font-size: 13px;
-        }
-
-        #tabelComanda th:first-child,
-        #tabelComanda td:first-child {
-            overflow: hidden;
-            /* ascunde partea care nu încape */
-            text-overflow: ellipsis;
-            /* afișează "..." la final */
-            white-space: nowrap;
-            /* tot textul pe un singur rând */
-        }
-
-        #cantitate,
-        #pret {
-            width: 18mm !important;
-            text-align: center;
-        }
-
-
-        #tabelComanda th:last-child,
-        #tabelComanda td:last-child {
-            width: 12mm;
-            text-align: center;
-        }
-
-        .stergeArticol {
-            background-color: #dc3545;
-            /* Bootstrap red */
-            color: white;
-            border: none;
-            border-radius: 50%;
-            /* circular button */
-            width: 20px;
-            height: 20px;
-            font-size: 14px;
-            line-height: 18px;
-            text-align: center;
-            cursor: pointer;
-            padding: 0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-        }
-
-        .stergeArticol:hover {
-            background-color: #c82333;
-            /* darker red on hover */
-        }
-
-        /* 1) Tabele: nu mai permite extinderea; trunchiază denumirea cu "..." */
-        #tabelBon {
-            table-layout: fixed;
-            /* important pentru a nu-și schimba lățimea coloanele */
-            width: 80mm;
-            /* dacă vrei fix 80mm; poți pune 95mm dacă preferi */
-        }
-
-        /* Coloanele numerice își păstrează lățimea fixă (deja le ai), iar prima coloană ia restul */
-        #tabelBon th:first-child,
-        #tabelBon td:first-child {
-            overflow: hidden;
-            /* ascunde excesul */
-            text-overflow: ellipsis;
-            /* afișează "..." la final */
-            white-space: nowrap;
-            /* pe un singur rând */
-        }
-
-
-
-        .formularAdaugare {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
-            align-items: center;
-        }
-
-        .formularAdaugare select,
-        .formularAdaugare input {
-            padding: 6px;
-            border: 1px solid #aaa;
-            border-radius: 4px;
-            font-size: 13px;
-            width: 100%;
-            max-width: 100px;
-        }
-
-        .formularAdaugare button {
-            padding: 6px 12px;
-            background-color: #0078D4;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .formularAdaugare button:hover {
-            background-color: #005fa3;
-        }
-
-        .actiunileFinale {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        #salveazaModificari {
-            background-color: #28a745;
-            color: white;
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        #salveazaModificari:hover {
-            background-color: #218838;
-        }
-
-        .totalComanda {
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        /* Stilizare pentru tabelul comenzi */
-        .tabelComanda {
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #ddd;
-        }
-
-        /* Zona formularului — full width + background ușor */
-        .adaugaArticolForm {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            width: 100%;
-            background-color: #fafafa;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
-
-        /* Câmpuri adaptabile */
-        .adaugaArticolForm input,
-        .adaugaArticolForm select {
-            flex: 1;
-            min-width: 100px;
-            padding: 8px;
-            border: 1px solid #aaa;
-            border-radius: 4px;
-        }
-
-        /* Buton cu accent */
-        .adaugaArticolForm button {
-            background-color: #0078D4;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 8px 14px;
-            cursor: pointer;
-        }
-
-        .adaugaArticolForm button:hover {
-            background-color: #005fa3;
-
         }
     </style>
 
@@ -1306,7 +964,6 @@ if ($users_result->num_rows > 0) {
             <button class="no-print" onclick="printOrder()">Print Order</button><br>
         </div>
     </div>
-
     <div style="min-height: 100vh;">
         <h2>Comanda nr. <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
         <?php if ($order['is_achitat'] == 1): ?>
@@ -1386,8 +1043,10 @@ if ($users_result->num_rows > 0) {
                     <option value="" disabled selected>Caută sau adaugă articol</option>
                 </select>
 
-                <!-- Optional visible price if you’ll support adding new items -->
-                <input type="text" id="price" name="price" placeholder="Preț" style="width:80px;">
+                <div style="display:inline-flex; align-items:center; gap:5px;">
+                    <input type="text" id="price" name="price" placeholder="Preț" style="width:80px;">
+                    <button type="button" id="updateDefaultPriceBtn" title="Actualizează prețul implicit">✏️</button>
+                </div>
 
                 <input type="number" id="quantity" name="quantity" min="1" value="" placeholder="Cantitate">
                 <input type="hidden" name="order_id" value="<?= (int)$order_id ?>">
@@ -1406,119 +1065,28 @@ if ($users_result->num_rows > 0) {
             echo "<p>Rest de Plata: $rest_de_plata lei</p>";
         }
         ?>
-
-    <h2>Comanda nr. <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
-    <?php if ($order['is_achitat'] == 1): ?>
-        <h2>Comandă achitată</h2>
-    <?php endif; ?>
-    <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
-    <p><strong>Scadentă: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
-    <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
-    <p><strong>Responsabil: </strong><?php echo ucwords($order['created_user']); ?></p>
-    <p><strong>Nume client: </strong><?php echo $client_name; ?></p>
-    <?php
-    $countryCode = "+4";
-    $waNumber = $countryCode . preg_replace('/\D/', '', $client_phone); // Remove non-digits
-    $waLink = "https://wa.me/" . urlencode($waNumber);
-    ?>
-    <p><strong>Contact client: </strong>
-        <?php echo htmlspecialchars($client_phone); ?>
-        <a href="<?php echo $waLink; ?>" target="_blank" class="no-print whatsapp-icon">
-            <i class="fab fa-whatsapp"></i>
-        </a>
-    </p>
-    <p><strong>Comanda initiala: </strong><br><span id="order_details_text"><?php echo nl2br(htmlspecialchars($order['order_details'])); ?></span></p>
-    <p><strong>Detalii suplimentare: </strong><br><span id="detalii_suplimentare_text"><?php echo nl2br(htmlspecialchars($order['detalii_suplimentare'])); ?></span></p>
-    <textarea id="detalii_suplimentare_edit" style="display:none;"><?php echo $order['detalii_suplimentare']; ?></textarea>
-
-    <?php if (!empty($articole_existente)): ?>
-        <table id="tabelBon">
-            <thead>
-                <tr>
-                    <th>Articol</th>
-                    <th>Cant</th>
-                    <th>Preț</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($articole_existente as $art): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($art['denumire']) ?></td>
-                        <td><?= $art['cantitate'] ?></td>
-                        <td><?= number_format($art['pret'], 2) ?></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php endif; ?>
-    <br>
-    <p><strong>Total comandă:</strong> <span id="totalJs">0.00</span> lei</p>
-    <p><strong>Avans:</strong> <span id="avansJs"><?php echo number_format($order['avans'], 2); ?></span> lei</p>
-    <p><strong>Rest de plată:</strong> <span id="restJs">0.00</span> lei</p>
-    <div class="zonaAdaugareArticole no-print">
-        <h3>Adaugă articole/servicii:</h3>
-        <table id="tabelComanda">
-            <thead>
-                <tr>
-                    <th>Articol</th>
-                    <th>Cant</th>
-                    <th>Preț</th>
-                    <th>Șterge</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($articole_existente as $art): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($art['denumire']) ?></td>
-                        <td><?= $art['cantitate'] ?></td>
-                        <td><?= number_format($art['pret'], 2) ?></td>
-                        <td><button class="stergeArticol" data-id="<?= $art['id'] ?>">x</button></td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-        <form id="adaugaArticolForm">
-            <select id="articolSelect" name="articol_id" style="width: 60mm;">
-                <option value="">Selectează sau adaugă...</option>
-                <?php
-                $res = $conn->query("SELECT id, denumire, pret FROM articole ORDER BY denumire ASC");
-                while ($row = $res->fetch_assoc()) {
-                    echo "<option value='{$row['id']}' data-pret='{$row['pret']}'>
-                  {$row['denumire']} ({$row['pret']} lei)
-                  </option>";
-                }
-                ?>
-            </select>
-            <br>
-            <input type="number" name="cantitate" id="cantitate" placeholder="Cant" style="width: 10mm;">
-            <input type="number" name="pret" id="pret" placeholder="Preț" style="width: 10mm;" step="0.01">
-            <button type="submit">Adaugă</button>
-        </form>
-        <button id="saveChangesBtn" class="no-print" onclick="window.location.href='view_order.php?order_id=<?php echo $order_id; ?>'">💾 Salvează modificările</button>
-    </div>
-    <div>
-
         <br>
-        <svg height="80px" clip-rule="evenodd" fill-rule="evenodd" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" version="1.1" viewBox="0 0 386 148.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <style>
-                    .fil0,
-                    .fil1 {
-                        fill: #373435
-                    }
+        <div>
+            <svg height="80px" clip-rule="evenodd" fill-rule="evenodd" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" version="1.1" viewBox="0 0 386 148.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <style>
+                        .fil0,
+                        .fil1 {
+                            fill: #373435
+                        }
 
-                    .fil1 {
-                        fill-rule: nonzero
-                    }
-                </style>
-            </defs>
-            <g transform="matrix(8.1831 0 0 8.1831 -1033 -1535.6)">
-                <path class="fil0" d="m148.35 188.2 0.01 5.13 2.33 1.91 0.01-5.38h3.73c1.11 0 1.29 1.62-0.12 1.62l-3.21 0.01c0.24 0.42 1.82 1.79 2.33 1.78 1.95-0.03 3.56 0.24 4.05-1.61 0.35-1.33 0.19-2.85-0.74-3.43-0.27-0.17-0.92-0.34-1.76-0.35l-6.63-0.03z" />
-                <path class="fil0" d="m150.7 195.8-2.34-1.92-3.36-0.01c-0.4 0-0.67 0.02-0.68-0.39l-0.02-3.16c0-0.3 0.32-0.46 0.57-0.46l2.89 0.01 0.01-2.02-3.7-0.01c-1.26 0-1.85 0.5-1.86 1.58l-0.02 4.49c-0.01 1.64 1.04 1.91 2.96 1.9z" />
-                <path class="fil1" d="m127.11 197.27h2.9c0.24 0 0.36 0.12 0.36 0.36s-0.12 0.36-0.36 0.36h-2.9v3h3.02c0.23 0 0.35 0.12 0.35 0.36s-0.12 0.36-0.35 0.36h-3.02c-0.26 0-0.45-0.07-0.59-0.21-0.14-0.13-0.21-0.33-0.21-0.59v-2.84c0-0.26 0.07-0.46 0.21-0.59 0.14-0.14 0.33-0.21 0.59-0.21zm4.56 1.5c0-0.23 0.07-0.41 0.19-0.53 0.13-0.13 0.31-0.2 0.54-0.2h2.23c0.23 0 0.41 0.07 0.54 0.2 0.12 0.12 0.19 0.3 0.19 0.53v2.2c0 0.24-0.07 0.42-0.19 0.55-0.13 0.13-0.31 0.19-0.54 0.19h-2.23c-0.23 0-0.41-0.06-0.54-0.19-0.12-0.13-0.19-0.31-0.19-0.55zm0.73-0.07v2.35h2.23v-2.35zm4.67-0.7h0.02c0.23 0 0.35 0.12 0.35 0.36v2.69h2.12c0.22 0 0.33 0.11 0.33 0.33s-0.11 0.33-0.33 0.33h-2.49c-0.24 0-0.36-0.12-0.36-0.36v-2.99c0-0.24 0.12-0.36 0.36-0.36zm3.6 0.77c0-0.23 0.07-0.41 0.19-0.53 0.13-0.13 0.31-0.2 0.54-0.2h2.22c0.24 0 0.42 0.07 0.55 0.2 0.12 0.12 0.18 0.3 0.18 0.53v2.2c0 0.24-0.06 0.42-0.18 0.55-0.13 0.13-0.31 0.19-0.55 0.19h-2.22c-0.23 0-0.41-0.06-0.54-0.19-0.12-0.13-0.19-0.31-0.19-0.55zm0.73-0.07v2.35h2.22v-2.35zm4.31-0.31c0-0.23 0.12-0.35 0.36-0.35h1.88c0.36 0 0.64 0.1 0.84 0.29s0.3 0.46 0.3 0.8c0 0.29-0.07 0.53-0.21 0.72s-0.33 0.32-0.57 0.39l0.87 1.19c0.06 0.07 0.07 0.14 0.04 0.19-0.02 0.06-0.09 0.09-0.18 0.09h-0.24c-0.1 0-0.18-0.02-0.25-0.06-0.06-0.03-0.13-0.11-0.22-0.22l-0.81-1.12h-0.28c-0.22 0-0.33-0.11-0.33-0.33 0-0.21 0.11-0.32 0.33-0.32h0.63c0.15 0 0.27-0.04 0.36-0.13 0.08-0.08 0.13-0.21 0.13-0.37 0-0.18-0.03-0.3-0.1-0.37-0.06-0.06-0.19-0.09-0.39-0.09h-1.43v2.69c0 0.24-0.12 0.36-0.37 0.36-0.24 0-0.36-0.12-0.36-0.36zm12.78 0c0-0.23 0.12-0.35 0.36-0.35h1.88c0.36 0 0.64 0.1 0.84 0.29 0.19 0.19 0.29 0.46 0.29 0.8 0 0.29-0.07 0.53-0.2 0.72-0.14 0.19-0.33 0.32-0.58 0.39l0.88 1.19c0.06 0.07 0.07 0.14 0.04 0.19-0.03 0.06-0.09 0.09-0.19 0.09h-0.23c-0.1 0-0.19-0.02-0.25-0.06a0.747 0.747 0 0 1-0.22-0.22l-0.82-1.12h-0.27c-0.22 0-0.33-0.11-0.33-0.33 0-0.21 0.11-0.32 0.33-0.32h0.62c0.16 0 0.28-0.04 0.36-0.13 0.09-0.08 0.13-0.21 0.13-0.37 0-0.18-0.03-0.3-0.09-0.37-0.06-0.06-0.2-0.09-0.4-0.09h-1.42v2.69c0 0.24-0.12 0.36-0.37 0.36-0.24 0-0.36-0.12-0.36-0.36zm4.93-0.38h0.01c0.24 0 0.36 0.12 0.36 0.35v3.03c0 0.24-0.13 0.36-0.37 0.36s-0.36-0.12-0.36-0.36v-3.03c0-0.23 0.12-0.35 0.36-0.35zm1.99 0.04h0.23c0.1 0 0.18 0.04 0.25 0.1l2.36 2.43v-2.21c0-0.24 0.13-0.36 0.37-0.36s0.36 0.12 0.36 0.36v3.12c0 0.18-0.09 0.26-0.26 0.26s-0.32-0.06-0.44-0.19l-2.96-3.05a0.332 0.332 0 0 1-0.12-0.25c0-0.14 0.07-0.21 0.21-0.21zm-0.02 1.18 0.44 0.44c0.07 0.07 0.1 0.16 0.1 0.25v1.46c0 0.25-0.12 0.37-0.36 0.37s-0.37-0.12-0.37-0.37v-2.08c0-0.1 0.03-0.15 0.07-0.15 0.03 0 0.07 0.03 0.12 0.08zm4.44-0.86c0-0.22 0.11-0.33 0.33-0.33h3.04c0.22 0 0.33 0.11 0.33 0.34 0 0.22-0.11 0.32-0.33 0.32h-3.04c-0.22 0-0.33-0.11-0.33-0.33zm1.48 3.02v-1.92c0-0.24 0.12-0.35 0.36-0.35h0.02c0.23 0 0.35 0.11 0.35 0.35v1.92c0 0.24-0.12 0.36-0.37 0.36-0.24 0-0.36-0.12-0.36-0.36zm-17.94-4.12h2.49c0.45 0 0.8 0.12 1.04 0.35 0.24 0.24 0.36 0.58 0.36 1.03 0 0.46-0.12 0.81-0.36 1.06-0.24 0.24-0.59 0.37-1.04 0.37h-1.23c-0.23 0-0.35-0.13-0.35-0.37s0.12-0.35 0.35-0.35h1.15c0.26 0 0.44-0.05 0.54-0.15 0.09-0.1 0.14-0.28 0.14-0.54 0-0.13-0.01-0.24-0.03-0.33s-0.05-0.16-0.11-0.21a0.422 0.422 0 0 0-0.21-0.11c-0.08-0.02-0.19-0.03-0.33-0.03h-2.01v3.38c0 0.25-0.14 0.38-0.42 0.38-0.25 0-0.38-0.13-0.38-0.38v-3.7c0-0.27 0.13-0.4 0.4-0.4zm-17.74 6.72c0 0.22-0.08 0.42-0.23 0.57-0.16 0.16-0.35 0.24-0.58 0.24-0.14 0-0.28-0.04-0.4-0.11v0.94h-0.41v-1.64c0-0.23 0.08-0.42 0.23-0.58 0.16-0.16 0.35-0.23 0.58-0.23s0.42 0.07 0.58 0.23c0.15 0.16 0.23 0.35 0.23 0.58zm-0.41 0c0-0.11-0.04-0.21-0.11-0.29a0.391 0.391 0 0 0-0.29-0.11c-0.11 0-0.2 0.03-0.28 0.11a0.4 0.4 0 0 0 0 0.57 0.4 0.4 0 0 0 0.57 0 0.41 0.41 0 0 0 0.11-0.28zm2.58 0.76h-0.44l-0.08-0.23c-0.16 0.19-0.37 0.28-0.62 0.28-0.23 0-0.42-0.08-0.58-0.24a0.74 0.74 0 0 1-0.23-0.57c0-0.17 0.04-0.33 0.14-0.47s0.23-0.23 0.39-0.29c0.1-0.04 0.19-0.05 0.28-0.05 0.17 0 0.33 0.04 0.47 0.14s0.23 0.23 0.29 0.39zm-0.74-0.76a0.39 0.39 0 0 0-0.17-0.33 0.39 0.39 0 0 0-0.23-0.07c-0.14 0-0.25 0.05-0.33 0.17a0.39 0.39 0 0 0-0.07 0.23c0 0.14 0.05 0.25 0.17 0.33 0.07 0.05 0.15 0.07 0.23 0.07 0.11 0 0.2-0.04 0.28-0.12 0.08-0.07 0.12-0.17 0.12-0.28zm2.19 0.3c0 0.09-0.04 0.18-0.1 0.26-0.13 0.16-0.31 0.24-0.55 0.23-0.1 0-0.2-0.02-0.32-0.06a0.718 0.718 0 0 1-0.27-0.16l0.23-0.29c0.11 0.1 0.22 0.15 0.35 0.15h0.01c0.05 0 0.09 0 0.13-0.02 0.06-0.03 0.08-0.06 0.08-0.11v-0.01c0-0.04-0.04-0.08-0.09-0.1-0.02 0-0.07-0.01-0.14-0.03-0.1-0.01-0.17-0.04-0.24-0.06a0.425 0.425 0 0 1-0.27-0.42c0-0.19 0.09-0.33 0.28-0.43 0.08-0.04 0.17-0.06 0.27-0.06 0.1-0.01 0.21 0.01 0.32 0.05 0.12 0.04 0.21 0.1 0.26 0.16l-0.27 0.25a0.333 0.333 0 0 0-0.23-0.11c-0.13 0-0.19 0.04-0.19 0.13v0.01c0 0.04 0.05 0.07 0.15 0.1 0.01 0 0.08 0.01 0.2 0.04 0.26 0.05 0.39 0.2 0.39 0.47zm0.66-1.46c0 0.07-0.03 0.12-0.07 0.17-0.05 0.05-0.11 0.07-0.18 0.07a0.22 0.22 0 0 1-0.17-0.07 0.22 0.22 0 0 1-0.07-0.17c0-0.07 0.02-0.13 0.07-0.18 0.05-0.04 0.1-0.07 0.17-0.07s0.13 0.03 0.17 0.07c0.05 0.05 0.08 0.11 0.08 0.18zm-0.04 1.92h-0.41v-1.57h0.41zm1.84-0.76a0.8 0.8 0 0 1-0.82 0.81c-0.22 0-0.42-0.08-0.57-0.24a0.763 0.763 0 0 1-0.24-0.57v-0.81h0.41v0.81c0 0.11 0.04 0.2 0.12 0.28a0.4 0.4 0 0 0 0.57 0c0.08-0.08 0.12-0.17 0.12-0.28v-0.81h0.41zm1.84 0.76h-0.41v-0.76a0.4 0.4 0 0 0-0.12-0.29 0.436 0.436 0 0 0-0.29-0.11c-0.11 0-0.2 0.03-0.28 0.11s-0.12 0.17-0.12 0.29v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58 0.15-0.16 0.35-0.23 0.57-0.23 0.23 0 0.42 0.07 0.58 0.23s0.24 0.35 0.24 0.58zm1.83-0.77c0 0.04 0 0.09-0.01 0.13h-1.18c0.02 0.08 0.07 0.15 0.14 0.2a0.407 0.407 0 0 0 0.55-0.06l0.25 0.33c-0.16 0.14-0.34 0.22-0.56 0.22-0.23 0-0.42-0.08-0.58-0.24a0.793 0.793 0 0 1-0.23-0.57c0-0.23 0.08-0.42 0.23-0.58 0.16-0.16 0.35-0.23 0.58-0.23s0.42 0.07 0.58 0.23c0.15 0.16 0.23 0.35 0.23 0.57zm-0.46-0.18a0.365 0.365 0 0 0-0.35-0.21c-0.16 0-0.28 0.07-0.35 0.21zm3.63 0.19c0 0.22-0.08 0.42-0.23 0.57-0.16 0.16-0.35 0.24-0.58 0.24-0.14 0-0.28-0.04-0.4-0.11v0.94h-0.41v-1.64c0-0.23 0.08-0.42 0.23-0.58 0.16-0.16 0.35-0.23 0.58-0.23s0.42 0.07 0.58 0.23c0.15 0.16 0.23 0.35 0.23 0.58zm-0.41 0c0-0.11-0.04-0.21-0.11-0.29a0.391 0.391 0 0 0-0.29-0.11c-0.11 0-0.21 0.03-0.28 0.11a0.4 0.4 0 0 0 0 0.57c0.07 0.08 0.17 0.12 0.28 0.12a0.4 0.4 0 0 0 0.29-0.12 0.41 0.41 0 0 0 0.11-0.28zm2.25-0.01c0 0.04 0 0.09-0.01 0.13h-1.19a0.426 0.426 0 0 0 0.39 0.28c0.12 0 0.22-0.05 0.3-0.14l0.25 0.33c-0.15 0.14-0.34 0.22-0.55 0.22a0.77 0.77 0 0 1-0.58-0.24 0.763 0.763 0 0 1-0.24-0.57c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23c0.22 0 0.42 0.07 0.57 0.23 0.16 0.16 0.24 0.35 0.24 0.57zm-0.46-0.18a0.375 0.375 0 0 0-0.35-0.21 0.38 0.38 0 0 0-0.36 0.21zm2.3 0.95h-0.41v-0.76a0.4 0.4 0 0 0-0.12-0.29 0.41 0.41 0 0 0-0.28-0.11c-0.12 0-0.21 0.03-0.29 0.11s-0.12 0.17-0.12 0.29v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23c0.22 0 0.41 0.07 0.57 0.23s0.24 0.35 0.24 0.58zm1.02 0c-0.22 0-0.42-0.08-0.57-0.23a0.785 0.785 0 0 1-0.24-0.58v-1.59h0.41v0.83h0.4v0.35h-0.4v0.41c0 0.11 0.04 0.21 0.12 0.29 0.08 0.07 0.17 0.11 0.28 0.11zm1.03-1.17c-0.12 0-0.21 0.04-0.29 0.12s-0.12 0.17-0.12 0.29v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23zm1.83 0.41a0.8 0.8 0 0 1-0.82 0.81c-0.22 0-0.42-0.08-0.57-0.24a0.763 0.763 0 0 1-0.24-0.57v-0.81h0.41v0.81c0 0.11 0.04 0.2 0.12 0.28 0.07 0.08 0.17 0.12 0.28 0.12a0.4 0.4 0 0 0 0.29-0.12c0.08-0.08 0.12-0.17 0.12-0.28v-0.81h0.41zm3.16 0c0 0.22-0.07 0.42-0.23 0.57-0.16 0.16-0.35 0.24-0.58 0.24-0.14 0-0.28-0.04-0.4-0.11v0.94h-0.41v-1.64c0-0.23 0.08-0.42 0.23-0.58 0.16-0.16 0.35-0.23 0.58-0.23s0.42 0.07 0.58 0.23 0.23 0.35 0.23 0.58zm-0.41 0c0-0.11-0.03-0.21-0.11-0.29a0.391 0.391 0 0 0-0.29-0.11c-0.11 0-0.2 0.03-0.28 0.11a0.4 0.4 0 0 0 0 0.57 0.4 0.4 0 0 0 0.57 0 0.37 0.37 0 0 0 0.11-0.28zm1.44-0.41a0.4 0.4 0 0 0-0.29 0.12c-0.08 0.08-0.12 0.17-0.12 0.29v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23zm0.65-0.75c0 0.07-0.02 0.12-0.07 0.17s-0.11 0.07-0.17 0.07c-0.07 0-0.13-0.02-0.18-0.07a0.22 0.22 0 0 1-0.07-0.17c0-0.07 0.02-0.13 0.07-0.18 0.05-0.04 0.11-0.07 0.18-0.07 0.06 0 0.12 0.03 0.17 0.07 0.05 0.05 0.07 0.11 0.07 0.18zm-0.04 1.92h-0.41v-1.57h0.41zm1.84 0h-0.41v-0.76a0.4 0.4 0 0 0-0.12-0.29 0.41 0.41 0 0 0-0.28-0.11 0.391 0.391 0 0 0-0.41 0.4v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23c0.22 0 0.42 0.07 0.57 0.23 0.16 0.16 0.24 0.35 0.24 0.58zm1.03 0c-0.23 0-0.42-0.08-0.58-0.23a0.785 0.785 0 0 1-0.24-0.58v-1.59h0.41v0.83h0.41v0.35h-0.41v0.41c0 0.11 0.04 0.21 0.12 0.29 0.08 0.07 0.17 0.11 0.29 0.11z" />
-            </g>
-        </svg>
+                        .fil1 {
+                            fill-rule: nonzero
+                        }
+                    </style>
+                </defs>
+                <g transform="matrix(8.1831 0 0 8.1831 -1033 -1535.6)">
+                    <path class="fil0" d="m148.35 188.2 0.01 5.13 2.33 1.91 0.01-5.38h3.73c1.11 0 1.29 1.62-0.12 1.62l-3.21 0.01c0.24 0.42 1.82 1.79 2.33 1.78 1.95-0.03 3.56 0.24 4.05-1.61 0.35-1.33 0.19-2.85-0.74-3.43-0.27-0.17-0.92-0.34-1.76-0.35l-6.63-0.03z" />
+                    <path class="fil0" d="m150.7 195.8-2.34-1.92-3.36-0.01c-0.4 0-0.67 0.02-0.68-0.39l-0.02-3.16c0-0.3 0.32-0.46 0.57-0.46l2.89 0.01 0.01-2.02-3.7-0.01c-1.26 0-1.85 0.5-1.86 1.58l-0.02 4.49c-0.01 1.64 1.04 1.91 2.96 1.9z" />
+                    <path class="fil1" d="m127.11 197.27h2.9c0.24 0 0.36 0.12 0.36 0.36s-0.12 0.36-0.36 0.36h-2.9v3h3.02c0.23 0 0.35 0.12 0.35 0.36s-0.12 0.36-0.35 0.36h-3.02c-0.26 0-0.45-0.07-0.59-0.21-0.14-0.13-0.21-0.33-0.21-0.59v-2.84c0-0.26 0.07-0.46 0.21-0.59 0.14-0.14 0.33-0.21 0.59-0.21zm4.56 1.5c0-0.23 0.07-0.41 0.19-0.53 0.13-0.13 0.31-0.2 0.54-0.2h2.23c0.23 0 0.41 0.07 0.54 0.2 0.12 0.12 0.19 0.3 0.19 0.53v2.2c0 0.24-0.07 0.42-0.19 0.55-0.13 0.13-0.31 0.19-0.54 0.19h-2.23c-0.23 0-0.41-0.06-0.54-0.19-0.12-0.13-0.19-0.31-0.19-0.55zm0.73-0.07v2.35h2.23v-2.35zm4.67-0.7h0.02c0.23 0 0.35 0.12 0.35 0.36v2.69h2.12c0.22 0 0.33 0.11 0.33 0.33s-0.11 0.33-0.33 0.33h-2.49c-0.24 0-0.36-0.12-0.36-0.36v-2.99c0-0.24 0.12-0.36 0.36-0.36zm3.6 0.77c0-0.23 0.07-0.41 0.19-0.53 0.13-0.13 0.31-0.2 0.54-0.2h2.22c0.24 0 0.42 0.07 0.55 0.2 0.12 0.12 0.18 0.3 0.18 0.53v2.2c0 0.24-0.06 0.42-0.18 0.55-0.13 0.13-0.31 0.19-0.55 0.19h-2.22c-0.23 0-0.41-0.06-0.54-0.19-0.12-0.13-0.19-0.31-0.19-0.55zm0.73-0.07v2.35h2.22v-2.35zm4.31-0.31c0-0.23 0.12-0.35 0.36-0.35h1.88c0.36 0 0.64 0.1 0.84 0.29s0.3 0.46 0.3 0.8c0 0.29-0.07 0.53-0.21 0.72s-0.33 0.32-0.57 0.39l0.87 1.19c0.06 0.07 0.07 0.14 0.04 0.19-0.02 0.06-0.09 0.09-0.18 0.09h-0.24c-0.1 0-0.18-0.02-0.25-0.06-0.06-0.03-0.13-0.11-0.22-0.22l-0.81-1.12h-0.28c-0.22 0-0.33-0.11-0.33-0.33 0-0.21 0.11-0.32 0.33-0.32h0.63c0.15 0 0.27-0.04 0.36-0.13 0.08-0.08 0.13-0.21 0.13-0.37 0-0.18-0.03-0.3-0.1-0.37-0.06-0.06-0.19-0.09-0.39-0.09h-1.43v2.69c0 0.24-0.12 0.36-0.37 0.36-0.24 0-0.36-0.12-0.36-0.36zm12.78 0c0-0.23 0.12-0.35 0.36-0.35h1.88c0.36 0 0.64 0.1 0.84 0.29 0.19 0.19 0.29 0.46 0.29 0.8 0 0.29-0.07 0.53-0.2 0.72-0.14 0.19-0.33 0.32-0.58 0.39l0.88 1.19c0.06 0.07 0.07 0.14 0.04 0.19-0.03 0.06-0.09 0.09-0.19 0.09h-0.23c-0.1 0-0.19-0.02-0.25-0.06a0.747 0.747 0 0 1-0.22-0.22l-0.82-1.12h-0.27c-0.22 0-0.33-0.11-0.33-0.33 0-0.21 0.11-0.32 0.33-0.32h0.62c0.16 0 0.28-0.04 0.36-0.13 0.09-0.08 0.13-0.21 0.13-0.37 0-0.18-0.03-0.3-0.09-0.37-0.06-0.06-0.2-0.09-0.4-0.09h-1.42v2.69c0 0.24-0.12 0.36-0.37 0.36-0.24 0-0.36-0.12-0.36-0.36zm4.93-0.38h0.01c0.24 0 0.36 0.12 0.36 0.35v3.03c0 0.24-0.13 0.36-0.37 0.36s-0.36-0.12-0.36-0.36v-3.03c0-0.23 0.12-0.35 0.36-0.35zm1.99 0.04h0.23c0.1 0 0.18 0.04 0.25 0.1l2.36 2.43v-2.21c0-0.24 0.13-0.36 0.37-0.36s0.36 0.12 0.36 0.36v3.12c0 0.18-0.09 0.26-0.26 0.26s-0.32-0.06-0.44-0.19l-2.96-3.05a0.332 0.332 0 0 1-0.12-0.25c0-0.14 0.07-0.21 0.21-0.21zm-0.02 1.18 0.44 0.44c0.07 0.07 0.1 0.16 0.1 0.25v1.46c0 0.25-0.12 0.37-0.36 0.37s-0.37-0.12-0.37-0.37v-2.08c0-0.1 0.03-0.15 0.07-0.15 0.03 0 0.07 0.03 0.12 0.08zm4.44-0.86c0-0.22 0.11-0.33 0.33-0.33h3.04c0.22 0 0.33 0.11 0.33 0.34 0 0.22-0.11 0.32-0.33 0.32h-3.04c-0.22 0-0.33-0.11-0.33-0.33zm1.48 3.02v-1.92c0-0.24 0.12-0.35 0.36-0.35h0.02c0.23 0 0.35 0.11 0.35 0.35v1.92c0 0.24-0.12 0.36-0.37 0.36-0.24 0-0.36-0.12-0.36-0.36zm-17.94-4.12h2.49c0.45 0 0.8 0.12 1.04 0.35 0.24 0.24 0.36 0.58 0.36 1.03 0 0.46-0.12 0.81-0.36 1.06-0.24 0.24-0.59 0.37-1.04 0.37h-1.23c-0.23 0-0.35-0.13-0.35-0.37s0.12-0.35 0.35-0.35h1.15c0.26 0 0.44-0.05 0.54-0.15 0.09-0.1 0.14-0.28 0.14-0.54 0-0.13-0.01-0.24-0.03-0.33s-0.05-0.16-0.11-0.21a0.422 0.422 0 0 0-0.21-0.11c-0.08-0.02-0.19-0.03-0.33-0.03h-2.01v3.38c0 0.25-0.14 0.38-0.42 0.38-0.25 0-0.38-0.13-0.38-0.38v-3.7c0-0.27 0.13-0.4 0.4-0.4zm-17.74 6.72c0 0.22-0.08 0.42-0.23 0.57-0.16 0.16-0.35 0.24-0.58 0.24-0.14 0-0.28-0.04-0.4-0.11v0.94h-0.41v-1.64c0-0.23 0.08-0.42 0.23-0.58 0.16-0.16 0.35-0.23 0.58-0.23s0.42 0.07 0.58 0.23c0.15 0.16 0.23 0.35 0.23 0.58zm-0.41 0c0-0.11-0.04-0.21-0.11-0.29a0.391 0.391 0 0 0-0.29-0.11c-0.11 0-0.2 0.03-0.28 0.11a0.4 0.4 0 0 0 0 0.57 0.4 0.4 0 0 0 0.57 0 0.41 0.41 0 0 0 0.11-0.28zm2.58 0.76h-0.44l-0.08-0.23c-0.16 0.19-0.37 0.28-0.62 0.28-0.23 0-0.42-0.08-0.58-0.24a0.74 0.74 0 0 1-0.23-0.57c0-0.17 0.04-0.33 0.14-0.47s0.23-0.23 0.39-0.29c0.1-0.04 0.19-0.05 0.28-0.05 0.17 0 0.33 0.04 0.47 0.14s0.23 0.23 0.29 0.39zm-0.74-0.76a0.39 0.39 0 0 0-0.17-0.33 0.39 0.39 0 0 0-0.23-0.07c-0.14 0-0.25 0.05-0.33 0.17a0.39 0.39 0 0 0-0.07 0.23c0 0.14 0.05 0.25 0.17 0.33 0.07 0.05 0.15 0.07 0.23 0.07 0.11 0 0.2-0.04 0.28-0.12 0.08-0.07 0.12-0.17 0.12-0.28zm2.19 0.3c0 0.09-0.04 0.18-0.1 0.26-0.13 0.16-0.31 0.24-0.55 0.23-0.1 0-0.2-0.02-0.32-0.06a0.718 0.718 0 0 1-0.27-0.16l0.23-0.29c0.11 0.1 0.22 0.15 0.35 0.15h0.01c0.05 0 0.09 0 0.13-0.02 0.06-0.03 0.08-0.06 0.08-0.11v-0.01c0-0.04-0.04-0.08-0.09-0.1-0.02 0-0.07-0.01-0.14-0.03-0.1-0.01-0.17-0.04-0.24-0.06a0.425 0.425 0 0 1-0.27-0.42c0-0.19 0.09-0.33 0.28-0.43 0.08-0.04 0.17-0.06 0.27-0.06 0.1-0.01 0.21 0.01 0.32 0.05 0.12 0.04 0.21 0.1 0.26 0.16l-0.27 0.25a0.333 0.333 0 0 0-0.23-0.11c-0.13 0-0.19 0.04-0.19 0.13v0.01c0 0.04 0.05 0.07 0.15 0.1 0.01 0 0.08 0.01 0.2 0.04 0.26 0.05 0.39 0.2 0.39 0.47zm0.66-1.46c0 0.07-0.03 0.12-0.07 0.17-0.05 0.05-0.11 0.07-0.18 0.07a0.22 0.22 0 0 1-0.17-0.07 0.22 0.22 0 0 1-0.07-0.17c0-0.07 0.02-0.13 0.07-0.18 0.05-0.04 0.1-0.07 0.17-0.07s0.13 0.03 0.17 0.07c0.05 0.05 0.08 0.11 0.08 0.18zm-0.04 1.92h-0.41v-1.57h0.41zm1.84-0.76a0.8 0.8 0 0 1-0.82 0.81c-0.22 0-0.42-0.08-0.57-0.24a0.763 0.763 0 0 1-0.24-0.57v-0.81h0.41v0.81c0 0.11 0.04 0.2 0.12 0.28a0.4 0.4 0 0 0 0.57 0c0.08-0.08 0.12-0.17 0.12-0.28v-0.81h0.41zm1.84 0.76h-0.41v-0.76a0.4 0.4 0 0 0-0.12-0.29 0.436 0.436 0 0 0-0.29-0.11c-0.11 0-0.2 0.03-0.28 0.11s-0.12 0.17-0.12 0.29v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58 0.15-0.16 0.35-0.23 0.57-0.23 0.23 0 0.42 0.07 0.58 0.23s0.24 0.35 0.24 0.58zm1.83-0.77c0 0.04 0 0.09-0.01 0.13h-1.18c0.02 0.08 0.07 0.15 0.14 0.2a0.407 0.407 0 0 0 0.55-0.06l0.25 0.33c-0.16 0.14-0.34 0.22-0.56 0.22-0.23 0-0.42-0.08-0.58-0.24a0.793 0.793 0 0 1-0.23-0.57c0-0.23 0.08-0.42 0.23-0.58 0.16-0.16 0.35-0.23 0.58-0.23s0.42 0.07 0.58 0.23c0.15 0.16 0.23 0.35 0.23 0.57zm-0.46-0.18a0.365 0.365 0 0 0-0.35-0.21c-0.16 0-0.28 0.07-0.35 0.21zm3.63 0.19c0 0.22-0.08 0.42-0.23 0.57-0.16 0.16-0.35 0.24-0.58 0.24-0.14 0-0.28-0.04-0.4-0.11v0.94h-0.41v-1.64c0-0.23 0.08-0.42 0.23-0.58 0.16-0.16 0.35-0.23 0.58-0.23s0.42 0.07 0.58 0.23c0.15 0.16 0.23 0.35 0.23 0.58zm-0.41 0c0-0.11-0.04-0.21-0.11-0.29a0.391 0.391 0 0 0-0.29-0.11c-0.11 0-0.21 0.03-0.28 0.11a0.4 0.4 0 0 0 0 0.57c0.07 0.08 0.17 0.12 0.28 0.12a0.4 0.4 0 0 0 0.29-0.12 0.41 0.41 0 0 0 0.11-0.28zm2.25-0.01c0 0.04 0 0.09-0.01 0.13h-1.19a0.426 0.426 0 0 0 0.39 0.28c0.12 0 0.22-0.05 0.3-0.14l0.25 0.33c-0.15 0.14-0.34 0.22-0.55 0.22a0.77 0.77 0 0 1-0.58-0.24 0.763 0.763 0 0 1-0.24-0.57c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23c0.22 0 0.42 0.07 0.57 0.23 0.16 0.16 0.24 0.35 0.24 0.57zm-0.46-0.18a0.375 0.375 0 0 0-0.35-0.21 0.38 0.38 0 0 0-0.36 0.21zm2.3 0.95h-0.41v-0.76a0.4 0.4 0 0 0-0.12-0.29 0.41 0.41 0 0 0-0.28-0.11c-0.12 0-0.21 0.03-0.29 0.11s-0.12 0.17-0.12 0.29v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23c0.22 0 0.41 0.07 0.57 0.23s0.24 0.35 0.24 0.58zm1.02 0c-0.22 0-0.42-0.08-0.57-0.23a0.785 0.785 0 0 1-0.24-0.58v-1.59h0.41v0.83h0.4v0.35h-0.4v0.41c0 0.11 0.04 0.21 0.12 0.29 0.08 0.07 0.17 0.11 0.28 0.11zm1.03-1.17c-0.12 0-0.21 0.04-0.29 0.12s-0.12 0.17-0.12 0.29v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23zm1.83 0.41a0.8 0.8 0 0 1-0.82 0.81c-0.22 0-0.42-0.08-0.57-0.24a0.763 0.763 0 0 1-0.24-0.57v-0.81h0.41v0.81c0 0.11 0.04 0.2 0.12 0.28 0.07 0.08 0.17 0.12 0.28 0.12a0.4 0.4 0 0 0 0.29-0.12c0.08-0.08 0.12-0.17 0.12-0.28v-0.81h0.41zm3.16 0c0 0.22-0.07 0.42-0.23 0.57-0.16 0.16-0.35 0.24-0.58 0.24-0.14 0-0.28-0.04-0.4-0.11v0.94h-0.41v-1.64c0-0.23 0.08-0.42 0.23-0.58 0.16-0.16 0.35-0.23 0.58-0.23s0.42 0.07 0.58 0.23 0.23 0.35 0.23 0.58zm-0.41 0c0-0.11-0.03-0.21-0.11-0.29a0.391 0.391 0 0 0-0.29-0.11c-0.11 0-0.2 0.03-0.28 0.11a0.4 0.4 0 0 0 0 0.57 0.4 0.4 0 0 0 0.57 0 0.37 0.37 0 0 0 0.11-0.28zm1.44-0.41a0.4 0.4 0 0 0-0.29 0.12c-0.08 0.08-0.12 0.17-0.12 0.29v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23zm0.65-0.75c0 0.07-0.02 0.12-0.07 0.17s-0.11 0.07-0.17 0.07c-0.07 0-0.13-0.02-0.18-0.07a0.22 0.22 0 0 1-0.07-0.17c0-0.07 0.02-0.13 0.07-0.18 0.05-0.04 0.11-0.07 0.18-0.07 0.06 0 0.12 0.03 0.17 0.07 0.05 0.05 0.07 0.11 0.07 0.18zm-0.04 1.92h-0.41v-1.57h0.41zm1.84 0h-0.41v-0.76a0.4 0.4 0 0 0-0.12-0.29 0.41 0.41 0 0 0-0.28-0.11 0.391 0.391 0 0 0-0.41 0.4v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23c0.22 0 0.42 0.07 0.57 0.23 0.16 0.16 0.24 0.35 0.24 0.58zm1.03 0c-0.23 0-0.42-0.08-0.58-0.23a0.785 0.785 0 0 1-0.24-0.58v-1.59h0.41v0.83h0.41v0.35h-0.41v0.41c0 0.11 0.04 0.21 0.12 0.29 0.08 0.07 0.17 0.11 0.29 0.11z" />
+                </g>
+            </svg>
+        </div>
         <div class="contact-info small-text">
             <p>Str. Roman Mușat, Nr. 21, Roman</p>
             <p>(lângă Biblioteca Municipală și Farm. 32)</p>

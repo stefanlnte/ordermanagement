@@ -61,7 +61,8 @@ $stmt = $conn->prepare("
 $stmt->bind_param('iiid', $order_id, $article_id, $quantity, $price);
 
 if ($stmt->execute()) {
-    echo "Article added successfully.";
+    // echo "Article added successfully.";
+    header("Location: " . $_SERVER['HTTP_REFERER']);
 } else {
     http_response_code(500);
     echo "Failed to add article to order.";
