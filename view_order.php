@@ -1123,10 +1123,10 @@ if ($users_result->num_rows > 0) {
             </svg>
         </div>
         <div class="contact-info small-text">
-            <p>Str. Roman Mușat, Nr. 21, Roman</p>
+            <p><i class="fa-solid fa-location-dot"></i> Str. Roman Mușat, Nr. 21, Roman</p>
             <p>(lângă Biblioteca Municipală și Farm. 32)</p>
-            <p>&#x1F57B 0753 581 170 </p>
-            <p>&#9993 colorprint_roman@yahoo.com</p>
+            <p><i class="fa-solid fa-phone"></i> 0753 581 170 </p>
+            <p><i class="fa-solid fa-envelope"></i> colorprint_roman@yahoo.com</p>
             <p>Program: Luni - Vineri: 08:00 – 18:00</p>
             <p>Sâmbătă: 09:00 – 12:00 Duminică: ÎNCHIS</p>
             <p>-------------VĂ MULŢUMIM!------------</p>
