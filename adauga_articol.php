@@ -41,4 +41,9 @@ while ($row = $res->fetch_assoc()) {
               </tr>";
 }
 
+if ($comanda_id <= 0) {
+    http_response_code(400);
+    exit('Invalid order ID');
+}
+
 echo json_encode(['rows' => $rows, 'total' => number_format($total, 2)]);

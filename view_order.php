@@ -124,14 +124,57 @@ if ($users_result->num_rows > 0) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
     <script>
+        const currentOrderId = <?= (int)$_GET['order_id'] ?>;
+    </script>
+
+    <script>
         function editOrderDetails() {
-            console.log('editOrderDetails called');
-            document.getElementById('detalii_suplimentare_text').style.display = 'none';
-            document.getElementById('detalii_suplimentare_edit').style.display = 'block';
-            document.getElementById('total_text').style.display = 'none';
-            document.getElementById('total_edit').style.display = 'block';
-            document.querySelector('button[onclick="editOrderDetails()"]').style.display = 'none';
-            document.querySelector('button[onclick="saveOrderDetails()"]').style.display = 'inline';
+            // Ascunde textul afișat
+            const suplText = document.getElementById('detalii_suplimentare_text');
+            if (suplText) suplText.style.display = 'none';
+
+            // Arată zona de editare
+            const suplEdit = document.getElementById('detalii_suplimentare_edit');
+            if (suplEdit) suplEdit.style.display = 'block';
+
+            // Butoane
+            const btnEdit = document.querySelector('button[onclick="editOrderDetails()"]');
+            const btnSave = document.querySelector('button[onclick="saveOrderDetails()"]');
+            if (btnEdit) btnEdit.style.display = 'none';
+            if (btnSave) btnSave.style.display = 'inline';
+        }
+
+        function saveOrderDetails() {
+            const suplEdit = document.getElementById('detalii_suplimentare_edit');
+            const detaliiSuplimentare = suplEdit ? suplEdit.value : '';
+            const orderId = <?php echo (int)$order['order_id']; ?>;
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'update_order_details.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const suplText = document.getElementById('detalii_suplimentare_text');
+                        if (suplText) {
+                            suplText.innerText = detaliiSuplimentare;
+                            suplText.style.display = 'block';
+                        }
+                        if (suplEdit) suplEdit.style.display = 'none';
+
+                        const btnEdit = document.querySelector('button[onclick="editOrderDetails()"]');
+                        const btnSave = document.querySelector('button[onclick="saveOrderDetails()"]');
+                        if (btnEdit) btnEdit.style.display = 'inline';
+                        if (btnSave) btnSave.style.display = 'none';
+                    } else {
+                        alert('Eroare la salvare: ' + (xhr.responseText || xhr.status));
+                    }
+                }
+            };
+            xhr.send(
+                'order_id=' + encodeURIComponent(orderId) +
+                '&detalii_suplimentare=' + encodeURIComponent(detaliiSuplimentare)
+            );
         }
 
         function togglePin(orderId, pinState) {
@@ -144,32 +187,6 @@ if ($users_result->num_rows > 0) {
                 }
             };
             xhr.send('order_id=' + orderId + '&is_pinned=' + pinState);
-        }
-
-        function saveOrderDetails() {
-            var detaliiSuplimentare = document.getElementById('detalii_suplimentare_edit').value;
-            var total = document.getElementById('total_edit').value;
-            var orderId = <?php echo $order['order_id']; ?>;
-            console.log('Saving order details:', detaliiSuplimentare);
-            console.log('Saving total:', total);
-            console.log('Order ID:', orderId);
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'update_order_details.php', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    console.log('Response from server:', xhr.responseText);
-                    document.getElementById('detalii_suplimentare_text').innerText = detaliiSuplimentare;
-                    document.getElementById('detalii_suplimentare_text').style.display = 'block';
-                    document.getElementById('detalii_suplimentare_edit').style.display = 'none';
-                    document.getElementById('total_text').innerText = total == 0 ? 'N/A' : total + ' lei';
-                    document.getElementById('total_text').style.display = 'block';
-                    document.getElementById('total_edit').style.display = 'none';
-                    document.querySelector('button[onclick="editOrderDetails()"]').style.display = 'inline';
-                    document.querySelector('button[onclick="saveOrderDetails()"]').style.display = 'none';
-                }
-            };
-            xhr.send('order_id=' + orderId + '&detalii_suplimentare=' + encodeURIComponent(detaliiSuplimentare) + '&total=' + encodeURIComponent(total));
         }
 
         function finishOrder() {
@@ -279,7 +296,110 @@ if ($users_result->num_rows > 0) {
         function printOrder() {
             window.print();
         }
+
+        // Fills the articles for orders 
+        function loadOrderArticles(orderId) {
+            $.getJSON(`fetch_order_articles.php?order_id=${orderId}`, function(data) {
+                const tbody = $('#bonTableBody');
+                tbody.empty();
+                let total = 0;
+
+                data.forEach(row => {
+                    const qty = Number(row.quantity);
+                    const unit = Number(row.price_per_unit);
+                    total += qty * unit;
+
+                    tbody.append(`
+        <tr data-id="${row.id}">
+          <td>${row.name}</td>
+          <td>${qty}</td>
+          <td>${unit.toFixed(2)}</td>
+          <td><button type="button" class="removeArticle">✖</button></td>
+        </tr>
+      `);
+                });
+
+                const avans = parseFloat("<?= $order['avans'] ?>") || 0;
+                const totalMinusAvans = total - avans;
+                $('#totalPrice').text(totalMinusAvans.toFixed(2) + ' lei');
+            });
+        }
+
+        $('#addArticleForm').on('submit', function(e) {
+            e.preventDefault();
+            $.post('add_article.php', $(this).serialize(), function() {
+                loadOrderArticles(currentOrderId); // refresh the table
+            });
+        });
+
+        $(document).ready(function() {
+            loadOrderArticles(currentOrderId);
+        });
+
+        $('#articleSelect').on('select2:select', function(e) {
+            const data = e.params.data;
+            if (data.price !== undefined) {
+                $('#price').val(data.price); // existing
+            } else {
+                $('#price').val(''); // new entry → blank so you can type
+            }
+        });
+
+        $(document).on('submit', '#addArticleForm', function(e) {
+            e.preventDefault();
+
+            const form = this;
+            $.ajax({
+                url: $(form).attr('action'),
+                method: 'POST',
+                data: $(form).serialize(),
+                success: function(resp) {
+                    // Optional: check JSON response if you return JSON
+                    loadOrderArticles(currentOrderId);
+                    // Reset for the next add (optional)
+                    $('#articleSelect').val(null).trigger('change');
+                    $('#quantity').val(1);
+                    $('#price').val('');
+                },
+                error: function(xhr) {
+                    alert(xhr.responseText || 'Eroare la adăugarea articolului.');
+                }
+            });
+        });
+
+        $(document).on('click', '.removeArticle', function() {
+            const row = $(this).closest('tr');
+            const id = row.data('id');
+
+            if (!id) {
+                alert('Missing row id; cannot delete.');
+                return;
+            }
+            if (!confirm('Șterge acest articol?')) return;
+
+            $.post('delete_article.php', {
+                id
+            }, function() {
+                loadOrderArticles(currentOrderId);
+            }).fail(function(xhr) {
+                alert(xhr.responseText || 'Could not delete article.');
+            });
+        });
     </script>
+
+    <script>
+        window.addEventListener('beforeprint', () => {
+            const table = document.getElementById('bonTable');
+            const hasRows = table.querySelectorAll('tbody tr').length > 0;
+            if (!hasRows) {
+                table.classList.add('no-print');
+            } else {
+                table.classList.remove('no-print');
+            }
+        });
+    </script>
+
+
 
     <!-- Select2 date picker -->
     <script>
@@ -355,6 +475,35 @@ if ($users_result->num_rows > 0) {
             $('#status_filter, #assigned_filter, #category_filter, #sort_order, #assigned_to, #category_id').select2({
                 dropdownAutoWidth: true,
                 width: 'auto'
+            });
+        });
+        // Init for add article
+        $(document).ready(function() {
+            $('#articleSelect').select2({
+                tags: true, // allow new entries
+                ajax: {
+                    url: 'fetch_articles.php',
+                    dataType: 'json',
+                    processResults: function(data) {
+                        return {
+                            results: data.map(item => ({
+                                id: item.id, // numeric for existing items
+                                text: `${item.name} (${item.price} lei)`,
+                                price: item.price
+                            }))
+                        };
+                    }
+                }
+            });
+
+            // Autofill price for existing items (clear if none)
+            $('#articleSelect').on('select2:select', function(e) {
+                const data = e.params.data;
+                if (data.price !== undefined) {
+                    $('#price').val(data.price);
+                } else {
+                    $('#price').val('');
+                }
             });
         });
     </script>
@@ -570,6 +719,179 @@ if ($users_result->num_rows > 0) {
             /* Ensure options are wide enough */
         }
     </style>
+
+
+    <!-- Stil pentru adauga aricol -->
+    <style>
+        /* Make column widths predictable */
+        #bonTable {
+            border-collapse: collapse;
+            table-layout: fixed;
+            width: auto;
+            /* allow the 4th column to extend beyond 80mm */
+            vertical-align: middle;
+            text-align: left;
+            max-width: none;
+        }
+
+        #bonTable th,
+        #bonTable td {
+            padding: 0;
+            /* keep the first 3 columns totaling exactly 80mm */
+            white-space: nowrap;
+            vertical-align: middle;
+            text-align: left;
+        }
+
+        /* Qty column: >= 4 characters wide */
+        #bonTable thead th:nth-child(2),
+        #bonTable tbody td:nth-child(2) {
+            width: 4.5ch;
+            /* room for 4 chars comfortably */
+            text-align: center;
+        }
+
+        /* Price column: >= 4 characters wide */
+        #bonTable thead th:nth-child(3),
+        #bonTable tbody td:nth-child(3) {
+            width: 4.5ch;
+            /* room for 4 chars comfortably */
+            text-align: center;
+        }
+
+        #bonTableBody>tr>td:nth-child(4) {
+            text-align: center;
+            /* horizontal centering */
+            vertical-align: middle;
+            /* vertical centering (works for table cells) */
+            padding: 3px;
+        }
+
+        #bonTable>thead>tr>th:nth-child(4) {
+            padding: 3px;
+        }
+
+        #bonTableBody>tr>td:nth-child(4)>button {
+            display: block;
+            margin: auto;
+        }
+
+        /* Article column takes the remainder so 1+2+3 = 80mm total */
+        #bonTable thead th:nth-child(1),
+        #bonTable tbody td:nth-child(1) {
+            width: calc(80mm - 9ch);
+            /* 9ch = 4.5ch + 4.5ch for Qty+Price */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 4th column (delete) – no fixed width; sits after the 80mm block */
+        #bonTable thead th:nth-child(4),
+        #bonTable tbody td:nth-child(4) {
+            width: auto;
+            text-align: left;
+        }
+
+        .removeArticle {
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            padding: 2px 6px;
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.3s ease;
+        }
+
+        .removeArticle:hover {
+            background: linear-gradient(135deg, #ff6f61, #e74c3c);
+            transform: scale(1.05);
+        }
+
+        body>div:nth-child(3)>div.no-print.add-article-form {
+            margin: 25px !important;
+        }
+
+        /* Material Design Gray & Yellow Theme */
+        .add-article-form {
+            background: linear-gradient(135deg, #1a1a1aff, gray);
+            /* light gray background */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px yellow;
+            max-width: 400px;
+            margin-left: 10px !important;
+        }
+
+        .add-article-form form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .add-article-form select,
+        .add-article-form input[type="text"],
+        .add-article-form input[type="number"] {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #e0e0e0;
+            /* medium gray */
+            font-size: 14px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .add-article-form select:focus,
+        .add-article-form input:focus {
+            background-color: #fffde7;
+            /* pale yellow focus */
+            box-shadow: 0 0 0 2px yellow;
+            /* vibrant yellow outline */
+            outline: none;
+        }
+
+        .add-article-form button {
+            padding: 12px;
+            background-color: yellow;
+            /* material yellow */
+            color: #212121;
+            /* dark gray text */
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 200 ms;
+        }
+
+        .add-article-form button:hover {
+            background-color: black;
+            color: yellow;
+            /* darker yellow on hover */
+            transform: translateY(-2px);
+            transition: 200 ms;
+        }
+
+        .add-article-form button:active {
+            background-color: gold;
+            /* press effect */
+            transform: translateY(0);
+        }
+
+        #bonTable>thead>tr>th:nth-child(4) {
+            border: none;
+        }
+
+        /* Hide delete controls when printing */
+        @media print {
+
+            #bonTable td:nth-child(4),
+            #bonTable th:nth-child(4),
+            #bonTable .removeArticle,
+            #bonTable .no-print {
+                display: none !important;
+                visibility: hidden !important;
+            }
 
     <!-- Style tabel comanda -->
     <style>
@@ -846,6 +1168,7 @@ if ($users_result->num_rows > 0) {
 
         .adaugaArticolForm button:hover {
             background-color: #005fa3;
+
         }
     </style>
 
@@ -983,6 +1306,107 @@ if ($users_result->num_rows > 0) {
             <button class="no-print" onclick="printOrder()">Print Order</button><br>
         </div>
     </div>
+
+    <div style="min-height: 100vh;">
+        <h2>Comanda nr. <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
+        <?php if ($order['is_achitat'] == 1): ?>
+            <h2>Comandă achitată</h2>
+        <?php endif; ?>
+        <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
+        <p><strong>Scadentă: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
+        <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
+        <p><strong>Responsabil: </strong><?php echo ucwords($order['created_user']); ?></p>
+        <p><strong>Nume client: </strong><?php echo $client_name; ?></p>
+        <?php
+        $countryCode = "+4";
+        $waNumber = $countryCode . preg_replace('/\D/', '', $client_phone); // Remove non-digits
+        $waLink = "https://wa.me/" . urlencode($waNumber);
+        ?>
+        <p><strong>Contact client: </strong>
+            <?php echo htmlspecialchars($client_phone); ?>
+            <a href="<?php echo $waLink; ?>" target="_blank" class="no-print whatsapp-icon">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+        </p>
+        <p><strong>Comanda initiala: </strong><br><span id="order_details_text"><?php echo nl2br(htmlspecialchars($order['order_details'])); ?></span></p>
+        <p><strong>Detalii suplimentare: </strong><br><span id="detalii_suplimentare_text"><?php echo nl2br(htmlspecialchars($order['detalii_suplimentare'])); ?></span></p>
+        <textarea id="detalii_suplimentare_edit" style="display:none;"><?php echo $order['detalii_suplimentare']; ?></textarea>
+
+        <!-- Articole -->
+        <?php
+        $stmt = $conn->prepare("
+    SELECT a.name, oa.quantity, oa.price_per_unit
+    FROM order_articles oa
+    JOIN articles a ON oa.article_id = a.id
+    WHERE oa.order_id = ?
+");
+        $stmt->bind_param('i', $order_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        echo '<table id="bonTable">
+    <thead>
+        <tr>
+            <th>Articole</th>
+            <th>Cant</th>
+            <th>Preț</th>
+            <th>Șterge</th>
+        </tr>
+    </thead>
+    <tbody id="bonTableBody">';
+
+        $hasRows = false;
+        $total = 0;
+
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $hasRows = true;
+                $total += $row['quantity'] * $row['price_per_unit'];
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') . '</td>';
+                echo '<td>' . (int)$row['quantity'] . '</td>';
+                echo '<td>' . number_format((float)$row['price_per_unit'], 2) . '</td>';
+                echo '</tr>';
+            }
+        }
+
+        if (!$hasRows) {
+            echo '<tr><td colspan="3" style="text-align:center;">Nu există articole</td></tr>';
+        }
+
+        echo '</tbody></table>';
+
+        $stmt->close();
+        ?>
+
+        <!-- Add article form -->
+        <div class="no-print add-article-form">
+            <form id="addArticleForm" method="post" action="add_article.php">
+                <select id="articleSelect" name="article_id" style="width: 300px;">
+                    <option value="" disabled selected>Caută sau adaugă articol</option>
+                </select>
+
+                <!-- Optional visible price if you’ll support adding new items -->
+                <input type="text" id="price" name="price" placeholder="Preț" style="width:80px;">
+
+                <input type="number" id="quantity" name="quantity" min="1" value="" placeholder="Cantitate">
+                <input type="hidden" name="order_id" value="<?= (int)$order_id ?>">
+                <button type="submit">Adaugă Articol</button>
+            </form>
+        </div>
+        <br>
+        <p>Avans: <?php echo $order['avans']; ?> lei</p>
+        <div id="totalWrapper">
+            <strong>Total:</strong> <span id="totalPrice">0.00</span>
+        </div>
+        <input type="number" id="total_edit" style="display:none;" value="<?php echo $order['total']; ?>" step="0.01">
+        <?php
+        $rest_de_plata = $order['total'] - $order['avans'];
+        if ($rest_de_plata > 0) {
+            echo "<p>Rest de Plata: $rest_de_plata lei</p>";
+        }
+        ?>
+
     <h2>Comanda nr. <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
     <?php if ($order['is_achitat'] == 1): ?>
         <h2>Comandă achitată</h2>
@@ -1074,6 +1498,7 @@ if ($users_result->num_rows > 0) {
         <button id="saveChangesBtn" class="no-print" onclick="window.location.href='view_order.php?order_id=<?php echo $order_id; ?>'">💾 Salvează modificările</button>
     </div>
     <div>
+
         <br>
         <svg height="80px" clip-rule="evenodd" fill-rule="evenodd" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" version="1.1" viewBox="0 0 386 148.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
             <defs>
