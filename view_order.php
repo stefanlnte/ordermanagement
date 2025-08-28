@@ -935,25 +935,25 @@ if ($users_result->num_rows > 0) {
             <button class="no-print" onclick="togglePin(<?= $order['order_id'] ?>, 1)">Pin Order 📌</button>
         <?php endif; ?>
         <?php if ($order['status'] != 'completed' && $order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
-            <button id="finishButton" class="no-print" onclick="finishOrder()">Comanda a fost terminată</button>
+            <button id="finishButton" class="no-print" onclick="finishOrder()"><i class="fa-solid fa-flag-checkered"></i> Comanda a fost terminată</button>
         <?php endif; ?>
 
         <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
-            <button id="deliverButton" class="no-print" onclick="deliverOrder()">Comanda a fost Livrată</button>
+            <button id="deliverButton" class="no-print" onclick="deliverOrder()"><i class="fa-solid fa-truck-ramp-box"></i> Comanda a fost Livrată</button>
         <?php endif; ?>
 
-        <button id="cancelButton" class="no-print" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>>Anulează Comanda</button>
+        <button id="cancelButton" class="no-print" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>><i class="fa-solid fa-ban"></i> Anulează Comanda</button>
         <br>
-        <button class="no-print" href="javascript:void(0);" onclick="window.history.back();"> &#8592; Înapoi la panou comenzi</button>
+        <button class="no-print" href="javascript:void(0);" onclick="window.history.back();"><i class="fa-solid fa-chevron-left"></i> Înapoi la panou comenzi</button>
     </header>
     <div class="order-options">
         <h1 style="font-size: larger;">Opțiuni suplimentare</h1>
         <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled')  ?>
         <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
             <div class="form-group">
-                <label for="new_due_date_select">Extinde data scadentă:</label>
+                <label for="new_due_date_select">Extinde termenul:</label>
                 <select id="new_due_date_select" name="new_due_date"></select>
-                <button type="submit" name="update_due_date">Actualizează data</button>
+                <button type="submit" name="update_due_date"><i class="fa-solid fa-clock-rotate-left"></i> Actualizează data</button>
             </div>
         </form>
 
@@ -973,21 +973,21 @@ if ($users_result->num_rows > 0) {
                     }
                     ?>
                 </select>
-                <button type="submit" name="update_user" class="no-print">Realocare strategică</button>
+                <button type="submit" name="update_user" class="no-print"><i class="fa-solid fa-people-arrows"></i> Realocare strategică</button>
             </div>
         </form>
         <?php if ($order['status'] != 'livrata') ?>
         <div class="no-print">
-            <button class="no-print" onclick="editOrderDetails()">Edit</button>
-            <button class="no-print" onclick="saveOrderDetails()" style="display:none;">Salvează modificările</button>
+            <button class="no-print" onclick="editOrderDetails()"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+            <button class="no-print" onclick="saveOrderDetails()" style="display:none;"><i class="fa-solid fa-floppy-disk"></i> Salvează modificările</button>
             <button
                 id="toggleAchitatButton"
                 class="no-print"
                 onclick="toggleAchitat(<?= $order['order_id'] ?>, <?= (int)$order['is_achitat'] ?>)">
-                <?= $order['is_achitat'] ? 'Marchează ca neachitat' : 'Comandă achitată' ?>
+                <?= $order['is_achitat'] ? '<i class="fa-solid fa-ban"></i> Marchează ca neachitat' : '<i class="fa-solid fa-sack-dollar"></i> Comandă achitată' ?>
             </button>
-            <button id="toggleComandaLucruButton" class="no-print" onclick="toggleComandaLucru()">Comandă în lucru</button>
-            <button class="no-print" onclick="printOrder()">Print Order</button><br>
+            <button id="toggleComandaLucruButton" class="no-print" onclick="toggleComandaLucru()"><i class="fa-solid fa-spinner"></i> Comandă în lucru</button>
+            <button class="no-print" onclick="printOrder()"><i class="fa-solid fa-print"></i> Print Order</button><br>
         </div>
     </div>
     <div style="min-height: 100vh;">
@@ -996,7 +996,7 @@ if ($users_result->num_rows > 0) {
             <h2>Comandă achitată</h2>
         <?php endif; ?>
         <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
-        <p><strong>Scadentă: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
+        <p><strong>Termen: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
         <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
         <p><strong>Responsabil: </strong><?php echo ucwords($order['created_user']); ?></p>
         <p><strong>Nume client: </strong><?php echo $client_name; ?></p>
