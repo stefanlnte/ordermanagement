@@ -1080,7 +1080,7 @@ if ($users_result->num_rows > 0) {
 
                 <div style="display:inline-flex; align-items:center; gap:5px;">
                     <input type="text" id="price" name="price" placeholder="Preț" style="width:80px;">
-                    <button type="button" id="updateDefaultPriceBtn" title="Actualizează prețul implicit"><i class="fa-solid fa-pencil"></i></button>
+                    <button type="button" id="updateDefaultPriceBtn" title="Actualizează prețul implicit"><i class="fa-solid fa-pencil"></i> Actualizează preț</button>
                 </div>
 
                 <input type="number" id="quantity" name="quantity" min="1" value="" placeholder="Cantitate">
