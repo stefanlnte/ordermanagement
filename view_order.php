@@ -1065,7 +1065,7 @@ if ($users_result->num_rows > 0) {
       width: 80mm;         /* same width as your columns block */
       text-align: left;  /* center the text inside that 80 mm */
     ">
-                Nu există articole
+                Bate vântul pe-aici <i class="fa-solid fa-wind"></i>
             </p>
         <?php endif; ?>
 
@@ -1085,7 +1085,7 @@ if ($users_result->num_rows > 0) {
 
                 <input type="number" id="quantity" name="quantity" min="1" value="" placeholder="Cantitate">
                 <input type="hidden" name="order_id" value="<?= (int)$order_id ?>">
-                <button type="submit">Adaugă Articol</button>
+                <button type="submit"><i class="fa-solid fa-file-circle-plus"></i> Adaugă Articol</button>
             </form>
         </div>
         <br>
