@@ -60,6 +60,16 @@ if (!isset($_SESSION['username'])) {
     }
 }
 
+$pinned_sql = "SELECT o.order_id, o.due_date, o.assigned_to, u.username AS operator, c.client_name
+               FROM orders o
+               LEFT JOIN users u ON o.assigned_to = u.user_id
+               JOIN clients c ON o.client_id = c.client_id
+               WHERE o.is_pinned = 1
+               ORDER BY o.due_date ASC
+               LIMIT 10";
+
+$pinned_result = $conn->query($pinned_sql);
+
 // Fetch filter values
 $status_filter = $_GET['status_filter'] ?? '';
 $assigned_filter = $_GET['assigned_filter'] ?? '';
@@ -307,6 +317,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- Include Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Include AOS CSS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -447,6 +459,58 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     openEditModal(clientId);
                 }
             });
+        });
+    </script>
+
+    <!-- Date picker -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const select = document.getElementById('datePickerSelect');
+            const today = new Date();
+
+            const daysToGenerate = 90; // only 90 days ahead
+
+            let daysAdded = 0;
+            let i = 0;
+
+            while (daysAdded < daysToGenerate) {
+                const date = new Date();
+                date.setDate(today.getDate() + i);
+
+                // Skip Sundays (getDay() === 0 means Sunday)
+                if (date.getDay() !== 0) {
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+
+                    const label = date.toLocaleDateString('ro-RO', {
+                        weekday: 'short',
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    });
+
+                    const option = new Option(label, `${year}-${month}-${day}`);
+
+                    if (daysAdded === 0) {
+                        option.selected = true;
+                    }
+
+                    select.add(option);
+                    daysAdded++;
+                }
+
+                i++;
+            }
+
+            // Optional: Select2 styling
+            if (typeof $ !== 'undefined' && $.fn.select2) {
+                $(select).select2({
+                    placeholder: "Alege o dată",
+                    dropdownAutoWidth: true,
+                    width: 'auto'
+                });
+            }
         });
     </script>
 
@@ -654,22 +718,50 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 document.getElementById('greeting-message').textContent = greetingMessage;
             });
         </script>
-        <p data-aos="fade-in">
+        <p data-aos="fade-down"
+            data-aos-easing="linear"
+            data-aos-duration="800">
             <span id="greeting-message"></span>, <?php echo ucwords($_SESSION['username']); ?>! Astăzi este <span id="currentdate"></span>.
         </p>
-        <div class="button" data-aos="fade-in"><a href="logout.php">Deconectare</a> </div>
+        <button data-aos="fade-down"
+            data-aos-easing="linear"
+            data-aos-duration="800" onclick="window.location.href='logout.php'">
+            <i class="fa-solid fa-right-from-bracket"></i> Deconectare
+        </button>
     </header>
+
     <div class="image-container" style="width: 100%; height: 300px; position: relative;">
         <img src="https://color-print.ro/magazincp/header.webp"
             alt="Main Image"
             style="width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1;">
         <div class="image-overlay"></div>
-        <object data-aos="fade-left"
-            data-aos-anchor="#example-anchor"
-            data-aos-offset="500"
+        <object data-aos="zoom-in"
+            data-aos-easing="linear"
+            data-aos-duration="800"
             type="image/svg+xml" data="https://color-print.ro/magazincp/comenzi.svg"
             style="width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; z-index: 2; object-fit: contain;">
         </object>
+    </div>
+
+    <div class="pinned-section">
+        <?php if ($pinned_result && $pinned_result->num_rows > 0): ?>
+            <h2 style="margin-left:20px;">📌 Comenzi urgente</h2>
+            <div class="pinned-feed">
+                <?php while ($pin = $pinned_result->fetch_assoc()): ?>
+                    <a href="view_order.php?order_id=<?= $pin['order_id']; ?>" class="pinned-card-link">
+                        <div class="card pinned-card">
+                            <div class="card-header">
+                                Comanda #<?= $pin['order_id']; ?>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Operator:</strong> <?= htmlspecialchars($pin['operator']); ?></p>
+                                <p><strong>Client:</strong> <?= htmlspecialchars($pin['client_name']); ?></p>
+                            </div>
+                        </div>
+                    </a>
+                <?php endwhile; ?>
+            </div>
+        <?php endif; ?>
     </div>
 
     <div class="container">
@@ -692,15 +784,15 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <div class="flex-container">
                         <div class="form-group">
                             <label for="client_name"><strong>Nume Client:</strong></label>
-                            <input type="text" id="client_name" name="client_name">
+                            <input placeholder="Nume complet" type="text" id="client_name" name="client_name">
                         </div>
                         <div class="form-group">
                             <label for="client_phone"><strong>Telefon Client:</strong></label>
-                            <input type="text" id="client_phone" name="client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
+                            <input placeholder="07XXXXXXXX" type="text" id="client_phone" name="client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
                         </div>
                         <div class="form-group">
                             <label for="client_email">Email Client:</label>
-                            <input type="email" id="client_email" name="client_email">
+                            <input placeholder="colorprint_roman@yahoo.com" type="email" id="client_email" name="client_email">
                         </div>
                     </div>
                     <button type="button" id="save_edit_button" style="display:none;">Salvează Modificările</button>
@@ -708,27 +800,27 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                 <div class="form-group">
                     <label for="order_details"><strong>Info Comandă:</strong></label>
-                    <textarea id="order_details" name="order_details" rows="4" cols="50"></textarea>
+                    <textarea id="order_details"
+                        name="order_details"
+                        rows="4"
+                        cols="50"
+                        required
+                        placeholder="Introdu detaliile comenzii"></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="avans">Avans:</label>
-                    <input type="number" id="avans" name="avans" max="9999" step="0.01">
+                    <input placeholder="Cât se poate" type="number" id="avans" name="avans" max="9999" step="0.01">
                 </div>
 
                 <div class="form-group">
                     <label for="total">Total:</label>
-                    <input type="number" id="total" name="total" max="9999" step="0.01">
+                    <input placeholder="Introdu suma" type="number" id="total" name="total" max="9999" step="0.01">
                 </div>
 
                 <div class="form-group">
-                    <label for="due_date">Data Livrare:</label>
-                    <input type="date" id="due_date" name="due_date" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="due_time">Ora Livrare:</label>
-                    <input type="time" id="due_time" name="due_time">
+                    <label for="datePickerSelect"><strong>Data Livrare:</strong></label>
+                    <select id="datePickerSelect" name="due_date"></select>
                 </div>
 
                 <div class="form-group">
@@ -759,7 +851,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     </select>
                 </div>
                 <div class="form-group">
-                    <input class="button" type="submit" value="Adaugă Comandă" style="font-family: Poppins, sans-serif;">
+                    <button class="button" type="submit">
+                        <i class="fa-solid fa-circle-plus"></i> Adaugă Comandă
+                    </button>
                 </div>
             </form>
         </div>
@@ -789,6 +883,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </form>
             </div>
         </div>
+
 
         <div class="main-content">
             <div class="filters">
@@ -986,9 +1081,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     </div>
     <footer>
         <p style="font-size: larger;">© Color Print</p>
-        <a href="dashboard.php" style="text-decoration: none; color: white;">Dashboard</a>
-        <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
-        <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
+        <a href="dashboard.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-house"></i> Dashboard</a>
+        <a href="archive.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-box-archive"></i> Arhivă</a>
+        <a href="unpaid_orders.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-ban"></i> Comenzi nefacturate</a>
         <div id="versionToggle" style="position: fixed; bottom: 20px; right: 30px; background: #333; padding: 10px; border-radius: 5px; cursor: pointer;">
             <button onclick="toggleVersion()">Schimbă la <?php echo (basename($_SERVER['PHP_SELF']) === 'dashboardv2.php') ? 'V1' : 'V2'; ?></button>
         </div>

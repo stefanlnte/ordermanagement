@@ -318,6 +318,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- Include Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Include AOS CSS -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -717,10 +719,16 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 document.getElementById('greeting-message').textContent = greetingMessage;
             });
         </script>
-        <p data-aos="fade-in">
+        <p data-aos="fade-down"
+            data-aos-easing="linear"
+            data-aos-duration="800">
             <span id="greeting-message"></span>, <?php echo ucwords($_SESSION['username']); ?>! Astăzi este <span id="currentdate"></span>.
         </p>
-        <div class="button" data-aos="fade-in"><a href="logout.php">Deconectare</a> </div>
+        <button data-aos="fade-down"
+            data-aos-easing="linear"
+            data-aos-duration="800" onclick="window.location.href='logout.php'">
+            <i class="fa-solid fa-right-from-bracket"></i> Deconectare
+        </button>
     </header>
 
     <div class="image-container" style="width: 100%; height: 300px; position: relative;">
@@ -728,9 +736,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             alt="Main Image"
             style="width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1;">
         <div class="image-overlay"></div>
-        <object data-aos="fade-left"
-            data-aos-anchor="#example-anchor"
-            data-aos-offset="500"
+        <object data-aos="zoom-in"
+            data-aos-easing="linear"
+            data-aos-duration="800"
             type="image/svg+xml" data="https://color-print.ro/magazincp/comenzi.svg"
             style="width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; z-index: 2; object-fit: contain;">
         </object>
@@ -778,15 +786,15 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <div class="flex-container">
                         <div class="form-group">
                             <label for="client_name"><strong>Nume Client:</strong></label>
-                            <input type="text" id="client_name" name="client_name">
+                            <input placeholder="Nume complet" type="text" id="client_name" name="client_name">
                         </div>
                         <div class="form-group">
                             <label for="client_phone"><strong>Telefon Client:</strong></label>
-                            <input type="text" id="client_phone" name="client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
+                            <input placeholder="07XXXXXXXX" type="text" id="client_phone" name="client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
                         </div>
                         <div class="form-group">
                             <label for="client_email">Email Client:</label>
-                            <input type="email" id="client_email" name="client_email">
+                            <input placeholder="colorprint_roman@yahoo.com" type="email" id="client_email" name="client_email">
                         </div>
                     </div>
                     <button type="button" id="save_edit_button" style="display:none;">Salvează Modificările</button>
@@ -794,17 +802,22 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                 <div class="form-group">
                     <label for="order_details"><strong>Info Comandă:</strong></label>
-                    <textarea id="order_details" name="order_details" rows="4" cols="50"></textarea>
+                    <textarea id="order_details"
+                        name="order_details"
+                        rows="4"
+                        cols="50"
+                        required
+                        placeholder="Introdu detaliile comenzii"></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="avans">Avans:</label>
-                    <input type="number" id="avans" name="avans" max="9999" step="0.01">
+                    <input placeholder="Cât se poate" type="number" id="avans" name="avans" max="9999" step="0.01">
                 </div>
 
                 <div class="form-group">
                     <label for="total">Total:</label>
-                    <input type="number" id="total" name="total" max="9999" step="0.01">
+                    <input placeholder="Introdu suma" type="number" id="total" name="total" max="9999" step="0.01">
                 </div>
 
                 <div class="form-group">
@@ -840,7 +853,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     </select>
                 </div>
                 <div class="form-group">
-                    <input class="button" type="submit" value="Adaugă Comandă" style="font-family: Poppins, sans-serif;">
+                    <button class="button" type="submit">
+                        <i class="fa-solid fa-circle-plus"></i> Adaugă Comandă
+                    </button>
                 </div>
             </form>
         </div>
@@ -1051,9 +1066,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     </div>
     <footer>
         <p style="font-size: larger;">© Color Print</p>
-        <a href="dashboard.php" style="text-decoration: none; color: white;">Dashboard</a>
-        <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
-        <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
+        <a href="dashboard.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-house"></i> Dashboard</a>
+        <a href="archive.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-box-archive"></i> Arhivă</a>
+        <a href="unpaid_orders.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-ban"></i> Comenzi nefacturate</a>
         <div id="versionToggle" style="position: fixed; bottom: 20px; right: 30px; background: #333; padding: 10px; border-radius: 5px; cursor: pointer;">
             <button onclick="toggleVersion()">Schimbă la <?php echo (basename($_SERVER['PHP_SELF']) === 'dashboardv2.php') ? 'V1' : 'V2'; ?></button>
         </div>

@@ -49,29 +49,6 @@ button:hover {
   transition: 500ms;
 }
 
-/* Link buttons */
-.button a {
-  background-color: yellow;
-  border: 1px solid #a9a9a9; /* Dark grey color for border */
-  border-radius: 4px; /* Rounded border */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  font-size: 14px; /* Adjust font size */
-  color: #333;
-  padding: 10px;
-  cursor: pointer;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  transition: 500ms;
-  font-family: 'Poppins', sans-serif;
-}
-
-/* Hover effect */
-.button :hover {
-  background-color: lightgrey;
-  transition: 500ms;
-}
-
 input[type='submit'] {
   background-color: yellow;
   border: none;
@@ -446,57 +423,12 @@ textarea {
   text-decoration: underline;
 }
 
-/* View Order options */
-.order-options {
-  display: flex;
-  align-items: center; /* Center items horizontally */
-  justify-content: center; /* Center items vertically */
-  flex-direction: column; /* Stack items vertically */
-  max-width: 700px;
-  margin: 20px auto;
-  padding: 20px;
-  background: linear-gradient(135deg, #000000, #434343); /* Black gradient */
-  color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  text-align: center; /* Center text within the container */
-  box-sizing: border-box;
-}
-
-.order-options form {
-  display: inline-flex; /* Keeps form elements inline and centered */
-  gap: 10px; /* Space between form elements */
-  width: fit-content; /* Only take as much space as needed */
-}
-
-.order-options .form-group {
-  width: 100%; /* Ensure the form group uses available space */
-  margin: 0;
-}
-
-.order-options select {
-  padding: 8px;
-  border-radius: 5px;
-}
-
-.order-options button {
-  padding: 8px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-/* Optional: Add a break between long text */
-.order-options .form-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 /* Container for pinned cards */
 .pinned-feed {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  grid-auto-rows: 1fr; /* 👈 This makes all rows equal height */
+  grid-auto-rows: 1fr;
+  /* 👈 This makes all rows equal height */
   gap: 10px;
   max-height: none;
   padding: 10px;

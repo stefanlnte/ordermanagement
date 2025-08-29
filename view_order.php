@@ -686,6 +686,63 @@ if ($users_result->num_rows > 0) {
         }
     </style>
 
+    <!--  View Order options  -->
+    <style>
+        .order-options {
+            display: flex;
+            align-items: center;
+            /* Center items horizontally */
+            justify-content: center;
+            /* Center items vertically */
+            flex-direction: column;
+            /* Stack items vertically */
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a1aff, gray);
+            /* Black gradient */
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px yellow;
+            text-align: center;
+            /* Center text within the container */
+            box-sizing: border-box;
+        }
+
+        .order-options form {
+            display: inline-flex;
+            /* Keeps form elements inline and centered */
+            gap: 10px;
+            /* Space between form elements */
+            width: fit-content;
+            /* Only take as much space as needed */
+        }
+
+        .order-options .form-group {
+            width: 100%;
+            /* Ensure the form group uses available space */
+            margin: 0;
+        }
+
+        .order-options select {
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .order-options button {
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Optional: Add a break between long text */
+        .order-options .form-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+
     <!-- Stil pentru adauga aricol -->
     <style>
         /* Make column widths predictable */
@@ -1085,7 +1142,7 @@ if ($users_result->num_rows > 0) {
 
                 <input type="number" id="quantity" name="quantity" min="1" value="" placeholder="Cantitate">
                 <input type="hidden" name="order_id" value="<?= (int)$order_id ?>">
-                <button type="submit"><i class="fa-solid fa-file-circle-plus"></i> Adaugă Articol</button>
+                <button type="submit"><i class="fa-solid fa-circle-plus"></i> Adaugă Articol</button>
             </form>
         </div>
         <br>
@@ -1136,9 +1193,9 @@ if ($users_result->num_rows > 0) {
     <br><br>
     <footer class="no-print">
         <p style="font-size: larger;">© Color Print</p>
-        <a href="dashboard.php" style="text-decoration: none; color: white;">Dashboard</a>
-        <a href="archive.php" style="text-decoration: none; color: white;">Arhivă</a>
-        <a href="unpaid_orders.php" style="text-decoration: none; color: white;">Comenzi nefacturate</a>
+        <a href="dashboard.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-house"></i> Dashboard</a>
+        <a href="archive.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-box-archive"></i> Arhivă</a>
+        <a href="unpaid_orders.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-ban"></i> Comenzi nefacturate</a>
     </footer>
 
 </body>
