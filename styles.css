@@ -480,3 +480,192 @@ textarea {
   line-height: 1.2 !important;
   border-radius: 5px;
 }
+
+/* Floating Action Button */
+#notesFab {
+  position: fixed;
+  top: 50%;
+  right: 24px;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  background: #ffeb3b; /* bright yellow */
+  border-radius: 50%;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+  color: #212121; /* dark icon for contrast */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+#notesFab:hover {
+  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.3);
+  transform: translateY(-50%) scale(1.05);
+}
+
+/* 4. Darken the backdrop and keep it behind the modal */
+.modal-backdrop.show {
+  opacity: 0.6 !important; /* stronger dimming */
+  z-index: 1040 !important;
+}
+
+/* Always keep notes modal above everything else */
+#notesModal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999; /* higher than any header/footer */
+  display: none; /* hidden by default */
+  justify-content: center;
+  align-items: center;
+}
+
+/* Backdrop covers the whole screen */
+#notesModal .modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 0; /* behind modal content */
+}
+
+/* Modal content above backdrop */
+#notesModal .modal-content {
+  position: relative;
+  z-index: 1;
+  background: #fff;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 700px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+#notesModal header {
+  background-color: #ffeb3b; /* your theme yellow */
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+#notesModal header h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #212121;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#notesModal header h3::before {
+  content: '\f249'; /* FontAwesome sticky note icon */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  font-size: 1.2rem;
+  color: #212121;
+}
+
+/* === Close Button === */
+#notesModal .close-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: #212121;
+  cursor: pointer;
+  justify-items: end;
+  transition: transform 0.2s ease;
+}
+#notesModal .close-btn:hover {
+  transform: scale(1.5);
+}
+
+/* === Notes List === */
+#notesModal ul {
+  list-style: none;
+  margin: 0;
+  padding: 16px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+#notesModal ul li {
+  background: #f5f5f5;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+#notesModal ul li .delete-note {
+  color: #e53935;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: color 0.2s ease;
+}
+#notesModal ul li .delete-note:hover {
+  color: #b71c1c;
+}
+
+/* === New Note Input === */
+#notesModal .new-note {
+  display: flex;
+  padding: 16px;
+  border-top: 1px solid #ddd;
+  background: #fafafa;
+  justify-content: center;
+  align-items: center;
+}
+
+#notesModal textarea {
+  min-height: 100px; /* taller */
+  min-width: 75%; /* full width of its container */
+  box-sizing: border-box; /* ensures padding/border don’t push it beyond container */
+  resize: both; /* lets you drag to make it even bigger if you want */
+  font-size: 14px;
+  line-height: 1.4;
+  padding: 8px;
+}
+
+#notesModal textarea:focus {
+  border-color: #ffeb3b;
+  outline: none;
+}
+
+/* === Add Button === */
+#notesModal #addNoteBtn {
+  background-color: #ffeb3b;
+  border: none;
+  padding: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #212121;
+  font-weight: 600;
+  transition: 200ms;
+}
+#notesModal #addNoteBtn:hover {
+  background-color: greenyellow;
+  transition: 200ms;
+}
+
+/* === Animation === */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
