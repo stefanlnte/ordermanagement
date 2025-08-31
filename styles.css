@@ -425,19 +425,11 @@ textarea {
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   grid-auto-rows: 1fr;
   /* 👈 This makes all rows equal height */
-  gap: 10px;
+  gap: 25px;
   max-height: none;
   padding: 10px;
   margin-left: 5px;
   margin-bottom: 15px;
-}
-
-/* Make the whole card clickable without losing styles */
-.pinned-card-link {
-  display: block;
-  text-decoration: none;
-  flex: 1 1 220px;
-  max-width: 250px;
 }
 
 /* Card base style with Material Design feel */
@@ -520,6 +512,7 @@ textarea {
   display: none; /* hidden by default */
   justify-content: center;
   align-items: center;
+  overflow: hidden;
 }
 
 /* Backdrop covers the whole screen */
@@ -538,7 +531,7 @@ textarea {
   border-radius: 8px;
   width: 80%;
   max-width: 700px;
-  max-height: 80vh;
+  max-height: 50vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);

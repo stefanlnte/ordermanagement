@@ -750,7 +750,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             <h2 style="margin-left:20px;">📌 Comenzi urgente</h2>
             <div class="pinned-feed">
                 <?php while ($pin = $pinned_result->fetch_assoc()): ?>
-                    <a href="view_order.php?order_id=<?= $pin['order_id']; ?>" class="pinned-card-link">
+                    <a href="view_order.php?order_id=<?= $pin['order_id']; ?>">
                         <div class="card pinned-card">
                             <div class="card-header">
                                 Comanda #<?= $pin['order_id']; ?>

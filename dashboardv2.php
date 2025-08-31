@@ -748,7 +748,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             <h2 style="margin-left:20px;">📌 Comenzi urgente</h2>
             <div class="pinned-feed">
                 <?php while ($pin = $pinned_result->fetch_assoc()): ?>
-                    <a href="view_order.php?order_id=<?= $pin['order_id']; ?>" class="pinned-card-link">
+                    <a href="view_order.php?order_id=<?= $pin['order_id']; ?>">
                         <div class="card pinned-card">
                             <div class="card-header">
                                 Comanda #<?= $pin['order_id']; ?>
@@ -1079,6 +1079,96 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             </div>
         </div>
     </div>
+
+    <!-- Floating Notes Button -->
+    <div id="notesFab" title="Notes">
+        <i class="fa-solid fa-note-sticky"></i>
+    </div>
+
+    <div id="notesModal" class="modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <header>
+                <h4>Notițe</h4>
+                <button class="close-btn"><i class="fa-solid fa-circle-xmark"></i></button>
+            </header>
+            <ul id="notesList"></ul>
+            <div class="new-note">
+                <textarea id="noteInput" placeholder="Scrie un mesaj…"></textarea>
+                <button id="addNoteBtn">Adaugă</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(function() {
+            const api = 'notes_api.php';
+            const $modal = $('#notesModal');
+            const $backdrop = $modal.find('.modal-backdrop');
+            const $notesList = $('#notesList');
+            const $input = $('#noteInput');
+
+            // Open modal & load notes
+            $('#notesFab').click(function() {
+                loadNotes();
+                $modal.show();
+            });
+
+            // Close modal
+            $backdrop.add($modal.find('.close-btn')).click(function() {
+                $modal.hide();
+            });
+
+            // Fetch & render
+            function loadNotes() {
+                $.getJSON(api, {
+                        action: 'fetch'
+                    })
+                    .done(notes => {
+                        $notesList.empty();
+                        if (!notes.length) {
+                            $notesList.append('<li>Nici o notiță.</li>');
+                        } else {
+                            notes.forEach(n => {
+                                $notesList.append(`
+              <li data-id="${n.note_id}">
+                <span>${n.content}</span>
+                <i class="fa-solid fa-trash delete-note"></i>
+              </li>`);
+                            });
+                        }
+                    });
+            }
+
+            // Add note
+            $('#addNoteBtn').click(function() {
+                let text = $input.val().trim();
+                if (!text) return;
+                $.post(api, {
+                        action: 'add',
+                        content: text
+                    })
+                    .done(() => {
+                        $input.val('');
+                        loadNotes();
+                    });
+            });
+
+            // Delete note (event delegation)
+            $notesList.on('click', '.delete-note', function() {
+                let $li = $(this).closest('li');
+                let id = $li.data('id');
+                $.post(api, {
+                        action: 'delete',
+                        note_id: id
+                    })
+                    .done(resp => {
+                        if (resp.deleted) $li.slideUp(200, () => $li.remove());
+                    });
+            });
+        });
+    </script>
+
     <footer>
         <p style="font-size: larger;">© Color Print</p>
         <a href="dashboard.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-house"></i> Dashboard</a>
