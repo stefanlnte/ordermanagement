@@ -745,7 +745,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
     </div>
 
-    <div class="pinned-section">
+    <div class="pinned-section" data-aos="fade-in">
         <?php if ($pinned_result && $pinned_result->num_rows > 0): ?>
             <h2 style="margin-left:20px;">📌 Comenzi urgente</h2>
             <div class="pinned-feed">

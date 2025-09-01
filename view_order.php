@@ -107,6 +107,10 @@ if ($users_result->num_rows > 0) {
     </script>
 
     <script>
+        const assignedTo = <?= json_encode($order['assigned_user']) ?>;
+        const clientName = <?= json_encode($client_name) ?>;
+        const boss = <?= json_encode($order['created_user']) ?>;
+
         function editOrderDetails() {
             // Ascunde textul afișat
             const suplText = document.getElementById('detalii_suplimentare_text');
@@ -176,7 +180,7 @@ if ($users_result->num_rows > 0) {
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4 && xhr.status == 200) {
-                    sendSMS(clientPhone, orderId);
+                    sendSMS(clientPhone, orderId, assignedTo, clientName, boss);
                     // Remove the button from the DOM
                     var button = document.getElementById('finishButton');
                     if (button) {
@@ -206,18 +210,24 @@ if ($users_result->num_rows > 0) {
             });
         }
 
-        function sendSMS(clientPhone, orderId) {
+        function sendSMS(clientPhone, orderId, assignedTo, clientName, boss) {
             var xhr = new XMLHttpRequest();
             xhr.open('POST', 'send_sms.php', true);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4 && xhr.status == 200) {
                     showAlert('Good job. Felicitări pentru terminarea comenzii. 🎉').then(() => {
-                        console.log('SMS SENT')
+                        console.log('SMS SENT');
                     });
                 }
             };
-            xhr.send('to=' + clientPhone + '&order_id=' + orderId);
+            xhr.send(
+                'to=' + encodeURIComponent(clientPhone) +
+                '&order_id=' + encodeURIComponent(orderId) +
+                '&assigned_to=' + encodeURIComponent(assignedTo) +
+                '&client_name=' + encodeURIComponent(clientName) +
+                '&boss=' + encodeURIComponent(boss)
+            );
         }
 
         function deliverOrder() {
@@ -276,13 +286,13 @@ if ($users_result->num_rows > 0) {
             window.print();
         }
 
-        // Fills the articles for orders 
+        // Fills the articles for orders
         function loadOrderArticles(orderId) {
             const $table = $('#bonTable');
             const $tbody = $('#bonTableBody');
             const emptyNote = document.getElementById('emptyNote');
 
-            //  — Hide the PHP placeholder up front (if present) —
+            // — Hide the PHP placeholder up front (if present) —
             if (emptyNote) {
                 emptyNote.style.display = 'none';
             }
@@ -309,13 +319,13 @@ if ($users_result->num_rows > 0) {
                     total += qty * unit;
 
                     $tbody.append(`
-        <tr data-id="${row.id}">
-          <td>${row.name}</td>
-          <td>${qty}</td>
-          <td>${unit.toFixed(2)}</td>
-          <td><button class="removeArticle">✖</button></td>
-        </tr>
-      `);
+    <tr data-id="${row.id}">
+        <td>${row.name}</td>
+        <td>${qty}</td>
+        <td>${unit.toFixed(2)}</td>
+        <td><button class="removeArticle">✖</button></td>
+    </tr>
+    `);
                 });
 
                 const avans = parseFloat("<?= $order['avans'] ?>") || 0;
@@ -1055,7 +1065,7 @@ if ($users_result->num_rows > 0) {
         <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
         <p><strong>Termen: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
         <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
-        <p><strong>Responsabil: </strong><?php echo ucwords($order['created_user']); ?></p>
+        <p><strong>Creată de: </strong><?php echo ucwords($order['created_user']); ?></p>
         <p><strong>Nume client: </strong><?php echo $client_name; ?></p>
         <?php
         $countryCode = "+4";
@@ -1140,7 +1150,7 @@ if ($users_result->num_rows > 0) {
                     <button type="button" id="updateDefaultPriceBtn" title="Actualizează prețul implicit"><i class="fa-solid fa-pencil"></i> Actualizează preț</button>
                 </div>
 
-                <input type="number" id="quantity" name="quantity" min="1" value="" placeholder="Cantitate">
+                <input required type="number" id="quantity" name="quantity" min="1" value="" placeholder="Cantitate">
                 <input type="hidden" name="order_id" value="<?= (int)$order_id ?>">
                 <button type="submit"><i class="fa-solid fa-circle-plus"></i> Adaugă Articol</button>
             </form>
