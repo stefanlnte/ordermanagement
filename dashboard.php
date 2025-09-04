@@ -816,11 +816,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </div>
 
                 <div class="form-group">
-                    <label for="total">Total:</label>
-                    <input placeholder="Introdu suma" type="number" id="total" name="total" max="9999" step="0.01">
-                </div>
-
-                <div class="form-group">
                     <label for="datePickerSelect"><strong>Data Livrare:</strong></label>
                     <select id="datePickerSelect" name="due_date"></select>
                 </div>
