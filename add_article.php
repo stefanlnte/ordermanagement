@@ -32,6 +32,7 @@ if (is_numeric($article_id_raw)) {
 } else {
     // New article: require name + price
     $article_name = trim($article_id_raw);
+    $article_name = ucfirst(strtolower($article_name));
     $price = is_numeric($price_raw) ? (float)$price_raw : 0;
 
     if ($article_name === '' || $price <= 0) {
