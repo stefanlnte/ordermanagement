@@ -114,7 +114,7 @@ table {
 
 /* Header: clean, flat background */
 th {
-  background: lightgrey; /* solid theme yellow */
+  background: whitesmoke; /* solid theme yellow */
   color: #212121;
   font-weight: 600;
   text-align: left;
@@ -298,12 +298,6 @@ div.pagination :hover {
 .order-card td {
   padding: 8px 0;
   font-size: 0.9em;
-}
-
-th {
-  font-weight: bold;
-  text-align: left;
-  padding-bottom: 10px;
 }
 
 .order-status {

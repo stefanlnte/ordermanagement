@@ -969,13 +969,13 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                 $status = $row["assigned_user"];
                                 $row_classes[] = 'order-completed';
                             } elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status != 'completed' && $status != 'delivered') {
-                                $status = 'comanda ta';
+                                $status = '<i class="fas fa-star"></i>';
                                 $row_classes[] = 'order-current-user';
                             } elseif ($status != "completed" && $status != "delivered") {
                                 $status = $row["assigned_user"];
                                 $row_classes[] = 'order-assigned';
                             } elseif ($status == 'completed') {
-                                $status = 'terminată';
+                                $status = '<i class="fas fa-flag-checkered"></i>';
                                 $row_classes[] = 'order-completed';
                             } else {
                                 $status = 'livrată';
