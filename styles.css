@@ -263,13 +263,6 @@ th {
   flex-wrap: wrap;
 }
 
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-}
-
 .filter-group label {
   margin-right: 5px;
 }
@@ -286,15 +279,6 @@ th {
   background-color: #ffffffe8;
 }
 
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 10px;
-  align-items: center;
-  justify-content: center;
-}
-
 .filters .form-group {
   flex: 1;
   min-width: 150px;
@@ -303,6 +287,81 @@ th {
 
 .filters button {
   align-self: flex-end;
+}
+
+/* Modernized filter group container */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 12px 16px;
+  justify-content: center;
+  align-items: center;
+  background: #ffffffcc; /* semi-transparent white */
+  backdrop-filter: blur(6px); /* glassmorphism effect */
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Individual filter group styling */
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.25s ease;
+}
+
+.filter-group:hover {
+  background: #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Labels */
+.filter-group label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+/* Inputs & selects inside filters */
+.filter-group select,
+.filter-group input[type='text'],
+.filter-group input[type='date'] {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+  border-color: #ffeb3b;
+  box-shadow: 0 0 0 3px rgba(255, 235, 59, 0.3);
+  outline: none;
+}
+
+/* Filter buttons */
+.filters button {
+  background: yellow;
+  color: #212121;
+  font-weight: 600;
+  border: gray solid 1px;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+
+.filters button:hover {
+  background: greenyellow;
+  transform: translateY(-1px);
 }
 
 textarea {
@@ -476,7 +535,7 @@ textarea {
 /* Floating Action Button */
 #notesFab {
   position: fixed;
-  top: 50%;
+  top: 35%;
   right: 24px;
   transform: translateY(-50%);
   width: 56px;
