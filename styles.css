@@ -651,6 +651,10 @@ textarea {
   transition: 200ms;
 }
 
+#notesList span {
+  white-space: pre-wrap; /* preserves \n and wraps long lines */
+}
+
 /* === Animation === */
 @keyframes fadeIn {
   from {
