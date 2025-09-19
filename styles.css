@@ -32,6 +32,7 @@
   color: white;
   box-shadow: 2px 3px 6px rgba(255, 255, 0, 0.5);
   background-color: rgba(0, 0, 0, 0.5); /* Optional: Helps visibility */
+  border-radius: 15px;
 }
 
 .sidebar::before {
@@ -45,6 +46,7 @@
   background-size: cover;
   filter: blur(1px); /* Adjust blur intensity */
   z-index: -1; /* Puts the blur behind the content */
+  border-radius: 15px;
 }
 
 .main-content {
@@ -89,6 +91,84 @@ input[type='submit']:hover {
   transition: 500ms;
 }
 
+/* Modern table container */
+/* Table container for responsiveness and style */
+.table-wrapper {
+  overflow-x: auto;
+  background: rgb(221, 220, 220); /* semi-transparent white */
+  backdrop-filter: blur(6px);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px black; /* soft golden shadow */
+  padding: 10px;
+}
+
+/* Base table styling */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+/* Header: clean, flat background */
+th {
+  background: lightgrey; /* solid theme yellow */
+  color: #212121;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 15px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Body cells */
+td {
+  padding: 10px 15px;
+  border-top: 1px solid grey;
+}
+
+/* Keep your existing row color coding */
+tbody tr.order-current-user {
+  background-color: #fecbc6;
+}
+
+tbody tr.status-cancelled {
+  background-color: #a93c4c;
+}
+
+tbody tr.order-completed {
+  background-color: palegreen;
+}
+
+tbody tr.order-assigned {
+  background-color: whitesmoke;
+}
+
+tbody tr.order-delivered {
+  background-color: #f9f9c8;
+}
+
+/* Hover effect that works with color coding */
+tbody tr:hover {
+  filter: brightness(0.9); /* 1 = normal, <1 = darker */
+  transition: all 0.2s ease;
+}
+
+/* Rounded corners for first & last cells */
+table tr:first-child th:first-child {
+  border-top-left-radius: 10px;
+}
+table tr:first-child th:last-child {
+  border-top-right-radius: 10px;
+}
+table tr:last-child td:first-child {
+  border-bottom-left-radius: 10px;
+}
+table tr:last-child td:last-child {
+  border-bottom-right-radius: 10px;
+}
+
 /* table effect */
 body > div.container > div.main-content > table > tbody > tr {
   transition: 500ms;
@@ -116,26 +196,6 @@ div.pagination :hover {
   }
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-table,
-th,
-td {
-  border: 1px solid black;
-}
-th,
-td {
-  padding: 10px;
-  text-align: left;
-}
-th {
-  background-color: #f2f2f2;
-}
-tr:hover {
-  background-color: #f5f5f5;
-}
 .pagination {
   display: flex;
   justify-content: center;
@@ -285,10 +345,6 @@ th {
   align-self: end;
 }
 
-.filters button {
-  align-self: flex-end;
-}
-
 /* Modernized filter group container */
 .filters {
   display: flex;
@@ -298,10 +354,10 @@ th {
   padding: 12px 16px;
   justify-content: center;
   align-items: center;
-  background: #ffffffcc; /* semi-transparent white */
+  background: #f9f9f9;
   backdrop-filter: blur(6px); /* glassmorphism effect */
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.09);
 }
 
 /* Individual filter group styling */
@@ -310,7 +366,7 @@ th {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: #f9f9f9;
+  background: whitesmoke;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
   transition: all 0.25s ease;
@@ -351,7 +407,7 @@ th {
 .filters button {
   background: yellow;
   color: #212121;
-  font-weight: 600;
+  font-weight: 300;
   border: gray solid 1px;
   border-radius: 6px;
   padding: 8px 14px;

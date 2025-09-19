@@ -881,8 +881,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
 
         <div class="main-content">
-            <div class="filters">
-                <form method="GET" action="dashboardv2.php">
+            <form method="GET" action="dashboardv2.php">
+                <div class="filters">
                     <div class="filter-group">
                         <label>Status:</label>
                         <select id="status_filter" name="status_filter">
@@ -939,140 +939,140 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                         <button type="submit">Aplică filtre</button>
                         <button type="button" onclick="window.location.href='dashboardv2.php'">Resetează filtre</button>
                     </div>
-                </form>
-            </div>
-            <div class="order-grid" data-aos="slide-up">
-                <?php
-                if ($orders_result->num_rows > 0) {
-                    while ($row = $orders_result->fetch_assoc()) {
-                        $order_id = str_pad($row["order_id"], 3, '0', STR_PAD_LEFT);
-                        $order_date = formatDateWithoutYearWithDay($row["order_date"]) . ' ' . date('H:i', strtotime($row["order_time"]));
-                        $due_date = formatRemainingDays($row["due_date"], $row["status"], $row["delivery_date"] ?? null);
-                        $status = $row["status"] ?? 'neatribuită';
+            </form>
+        </div>
+        <div class="order-grid" data-aos="slide-up">
+            <?php
+            if ($orders_result->num_rows > 0) {
+                while ($row = $orders_result->fetch_assoc()) {
+                    $order_id = str_pad($row["order_id"], 3, '0', STR_PAD_LEFT);
+                    $order_date = formatDateWithoutYearWithDay($row["order_date"]) . ' ' . date('H:i', strtotime($row["order_time"]));
+                    $due_date = formatRemainingDays($row["due_date"], $row["status"], $row["delivery_date"] ?? null);
+                    $status = $row["status"] ?? 'neatribuită';
 
-                        $row_classes = [];
+                    $row_classes = [];
 
-                        if ($status == 'assigned') {
-                            $row_classes[] = 'assigned';
-                        } elseif (
-                            $status == 'completed'
-                        ) {
-                            $row_classes[] = 'completed';
-                        } elseif (
-                            $status == 'delivered'
-                        ) {
-                            $row_classes[] = 'delivered';
-                        } elseif (
-                            $status == 'cancelled'
-                        ) {
-                            $row_classes[] = 'cancelled';
-                        }
+                    if ($status == 'assigned') {
+                        $row_classes[] = 'assigned';
+                    } elseif (
+                        $status == 'completed'
+                    ) {
+                        $row_classes[] = 'completed';
+                    } elseif (
+                        $status == 'delivered'
+                    ) {
+                        $row_classes[] = 'delivered';
+                    } elseif (
+                        $status == 'cancelled'
+                    ) {
+                        $row_classes[] = 'cancelled';
+                    }
 
-                        if ($row["assigned_to"] == $_SESSION['user_id'] && $status != 'completed' && $status != 'delivered' && $status != 'cancelled') {
-                            $row_classes[] = 'current-user';
-                        }
+                    if ($row["assigned_to"] == $_SESSION['user_id'] && $status != 'completed' && $status != 'delivered' && $status != 'cancelled') {
+                        $row_classes[] = 'current-user';
+                    }
 
-                        $row_class = implode(' ', $row_classes);
+                    $row_class = implode(' ', $row_classes);
 
-                        $operator_name = $row['assigned_user'] ?? '';
-                ?>
+                    $operator_name = $row['assigned_user'] ?? '';
+            ?>
 
-                        <div class="order-card <?php echo $row_class; ?>" onclick="window.location.href='view_order.php?order_id=<?php echo $row["order_id"]; ?>'">
-                            <?php
-                            // Define an array to translate status values to the desired labels
-                            $status_translations = [
-                                "assigned" => "Atribuită",
-                                "completed" => "Terminată",
-                                "delivered" => "Livrată",
-                                "cancelled" => "Anulată"
-                            ];
+                    <div class="order-card <?php echo $row_class; ?>" onclick="window.location.href='view_order.php?order_id=<?php echo $row["order_id"]; ?>'">
+                        <?php
+                        // Define an array to translate status values to the desired labels
+                        $status_translations = [
+                            "assigned" => "Atribuită",
+                            "completed" => "Terminată",
+                            "delivered" => "Livrată",
+                            "cancelled" => "Anulată"
+                        ];
 
-                            // Fetch the translated status using isset() for safe array access
-                            $translated_status = isset($status_translations[$status]) ? $status_translations[$status] : ucfirst($status);
-                            ?>
-                            <div>
-                                <h3>Comanda <?php echo $order_id; ?></h3>
-                                <p><strong>Client:</strong> <?php echo $row["client_name"]; ?></p>
-                                <p><strong>Detalii:</strong> <?php echo $row["order_details"]; ?></p>
-                                <div class="order-date">
-                                    <p><strong>Din:</strong> <?php echo $order_date; ?></p>
-                                    <p><strong>Livrare:</strong> <?php echo $due_date; ?></p>
-                                </div>
-                                <div class="order-status">
-                                    <p>Stare: <?php echo $translated_status; ?></p>
-                                    <?php if (!empty($operator_name)): ?>
-                                        <p>Operator: <?php echo ucwords($operator_name); ?></p>
-                                    <?php endif; ?>
-                                </div>
+                        // Fetch the translated status using isset() for safe array access
+                        $translated_status = isset($status_translations[$status]) ? $status_translations[$status] : ucfirst($status);
+                        ?>
+                        <div>
+                            <h3>Comanda <?php echo $order_id; ?></h3>
+                            <p><strong>Client:</strong> <?php echo $row["client_name"]; ?></p>
+                            <p><strong>Detalii:</strong> <?php echo $row["order_details"]; ?></p>
+                            <div class="order-date">
+                                <p><strong>Din:</strong> <?php echo $order_date; ?></p>
+                                <p><strong>Livrare:</strong> <?php echo $due_date; ?></p>
+                            </div>
+                            <div class="order-status">
+                                <p>Stare: <?php echo $translated_status; ?></p>
+                                <?php if (!empty($operator_name)): ?>
+                                    <p>Operator: <?php echo ucwords($operator_name); ?></p>
+                                <?php endif; ?>
                             </div>
                         </div>
+                    </div>
 
-                <?php
-                    }
-                } else {
-                    echo "<div class='order-card'><p>Nu există comenzi.</p></div>";
+            <?php
                 }
-                ?>
-            </div>
-            <div class="pagination">
-                <?php
-                // Ensure all variables are set and have valid values
-                $total_pages = isset($total_pages) ? (int)$total_pages : 1;
-                $page = isset($page) ? (int)$page : 1;
-                $status_filter = isset($status_filter) ? urlencode($status_filter) : '';
-                $assigned_filter = isset($assigned_filter) ? urlencode($assigned_filter) : '';
-                $category_filter = isset($category_filter) ? urlencode($category_filter) : '';
-                $sort_order = isset($sort_order) ? urlencode($sort_order) : '';
-
-                // First page link
-                if ($total_pages > 5 && $page > 1) {
-                    echo "<a href='dashboardv2.php?page=1&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Prima</a>";
-                }
-
-                // Previous page link
-                if ($total_pages > 5 && $page > 1) {
-                    echo "<a href='dashboardv2.php?page=" . ($page - 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înapoi</a>";
-                }
-
-                // Define the number of pages to show before and after the current page
-                $window_size = 2; // This means 2 pages before and 2 pages after the current page
-
-                // Calculate the start and end page numbers
-                $start = 1;
-                $end = $total_pages;
-
-                if ($total_pages > 5) {
-                    $start = max(1, $page - $window_size);
-                    $end = min($total_pages, $page + $window_size);
-
-                    // Ensure there's always a minimum of 5 pages shown if possible
-                    if ($end - $start + 1 < 5) {
-                        if ($start == 1) {
-                            $end = min($total_pages, $start + 4);
-                        } else {
-                            $start = max(1, $end - 4);
-                        }
-                    }
-                }
-
-                // Display page numbers within the window
-                for ($i = $start; $i <= $end; $i++) {
-                    $active = ($i == $page) ? 'active' : '';
-                    echo "<a href='dashboardv2.php?page=$i&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order' class='$active'>$i</a>";
-                }
-
-                // Next page link
-                if ($total_pages > 5 && $page < $total_pages) {
-                    echo "<a href='dashboardv2.php?page=" . ($page + 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înainte</a>";
-                }
-
-                // Last page link
-                if ($total_pages > 5 && $page < $total_pages) {
-                    echo "<a href='dashboardv2.php?page=$total_pages&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Ultima</a>";
-                }
-                ?>
-            </div>
+            } else {
+                echo "<div class='order-card'><p>Nu există comenzi.</p></div>";
+            }
+            ?>
         </div>
+        <div class="pagination">
+            <?php
+            // Ensure all variables are set and have valid values
+            $total_pages = isset($total_pages) ? (int)$total_pages : 1;
+            $page = isset($page) ? (int)$page : 1;
+            $status_filter = isset($status_filter) ? urlencode($status_filter) : '';
+            $assigned_filter = isset($assigned_filter) ? urlencode($assigned_filter) : '';
+            $category_filter = isset($category_filter) ? urlencode($category_filter) : '';
+            $sort_order = isset($sort_order) ? urlencode($sort_order) : '';
+
+            // First page link
+            if ($total_pages > 5 && $page > 1) {
+                echo "<a href='dashboardv2.php?page=1&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Prima</a>";
+            }
+
+            // Previous page link
+            if ($total_pages > 5 && $page > 1) {
+                echo "<a href='dashboardv2.php?page=" . ($page - 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înapoi</a>";
+            }
+
+            // Define the number of pages to show before and after the current page
+            $window_size = 2; // This means 2 pages before and 2 pages after the current page
+
+            // Calculate the start and end page numbers
+            $start = 1;
+            $end = $total_pages;
+
+            if ($total_pages > 5) {
+                $start = max(1, $page - $window_size);
+                $end = min($total_pages, $page + $window_size);
+
+                // Ensure there's always a minimum of 5 pages shown if possible
+                if ($end - $start + 1 < 5) {
+                    if ($start == 1) {
+                        $end = min($total_pages, $start + 4);
+                    } else {
+                        $start = max(1, $end - 4);
+                    }
+                }
+            }
+
+            // Display page numbers within the window
+            for ($i = $start; $i <= $end; $i++) {
+                $active = ($i == $page) ? 'active' : '';
+                echo "<a href='dashboardv2.php?page=$i&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order' class='$active'>$i</a>";
+            }
+
+            // Next page link
+            if ($total_pages > 5 && $page < $total_pages) {
+                echo "<a href='dashboardv2.php?page=" . ($page + 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înainte</a>";
+            }
+
+            // Last page link
+            if ($total_pages > 5 && $page < $total_pages) {
+                echo "<a href='dashboardv2.php?page=$total_pages&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Ultima</a>";
+            }
+            ?>
+        </div>
+    </div>
     </div>
 
     <!-- Floating Notes Button -->
