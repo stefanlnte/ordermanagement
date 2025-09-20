@@ -95,7 +95,7 @@ input[type='submit']:hover {
 /* Table container for responsiveness and style */
 .table-wrapper {
   overflow-x: auto;
-  background: rgb(221, 220, 220); /* semi-transparent white */
+  background: whitesmoke;
   backdrop-filter: blur(6px);
   border-radius: 10px;
   box-shadow: 0 4px 12px black; /* soft golden shadow */
@@ -109,12 +109,12 @@ table {
   border-spacing: 0;
   font-family: 'Poppins', sans-serif;
   font-size: 0.95rem;
-  color: #333;
+  color: #000000;
 }
 
 /* Header: clean, flat background */
 th {
-  background: whitesmoke; /* solid theme yellow */
+  background: whitesmoke;
   color: #212121;
   font-weight: 600;
   text-align: left;
@@ -125,12 +125,12 @@ th {
 /* Body cells */
 td {
   padding: 10px 15px;
-  border-top: 1px solid grey;
+  border: none;
 }
 
 /* Keep your existing row color coding */
 tbody tr.order-current-user {
-  background-color: #fecbc6;
+  background-color: lightcoral;
 }
 
 tbody tr.status-cancelled {
@@ -142,11 +142,11 @@ tbody tr.order-completed {
 }
 
 tbody tr.order-assigned {
-  background-color: whitesmoke;
+  background-color: aliceblue;
 }
 
 tbody tr.order-delivered {
-  background-color: #f9f9c8;
+  background-color: antiquewhite;
 }
 
 /* Hover effect that works with color coding */
@@ -254,13 +254,13 @@ div.pagination :hover {
 }
 
 .order-card.assigned {
-  background: #fffacd;
-  border: 1px solid #f4d03f;
+  background: aliceblue;
+  border: 1px solid lightskyblue;
   transition: 200ms;
 }
 
 .order-card.assigned:hover {
-  box-shadow: 0 0 10px #f4d03f;
+  box-shadow: 0 0 10px lightskyblue;
   transition: 200ms;
 }
 
@@ -348,7 +348,7 @@ div.pagination :hover {
   padding: 12px 16px;
   justify-content: center;
   align-items: center;
-  background: #f9f9f9;
+  background: whitesmoke;
   backdrop-filter: blur(6px); /* glassmorphism effect */
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.09);
@@ -360,16 +360,17 @@ div.pagination :hover {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background: whitesmoke;
+  background: #f0f0f0;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
   transition: all 0.25s ease;
 }
 
 .filter-group:hover {
-  background: #f0f0f0;
+  background: whitesmoke;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);
+  transition: 300ms;
 }
 
 /* Labels */

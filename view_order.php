@@ -906,10 +906,6 @@ if ($users_result->num_rows > 0) {
             background-color: gold;
         }
 
-        #bonTable>thead>tr>th:nth-child(4) {
-            border: none;
-        }
-
         /* Hide delete controls when printing */
         @media print {
 
