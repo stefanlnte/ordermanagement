@@ -130,11 +130,11 @@ td {
 
 /* Keep your existing row color coding */
 tbody tr.order-current-user {
-  background-color: lightcoral;
+  background-color: #ff751f;
 }
 
 tbody tr.status-cancelled {
-  background-color: #a93c4c;
+  background-color: tomato;
 }
 
 tbody tr.order-completed {
@@ -142,7 +142,7 @@ tbody tr.order-completed {
 }
 
 tbody tr.order-assigned {
-  background-color: aliceblue;
+  background-color: linen;
 }
 
 tbody tr.order-delivered {
@@ -243,7 +243,7 @@ div.pagination :hover {
 }
 
 .order-card.completed {
-  background: #98fb98;
+  background: palegreen;
   border: 1px solid #008000;
   transition: 200ms;
 }
@@ -254,24 +254,24 @@ div.pagination :hover {
 }
 
 .order-card.assigned {
-  background: aliceblue;
-  border: 1px solid lightskyblue;
+  background: linen;
+  border: 1px solid wheat;
   transition: 200ms;
 }
 
 .order-card.assigned:hover {
-  box-shadow: 0 0 10px lightskyblue;
+  box-shadow: 0 0 10px wheat;
   transition: 200ms;
 }
 
 .order-card.current-user {
-  background: #f9c2bd;
-  border: 1px solid rgb(153, 81, 81);
+  background: #ff751f;
+  border: 1px solid red;
   transition: 200ms;
 }
 
 .order-card.current-user:hover {
-  box-shadow: 0 0 10px rgb(153, 81, 81);
+  box-shadow: 0 0 10px red;
   transition: 200ms;
 }
 
