@@ -690,6 +690,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 </head>
 
 <body>
+    <canvas id="autumnLeaves"></canvas>
     <header id="header">
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -1157,7 +1158,117 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             <button onclick="toggleVersion()">Schimbă la <?php echo (basename($_SERVER['PHP_SELF']) === 'dashboardv2.php') ? 'V1' : 'V2'; ?></button>
         </div>
     </footer>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const canvas = document.getElementById("autumnLeaves");
+            const ctx = canvas.getContext("2d");
+            let W = 0,
+                H = 0;
 
+            function resize() {
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+            window.addEventListener("resize", resize);
+            resize();
+
+            // Replace with your own PNG URLs
+            const SPRITES = [
+                "https://color-print.ro/magazincp/leaf1.png",
+                "https://color-print.ro/magazincp/leaf2.png",
+                "https://color-print.ro/magazincp/leaf3.png"
+            ];
+
+            const images = [];
+            let loaded = 0;
+            SPRITES.forEach(src => {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.onload = () => {
+                    loaded++;
+                };
+                img.src = src;
+                images.push(img);
+            });
+
+            const LEAF_COUNT = 10;
+            const leaves = [];
+
+            function rand(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            class Leaf {
+                constructor() {
+                    this.reset(true);
+                }
+                reset(initial = false) {
+                    this.img = images[Math.floor(rand(0, images.length))] || images[0];
+                    this.size = rand(28, 56);
+                    this.x = rand(0, W);
+                    this.y = initial ? rand(-H, 0) : -this.size;
+                    this.speedY = rand(0.6, 1.1);
+                    this.baseDrift = rand(-0.15, 0.25);
+                    this.angle = rand(0, Math.PI * 2);
+                    this.spin = rand(-0.02, 0.02);
+                    this.swayAmp = rand(10, 28);
+                    this.swayFreq = rand(0.6, 1.2);
+                    this.time = rand(0, 1000);
+                    this.flip = Math.random() < 0.5 ? -1 : 1;
+                }
+                update(dt) {
+                    this.time += dt;
+                    const wind = Math.sin(this.time * 0.00025) * 0.25;
+                    const sway = Math.sin(this.time * 0.002 * this.swayFreq) * this.swayAmp;
+
+                    this.x += this.baseDrift + wind + (sway * 0.01);
+                    this.y += this.speedY;
+                    this.angle += this.spin;
+
+                    if (this.y > H + this.size || this.x < -this.size || this.x > W + this.size) {
+                        this.reset(false);
+                        this.y = -this.size;
+                    }
+                }
+                draw() {
+                    if (!this.img || !this.img.complete) return;
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.angle);
+                    const w = this.size * this.flip;
+                    const h = this.size;
+                    ctx.drawImage(this.img, -w / 2, -h / 2, w, h);
+                    ctx.restore();
+                }
+            }
+
+            function start() {
+                leaves.length = 0;
+                for (let i = 0; i < LEAF_COUNT; i++) leaves.push(new Leaf());
+
+                let last = performance.now();
+
+                function tick(now) {
+                    const dt = now - last;
+                    last = now;
+                    ctx.clearRect(0, 0, W, H);
+                    for (const leaf of leaves) {
+                        leaf.update(dt);
+                        leaf.draw();
+                    }
+                    requestAnimationFrame(tick);
+                }
+                requestAnimationFrame(tick);
+            }
+
+            const waitForImages = setInterval(() => {
+                if (loaded > 0) {
+                    clearInterval(waitForImages);
+                    start();
+                }
+            }, 50);
+        });
+    </script>
 </body>
 
 
