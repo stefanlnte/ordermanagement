@@ -4,18 +4,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Autentificare</title>
     <link rel="stylesheet" href="stylelogin.css">
     <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
 </head>
 
 <body>
     <div class="login-container">
-        <img src="logo.png" alt="Logo" class="logo">
-        <h2>Login</h2>
+        <img src="comenzi.svg" alt="Logo" class="logo">
+        <h2>Autentificare</h2>
         <form action="authenticate.php" method="post">
             <div class="form-group">
-                <label for="username">User</label>
+                <label for="username">Utilizator</label>
                 <input type="text" id="username" name="username" required>
             </div>
             <div class="form-group">
@@ -26,7 +26,7 @@
                 <input type="checkbox" id="remember_me" name="remember_me" checked>Ține-mă minte
             </label>
             <div class="buttonal">
-                <button type="submit">Login</button>
+                <button type="submit">Autentificare</button>
 
         </form>
     </div>

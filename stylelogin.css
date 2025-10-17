@@ -4,7 +4,7 @@ body {
   align-items: center;
   height: 100vh;
   margin: 0;
-  background-color: #ffffff;
+  background-color: whitesmoke;
   font-family: 'Poppins', sans-serif;
 }
 
@@ -25,14 +25,15 @@ body {
   text-align: center;
   width: 300px;
   padding: 25px;
-  background-color: lightgray;
+  background: linear-gradient(180deg, #2c2c2c 0%, #3a3a3a 50%, #5c5c5c 100%);
+  color: white;
   border-radius: 10px;
-  box-shadow: 0 0 6px rgba(255, 255, 0, 0.5);
+  box-shadow: 0 0 6px yellow;
 }
 
 .logo {
   align-items: center;
-  width: 100px;
+  width: 250px;
 }
 
 h2 {
@@ -63,16 +64,18 @@ input[type='password'] {
 button {
   width: 100%;
   padding-block: 10px;
-  background-color: grey;
-  color: white;
+  background-color: yellow;
+  color: black;
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-weight: 700;
+  font-size: medium;
   transition: 1s;
 }
 
 button:hover {
-  background-color: yellow;
+  background-color: greenyellow;
   color: black;
   transition: 1s;
 }

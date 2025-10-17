@@ -536,6 +536,7 @@ textarea {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  border-radius: 15px;
   height: 100%;
 }
 
