@@ -732,22 +732,18 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </button>
     </header>
 
-    <div class="image-container" style="width: 100%; height: 300px; position: relative; overflow: hidden;">
-        <video autoplay muted loop playsinline
+    <div class="image-container" style="width: 100%; height: 300px; position: relative;">
+        <img src="https://color-print.ro/magazincp/header.webp"
+            alt="Main Image"
             style="width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1;">
-            <source src="https://color-print.ro/magazincp/header.mp4" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-
         <div class="image-overlay"></div>
-
         <object data-aos="zoom-in"
             data-aos-easing="linear"
             data-aos-duration="800"
-            type="image/svg+xml"
-            data="https://color-print.ro/magazincp/comenzi.svg"
+            type="image/svg+xml" data="https://color-print.ro/magazincp/comenzi.svg"
             style="width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; z-index: 2; object-fit: contain;">
         </object>
+
     </div>
 
     <div class="pinned-section" data-aos="fade-in">
