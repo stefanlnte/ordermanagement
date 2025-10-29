@@ -743,7 +743,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             type="image/svg+xml" data="https://color-print.ro/magazincp/comenzi.svg"
             style="width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; z-index: 2; object-fit: contain;">
         </object>
-
     </div>
 
     <div class="pinned-section" data-aos="fade-in">

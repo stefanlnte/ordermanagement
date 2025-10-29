@@ -732,7 +732,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     </header>
 
     <div class="image-container" style="width: 100%; height: 300px; position: relative;">
-        <img src="https://color-print.ro/magazincp/header.webp"
+        <img src="https://color-print.ro/magazincp/header.jpg"
             alt="Main Image"
             style="width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1;">
         <div class="image-overlay"></div>
