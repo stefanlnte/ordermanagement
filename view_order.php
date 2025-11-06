@@ -1076,7 +1076,7 @@ if ($users_result->num_rows > 0) {
         </p>
         <p><strong>Comanda initiala: </strong><br><span id="order_details_text"><?php echo nl2br(htmlspecialchars($order['order_details'])); ?></span></p>
         <p><strong>Detalii suplimentare: </strong><br><span id="detalii_suplimentare_text"><?php echo nl2br(htmlspecialchars($order['detalii_suplimentare'])); ?></span></p>
-        <textarea id="detalii_suplimentare_edit" style="display:none;" rows="6" cols="60"><?php echo $order['detalii_suplimentare']; ?></textarea>
+        <textarea id="detalii_suplimentare_edit" style="display:none;" rows="6" cols="60"><?php echo $order['detalii_suplimentare']; ?></textarea><br>
 
         <!-- Articole -->
         <?php
