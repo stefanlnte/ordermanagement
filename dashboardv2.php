@@ -812,7 +812,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                 <div class="form-group">
                     <label for="avans">Avans:</label>
-                    <input placeholder="Cât se poate" type="number" id="avans" name="avans" max="9999" step="0.01">
+                    <input placeholder="50% din total" type="number" id="avans" name="avans" max="9999" step="0.01">
                 </div>
 
                 <div class="form-group">

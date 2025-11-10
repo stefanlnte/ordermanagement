@@ -112,15 +112,21 @@ if ($users_result->num_rows > 0) {
         const boss = <?= json_encode($order['created_user']) ?>;
 
         function editOrderDetails() {
-            // Ascunde textul afișat
+            // Hide text
             const suplText = document.getElementById('detalii_suplimentare_text');
             if (suplText) suplText.style.display = 'none';
 
-            // Arată zona de editare
+            const avansText = document.getElementById('avans_text');
+            if (avansText) avansText.style.display = 'none';
+
+            // Show inputs
             const suplEdit = document.getElementById('detalii_suplimentare_edit');
             if (suplEdit) suplEdit.style.display = 'block';
 
-            // Butoane
+            const avansEdit = document.getElementById('avans_edit');
+            if (avansEdit) avansEdit.style.display = 'inline';
+
+            // Toggle buttons
             const btnEdit = document.querySelector('button[onclick="editOrderDetails()"]');
             const btnSave = document.querySelector('button[onclick="saveOrderDetails()"]');
             if (btnEdit) btnEdit.style.display = 'none';
@@ -130,6 +136,10 @@ if ($users_result->num_rows > 0) {
         function saveOrderDetails() {
             const suplEdit = document.getElementById('detalii_suplimentare_edit');
             const detaliiSuplimentare = suplEdit ? suplEdit.value : '';
+
+            const avansEdit = document.getElementById('avans_edit');
+            const avans = avansEdit ? avansEdit.value : '';
+
             const orderId = <?php echo (int)$order['order_id']; ?>;
 
             var xhr = new XMLHttpRequest();
@@ -138,6 +148,7 @@ if ($users_result->num_rows > 0) {
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
+                        // Update UI
                         const suplText = document.getElementById('detalii_suplimentare_text');
                         if (suplText) {
                             suplText.innerText = detaliiSuplimentare;
@@ -145,6 +156,14 @@ if ($users_result->num_rows > 0) {
                         }
                         if (suplEdit) suplEdit.style.display = 'none';
 
+                        const avansText = document.getElementById('avans_text');
+                        if (avansText) {
+                            avansText.innerText = avans;
+                            avansText.style.display = 'inline';
+                        }
+                        if (avansEdit) avansEdit.style.display = 'none';
+
+                        // Toggle buttons back
                         const btnEdit = document.querySelector('button[onclick="editOrderDetails()"]');
                         const btnSave = document.querySelector('button[onclick="saveOrderDetails()"]');
                         if (btnEdit) btnEdit.style.display = 'inline';
@@ -156,7 +175,8 @@ if ($users_result->num_rows > 0) {
             };
             xhr.send(
                 'order_id=' + encodeURIComponent(orderId) +
-                '&detalii_suplimentare=' + encodeURIComponent(detaliiSuplimentare)
+                '&detalii_suplimentare=' + encodeURIComponent(detaliiSuplimentare) +
+                '&avans=' + encodeURIComponent(avans)
             );
         }
 
@@ -1152,7 +1172,16 @@ if ($users_result->num_rows > 0) {
             </form>
         </div>
         <br>
-        <p>Avans: <?php echo $order['avans']; ?> lei</p>
+        <p>
+            <strong>Avans: </strong> <span id="avans_text"><?php echo htmlspecialchars($order['avans']); ?></span> lei
+            <!-- Hidden input for editing -->
+            <input type="number"
+                id="avans_edit"
+                style="display:none;"
+                value="<?php echo $order['avans']; ?>"
+                step="0.01">
+        </p>
+
         <div id="totalWrapper">
             <strong>Total:</strong> <span id="totalPrice">0.00</span>
         </div>
