@@ -185,37 +185,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
         $total = (float)($_POST['total'] ?? 0);
         $assigned_to = $_POST['assigned_to'];
 
-        // Debugging: Check if client ID is set
-        if (empty($client_id)) {
-            echo "Client ID is empty. Creating a new client.<br>";
-        } else {
-            echo "Client ID is set: $client_id<br>";
-        }
-
         // Check if client exists or create a new client
         if (empty($client_id)) {
-            $insert_client_sql = "INSERT INTO clients (client_name, client_email, client_phone) VALUES (?, ?, ?)";
-            $stmt = $conn->prepare($insert_client_sql);
-            $stmt->bind_param("sss", $client_name, $client_email, $client_phone);
-
-            if ($stmt->execute()) {
-                $client_id = $stmt->insert_id;
-                echo "New client created with ID: $client_id<br>";
-            } else {
-                echo "Error creating new client: " . $stmt->error;
-                exit();
-            }
-            $stmt->close();
-        } else {
-            $client_check_sql = "SELECT client_id FROM clients WHERE client_id = ?";
-            $stmt = $conn->prepare($client_check_sql);
-            $stmt->bind_param("i", $client_id);
+            // Verifică dacă telefonul există deja
+            $check_phone_sql = "SELECT client_id FROM clients WHERE client_phone = ?";
+            $stmt = $conn->prepare($check_phone_sql);
+            $stmt->bind_param("s", $client_phone);
             $stmt->execute();
-            $client_check_result = $stmt->get_result();
+            $check_result = $stmt->get_result();
 
-            if ($client_check_result->num_rows == 0) {
-                echo "Error: Client does not exist.";
-                exit();
+            if ($check_result->num_rows > 0) {
+                // Telefon deja înregistrat → preia clientul existent
+                $existing_client = $check_result->fetch_assoc();
+                $client_id = $existing_client['client_id'];
+
+                echo "Clientul cu acest număr de telefon există deja. Comanda va fi asociată cu clientul existent (ID: $client_id).<br>";
+            } else {
+                // Telefon nou → inserează clientul
+                $insert_client_sql = "INSERT INTO clients (client_name, client_email, client_phone) VALUES (?, ?, ?)";
+                $stmt = $conn->prepare($insert_client_sql);
+                $stmt->bind_param("sss", $client_name, $client_email, $client_phone);
+
+                if ($stmt->execute()) {
+                    $client_id = $stmt->insert_id;
+                    echo "Client nou creat cu ID: $client_id<br>";
+                } else {
+                    echo "Eroare la crearea clientului: " . $stmt->error;
+                    exit();
+                }
             }
             $stmt->close();
         }
@@ -341,7 +338,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             $('#client_id').select2({
                 dropdownAutoWidth: true,
                 width: 'auto',
-                placeholder: 'Nume client',
+                placeholder: 'Nume sau telefon client',
                 allowClear: true,
                 ajax: {
                     url: 'fetch_clients.php', // Update the URL to point to fetch_clients.php
@@ -786,7 +783,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <div class="flex-container">
                         <div class="form-group">
                             <label for="client_name"><strong>Nume Client:</strong></label>
-                            <input placeholder="Nume complet" type="text" id="client_name" name="client_name">
+                            <input placeholder="Prenume și Nume" type="text" id="client_name" name="client_name">
                         </div>
                         <div class="form-group">
                             <label for="client_phone"><strong>Telefon Client:</strong></label>
