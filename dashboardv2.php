@@ -74,6 +74,7 @@ $pinned_result = $conn->query($pinned_sql);
 $status_filter = $_GET['status_filter'] ?? '';
 $assigned_filter = $_GET['assigned_filter'] ?? '';
 $category_filter = $_GET['category_filter'] ?? '';
+$client_filter = $_GET['client_filter'] ?? '';
 $sort_order = $_GET['sort_order'] ?? 'ASC';
 $page = $_GET['page'] ?? 1;
 $limit = 20; // Number of orders per page
@@ -112,6 +113,12 @@ if ($category_filter) {
     $types .= 'i';
 }
 
+if ($client_filter) {
+    $order_sql .= " AND o.client_id = ?";
+    $params[] = $client_filter;
+    $types .= 'i';
+}
+
 $order_sql .= " ORDER BY o.order_id $sort_order LIMIT ? OFFSET ?";
 $params[] = $limit;
 $params[] = $offset;
@@ -143,6 +150,12 @@ if ($assigned_filter) {
 if ($category_filter) {
     $total_orders_sql .= " AND category_id = ?";
     $total_params[] = $category_filter;
+    $total_types .= 'i';
+}
+
+if ($client_filter) {
+    $total_orders_sql .= " AND client_id = ?";
+    $total_params[] = $client_filter;
     $total_types .= 'i';
 }
 
@@ -333,6 +346,32 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             $('#status_filter, #assigned_filter, #category_filter, #sort_order, #assigned_to, #category_id').select2({
                 dropdownAutoWidth: true,
                 width: 'auto'
+            });
+
+            $('#client_filter').select2({
+                dropdownAutoWidth: true,
+                width: 'auto',
+                placeholder: 'Toți',
+                allowClear: true,
+                ajax: {
+                    url: 'fetch_clients.php',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            search_clients: 1,
+                            q: params.term
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                },
+                templateResult: formatClient,
+                templateSelection: formatClientSelection
             });
 
             $('#client_id').select2({
@@ -908,6 +947,13 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                 }
                             }
                             ?>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Client:</label>
+                        <select id="client_filter" name="client_filter" style="width: 200px;">
+                            <option value="">Toți</option>
                         </select>
                     </div>
 
