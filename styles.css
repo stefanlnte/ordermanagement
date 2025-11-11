@@ -115,7 +115,7 @@ td {
 
 /* Keep your existing row color coding */
 tbody tr.order-current-user {
-  background-color: #ff751f;
+  background-color: salmon;
 }
 
 tbody tr.status-cancelled {
@@ -127,11 +127,11 @@ tbody tr.order-completed {
 }
 
 tbody tr.order-assigned {
-  background-color: linen;
+  background-color: wheat;
 }
 
 tbody tr.order-delivered {
-  background-color: antiquewhite;
+  background-color: linen;
 }
 
 /* Hover effect that works with color coding */
@@ -239,18 +239,18 @@ div.pagination :hover {
 }
 
 .order-card.assigned {
-  background: linen;
-  border: 1px solid wheat;
+  background: wheat;
+  border: 1px solid goldenrod;
   transition: 200ms;
 }
 
 .order-card.assigned:hover {
-  box-shadow: 0 0 10px wheat;
+  box-shadow: 0 0 10px goldenrod;
   transition: 200ms;
 }
 
 .order-card.current-user {
-  background: #ff751f;
+  background: salmon;
   border: 1px solid red;
   transition: 200ms;
 }
@@ -261,22 +261,24 @@ div.pagination :hover {
 }
 
 .order-card.delivered {
-  border: 1px solid lightgreen;
+  border: 1px solid wheat;
+  background: linen;
   transition: 200ms;
 }
 
 .order-card.delivered:hover {
-  box-shadow: 0 0 10px green;
+  box-shadow: 0 0 10px wheat;
   transition: 200ms;
 }
 
 .order-card.cancelled {
   border: 1px solid red;
+  background: tomato;
   transition: 200ms;
 }
 
 .order-card.cancelled:hover {
-  box-shadow: 0 0 10px lightcoral;
+  box-shadow: 0 0 10px red;
   transition: 200ms;
 }
 
