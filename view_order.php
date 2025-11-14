@@ -1275,7 +1275,7 @@ if ($users_result->num_rows > 0) {
     <script>
         Dropzone.options.orderDropzone = {
             paramName: "file", // name of the file param
-            maxFilesize: 20, // MB
+            maxFilesize: 1024, // MB
             acceptedFiles: null, // allow all file types
             init: function() {
                 this.on("success", function(file, response) {
