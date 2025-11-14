@@ -1228,8 +1228,8 @@ if ($users_result->num_rows > 0) {
         </div>
     </div>
 
-    <div class="no-print">
-        <h3>Attachments</h3>
+    <h3>Atașamente</h3>
+    <div class="no-print attachments-section">
         <form action="upload_attachment.php"
             class="dropzone"
             id="orderDropzone">

@@ -771,6 +771,45 @@ textarea {
   pointer-events: none; /* ensures click is on button, not icon */
 }
 
+.attachments-section {
+  display: flex;
+  justify-content: flex-start; /* align left */
+  margin-left: 20px; /* add margin from the left edge */
+  margin-top: 20px; /* optional spacing from top */
+}
+
+#orderDropzone {
+  border: 2px dashed yellow;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #000000 0%, #3c3c3c 50%, #6c6c6c 100%);
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  padding: 20px;
+  width: 300px; /* control width */
+  min-height: 150px; /* control height */
+  text-align: center;
+}
+
+/* Style the Dropzone message */
+#orderDropzone .dz-message {
+  font-size: 1rem;
+  color: #ffeb3b; /* bright yellow text */
+}
+
+/* File preview thumbnails */
+#orderDropzone .dz-preview {
+  background: #222;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 10px;
+  box-shadow: 0 2px 6px rgba(255, 255, 0, 0.4);
+}
+
+#orderDropzone .dz-preview .dz-filename {
+  color: #fff;
+  font-size: 0.85rem;
+}
+
 /* === Animation === */
 @keyframes fadeIn {
   from {
