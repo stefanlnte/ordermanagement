@@ -1243,13 +1243,34 @@ if ($users_result->num_rows > 0) {
         $stmt->execute();
         $result = $stmt->get_result();
 
-        echo "<ul>";
+        echo "<ul id='attachmentsList'>";
         while ($row = $result->fetch_assoc()) {
-            echo "<li><a href='download_attachment.php?id={$row['id']}'>{$row['filename']}</a></li>";
+            echo "<li id='attachment-{$row['id']}'>
+            <a href='download_attachment.php?id={$row['id']}'>{$row['filename']}</a>
+            <button class='deleteAttachment' data-id='{$row['id']}'>
+                <i class='fa fa-trash'></i>
+            </button>
+          </li>";
         }
         echo "</ul>";
         ?>
     </div>
+
+    <script>
+        $(document).on('click', '.deleteAttachment', function() {
+            const id = $(this).data('id');
+            if (!confirm('Șterge acest fișier?')) return;
+
+            $.post('delete_attachment.php', {
+                id: id
+            }, function(resp) {
+                alert(resp);
+                location.reload(); // refresh list
+            }).fail(function(xhr) {
+                alert(xhr.responseText || 'Eroare la ștergerea fișierului.');
+            });
+        });
+    </script>
 
     <script>
         Dropzone.options.orderDropzone = {
@@ -1259,8 +1280,8 @@ if ($users_result->num_rows > 0) {
             init: function() {
                 this.on("success", function(file, response) {
                     console.log("Uploaded:", response);
-                    // Optionally reload attachment list
-                    loadAttachments();
+                    // Refresh the page after upload
+                    window.location.reload();
                 });
             }
         };

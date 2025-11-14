@@ -753,6 +753,24 @@ textarea {
   white-space: pre-wrap; /* preserves \n and wraps long lines */
 }
 
+.deleteAttachment {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888; /* neutral gray by default */
+  font-size: 14px; /* small size */
+  margin-left: 8px;
+  transition: color 0.2s ease;
+}
+
+.deleteAttachment:hover {
+  color: #d9534f; /* Bootstrap-style red */
+}
+
+.deleteAttachment i {
+  pointer-events: none; /* ensures click is on button, not icon */
+}
+
 /* === Animation === */
 @keyframes fadeIn {
   from {
