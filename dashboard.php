@@ -927,7 +927,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                             <div class="filter-group">
                                 <label>Status:</label>
                                 <select id="status_filter" name="status_filter">
-                                    <option value="">Toate</option>
+                                    <option value="">Active</option>
                                     <option value="assigned" <?php if ($status_filter == 'assigned') echo 'selected'; ?>>Atribuit</option>
                                     <option value="completed" <?php if ($status_filter == 'completed') echo 'selected'; ?>>Terminat</option>
                                     <option value="delivered" <?php if ($status_filter == 'delivered') echo 'selected'; ?>>Livrat</option>

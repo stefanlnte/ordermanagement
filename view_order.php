@@ -93,10 +93,12 @@ if ($users_result->num_rows > 0) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Include Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-
+    <!-- Dropzone CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.css">
     <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+    <!-- Dropzone JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
     <!-- Include Select2 JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <!-- CodeMirror JavaScript -->
@@ -1225,6 +1227,44 @@ if ($users_result->num_rows > 0) {
 
         </div>
     </div>
+
+    <div class="no-print">
+        <h3>Attachments</h3>
+        <form action="upload_attachment.php"
+            class="dropzone"
+            id="orderDropzone">
+            <input type="hidden" name="order_id" value="<?= $order_id ?>">
+        </form>
+    </div>
+    <div class="no-print">
+        <?php
+        $stmt = $conn->prepare("SELECT * FROM order_attachments WHERE order_id = ?");
+        $stmt->bind_param("i", $order_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        echo "<ul>";
+        while ($row = $result->fetch_assoc()) {
+            echo "<li><a href='download_attachment.php?id={$row['id']}'>{$row['filename']}</a></li>";
+        }
+        echo "</ul>";
+        ?>
+    </div>
+
+    <script>
+        Dropzone.options.orderDropzone = {
+            paramName: "file", // name of the file param
+            maxFilesize: 20, // MB
+            acceptedFiles: null, // allow all file types
+            init: function() {
+                this.on("success", function(file, response) {
+                    console.log("Uploaded:", response);
+                    // Optionally reload attachment list
+                    loadAttachments();
+                });
+            }
+        };
+    </script>
     <br><br>
     <footer class="no-print">
         <p style="font-size: larger;">© Color Print</p>
