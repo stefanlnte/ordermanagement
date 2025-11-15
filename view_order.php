@@ -33,9 +33,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_due_date'])) {
     $stmt->bind_param("si", $new_due_date, $order_id);
     if ($stmt->execute()) {
         echo "<script>
-        alert('Data scadentă a fost actualizată cu succes!');
-        window.location.href = 'view_order.php?order_id={$order_id}';
-    </script>";
+Swal.fire({
+  icon: 'success',
+  title: 'Succes',
+  text: 'Data scadentă a fost actualizată!',
+  position: 'center',
+  showConfirmButton: false,
+  timer: 1500,
+  timerProgressBar: true
+}).then(() => {
+  window.location.href = 'view_order.php?order_id={$order_id}';
+});
+</script>";
         exit;
     } else {
         echo "Error updating due date: " . $stmt->error;
@@ -89,6 +98,9 @@ if ($users_result->num_rows > 0) {
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" type="text/css" href="styles.css">
     <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Include Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Include Select2 CSS -->
@@ -101,9 +113,6 @@ if ($users_result->num_rows > 0) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
     <!-- Include Select2 JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    <!-- CodeMirror JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
     <script>
         const currentOrderId = <?= (int)$_GET['order_id'] ?>;
     </script>
@@ -171,7 +180,12 @@ if ($users_result->num_rows > 0) {
                         if (btnEdit) btnEdit.style.display = 'inline';
                         if (btnSave) btnSave.style.display = 'none';
                     } else {
-                        alert('Eroare la salvare: ' + (xhr.responseText || xhr.status));
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Eroare la salvare',
+                            text: xhr.responseText || ('Status: ' + xhr.status),
+                            position: 'center'
+                        });
                     }
                 }
             };
@@ -195,41 +209,51 @@ if ($users_result->num_rows > 0) {
         }
 
         function finishOrder() {
-            var orderId = <?php echo $order['order_id']; ?>;
+            var orderId = <?php echo (int)$order['order_id']; ?>;
             var clientPhone = '<?php echo $client_phone; ?>';
+
             var xhr = new XMLHttpRequest();
             xhr.open('POST', 'update_order_status.php', true);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
             xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    sendSMS(clientPhone, orderId, assignedTo, clientName, boss);
-                    // Remove the button from the DOM
-                    var button = document.getElementById('finishButton');
-                    if (button) {
-                        console.log('Butonul a fost gasit si va fi sters.');
-                        button.parentNode.removeChild(button);
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        // Order status updated successfully → send SMS
+                        sendSMS(clientPhone, orderId, assignedTo, clientName, boss);
+
+                        // Remove the "finish" button from DOM
+                        var button = document.getElementById('finishButton');
+                        if (button) {
+                            console.log('Butonul a fost găsit și va fi șters.');
+                            button.parentNode.removeChild(button);
+                        } else {
+                            console.log('Butonul nu a fost găsit.');
+                        }
                     } else {
-                        console.log('Butonul nu a fost gasit.');
+                        console.error('Cererea a eșuat cu status:', xhr.status);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Eroare',
+                            text: 'Finalizarea comenzii a eșuat.',
+                            position: 'center'
+                        });
                     }
-                } else if (xhr.readyState == 4) {
-                    console.error('Cererea a esuat cu status:', xhr.status);
-                    // Opțional: Afisează un mesaj de eroare pentru utilizator
-                    showAlert('Eroare la finalizarea comenzii');
                 }
             };
+
             xhr.onerror = function() {
                 console.error('Eroare la cererea AJAX');
-                // Opțional: Afisează un mesaj de eroare pentru utilizator
-                showAlert('Eroare la finalizarea comenzii');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Eroare',
+                    text: 'Finalizarea comenzii a eșuat.',
+                    position: 'center'
+                });
             };
-            xhr.send('order_id=' + orderId + '&status=completed');
-        }
 
-        function showAlert(message) {
-            return new Promise((resolve) => {
-                alert(message);
-                resolve();
-            });
+            // ✅ Send request here (outside the handler!)
+            xhr.send('order_id=' + encodeURIComponent(orderId) + '&status=completed');
         }
 
         function sendSMS(clientPhone, orderId, assignedTo, clientName, boss) {
@@ -238,7 +262,15 @@ if ($users_result->num_rows > 0) {
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4 && xhr.status == 200) {
-                    showAlert('Good job. Felicitări pentru terminarea comenzii. 🎉').then(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Felicitări!',
+                        text: 'Comanda a fost terminată cu succes 🎉',
+                        position: 'center',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true
+                    }).then(() => {
                         console.log('SMS SENT');
                     });
                 }
@@ -261,13 +293,25 @@ if ($users_result->num_rows > 0) {
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onreadystatechange = function() {
                 if (xhr.readyState == 4 && xhr.status == 200) {
-                    // Display the alert message first
-                    showAlert(xhr.responseText).then(() => {
-                        console.log('Comanda Livrata');
+                    // Success
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Comanda livrată',
+                        text: xhr.responseText,
+                        position: 'center',
+                        showConfirmButton: false,
+                        timer: 2000
+                    }).then(() => {
+                        console.log('Comanda Livrată');
                     });
                 } else if (xhr.readyState == 4) {
-                    // Display an error message if the request was unsuccessful
-                    showAlert('Eroare');
+                    // Error
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Eroare',
+                        text: 'Nu s-a putut marca comanda ca livrată.',
+                        position: 'center'
+                    });
                 }
             };
             xhr.send('order_id=' + orderId + '&status=delivered&delivery_date=' + encodeURIComponent(currentDate));
@@ -279,28 +323,40 @@ if ($users_result->num_rows > 0) {
         function cancelOrder() {
             var orderId = <?php echo $order['order_id']; ?>;
 
-            // Add confirmation prompt
-            if (!confirm("Sigur doriți să anulați comanda cu ID-ul " + orderId + "?")) {
-                return; // Exit the function if the user clicks "Cancel"
-            }
+            Swal.fire({
+                title: 'Anulezi comanda?',
+                text: 'Sigur vrei să anulezi comanda #' + orderId + '?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Da, anulează',
+                cancelButtonText: 'Renunță'
+            }).then(result => {
+                if (!result.isConfirmed) return;
 
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'cancel_order.php', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    // Display the alert message first
-                    showAlert(xhr.responseText).then(() => {
-                        console.log('Comanda Anulată');
-                        // Optionally, redirect or refresh the page
-                        window.location.reload();
-                    });
-                } else if (xhr.readyState == 4) {
-                    // Display an error message if the request was unsuccessful
-                    showAlert('Eroare la anularea comenzii');
-                }
-            };
-            xhr.send('order_id=' + orderId);
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'cancel_order.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Comanda anulată',
+                            text: xhr.responseText,
+                            position: 'center',
+                            showConfirmButton: false,
+                            timer: 2000
+                        }).then(() => window.location.reload());
+                    } else if (xhr.readyState == 4) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Eroare',
+                            text: 'Nu s-a putut anula comanda.',
+                            position: 'center'
+                        });
+                    }
+                };
+                xhr.send('order_id=' + orderId);
+            });
         }
 
 
@@ -403,7 +459,12 @@ if ($users_result->num_rows > 0) {
                     $('#price').val('');
                 },
                 error: function(xhr) {
-                    alert(xhr.responseText || 'Eroare la adăugarea articolului.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Eroare',
+                        text: xhr.responseText || 'Nu s-a putut adăuga articolul.',
+                        position: 'center'
+                    });
                 }
             });
         });
@@ -413,17 +474,37 @@ if ($users_result->num_rows > 0) {
             const id = row.data('id');
 
             if (!id) {
-                alert('Missing row id; cannot delete.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Eroare',
+                    text: 'ID-ul articolului lipsește, nu se poate șterge.',
+                    position: 'center'
+                });
                 return;
             }
-            if (!confirm('Șterge acest articol?')) return;
 
-            $.post('delete_article.php', {
-                id
-            }, function() {
-                loadOrderArticles(currentOrderId);
-            }).fail(function(xhr) {
-                alert(xhr.responseText || 'Could not delete article.');
+            Swal.fire({
+                title: 'Ștergi articolul?',
+                text: 'Această acțiune nu poate fi anulată.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Șterge',
+                cancelButtonText: 'Renunță'
+            }).then(result => {
+                if (!result.isConfirmed) return;
+
+                $.post('delete_article.php', {
+                        id
+                    })
+                    .done(() => loadOrderArticles(currentOrderId))
+                    .fail(xhr => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Eroare',
+                            text: xhr.responseText || 'Nu s-a putut șterge articolul.',
+                            position: 'center'
+                        });
+                    });
             });
         });
     </script>
@@ -564,12 +645,20 @@ if ($users_result->num_rows > 0) {
 
                 // Don’t update if it’s a new typed‑in tag or no selection
                 if (!articleId || isNaN(Number(articleId))) {
-                    alert('Selectează un articol existent înainte de a actualiza prețul implicit.');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Atenție',
+                        text: 'Selectează un articol existent înainte de a actualiza prețul.'
+                    });
                     return;
                 }
 
                 if (newPrice === '' || isNaN(Number(newPrice))) {
-                    alert('Introdu un preț numeric valid.');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Atenție',
+                        text: 'Introdu un preț numeric valid.'
+                    });
                     return;
                 }
 
@@ -584,7 +673,11 @@ if ($users_result->num_rows > 0) {
                     .then(res => res.json())
                     .then(data => {
                         if (data && data.success) {
-                            alert('Prețul implicit a fost actualizat.');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Succes',
+                                text: 'Prețul implicit a fost actualizat.'
+                            });
                             // Optional: refresh Select2 display text with the new price
                             const selected = $('#articleSelect').select2('data')[0];
                             if (selected && selected.name) {
@@ -593,13 +686,54 @@ if ($users_result->num_rows > 0) {
                                 $('#articleSelect').trigger('change.select2');
                             }
                         } else {
-                            alert(data && data.error ? data.error : 'Eroare la actualizarea prețului.');
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Eroare',
+                                text: data && data.error ? data.error : 'Nu s-a putut actualiza prețul.'
+                            });
                         }
                     })
-                    .catch(() => alert('Eroare de rețea la actualizarea prețului.'));
+                    .catch(() =>
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Eroare de rețea',
+                            text: 'Nu s-a putut actualiza prețul.'
+                        })
+                    );
             });
         });
     </script>
+
+    <!-- Sweet alert -->
+    <style>
+        /* Butoane */
+        .swal2-styled.swal2-confirm {
+            background: yellow !important;
+            /* gold */
+            color: #000 !important;
+            border: none !important;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .swal2-styled.swal2-cancel {
+            background: #555 !important;
+            /* gri neutru */
+            color: #fff !important;
+            border: none !important;
+            border-radius: 4px;
+        }
+
+        /* Acțiuni */
+        .swal2-actions {
+            gap: 10px;
+        }
+
+        /* Buton de închidere */
+        .swal2-popup .swal2-close {
+            color: #555;
+        }
+    </style>
 
     <!-- Custom CSS for Select2 golden theme -->
     <style>
@@ -1255,15 +1389,38 @@ if ($users_result->num_rows > 0) {
     <script>
         $(document).on('click', '.deleteAttachment', function() {
             const id = $(this).data('id');
-            if (!confirm('Șterge acest fișier?')) return;
 
-            $.post('delete_attachment.php', {
-                id: id
-            }, function(resp) {
-                alert(resp);
-                location.reload(); // refresh list
-            }).fail(function(xhr) {
-                alert(xhr.responseText || 'Eroare la ștergerea fișierului.');
+            Swal.fire({
+                title: 'Ștergi fișierul?',
+                text: 'Această acțiune nu poate fi anulată.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Șterge',
+                cancelButtonText: 'Renunță'
+            }).then(result => {
+                if (!result.isConfirmed) return;
+
+                $.post('delete_attachment.php', {
+                        id
+                    })
+                    .done(resp => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Succes',
+                            text: 'Fișierul a fost șters.',
+                            position: 'center',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => location.reload());
+                    })
+                    .fail(xhr => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Eroare',
+                            text: xhr.responseText || 'Nu s-a putut șterge fișierul.',
+                            position: 'center'
+                        });
+                    });
             });
         });
     </script>
@@ -1287,12 +1444,64 @@ if ($users_result->num_rows > 0) {
                     // Do nothing here — just log
                 });
                 this.on("queuecomplete", function() {
-                    // Refresh only after ALL uploads finish
-                    window.location.reload();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Succes',
+                        text: 'Toate fișierele au fost adăugate cu succes!',
+                        position: 'center',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true
+                    }).then(() => {
+                        // reîmprospătăm pagina după ce mesajul dispare
+                        window.location.reload();
+                    });
                 });
             }
         };
     </script>
+    <script>
+        // Simple alert
+        function showAlert(message, icon = 'info', title = 'Notificare') {
+            return Swal.fire({
+                icon: icon, // 'success', 'error', 'warning', 'info', 'question'
+                title: title,
+                text: message,
+                position: 'center', // center the modal
+                confirmButtonText: 'OK'
+            });
+        }
+
+        // Confirm dialog (returns a Promise)
+        function showConfirm({
+            title = 'Confirmare',
+            text = 'Ești sigur?',
+            icon = 'question',
+            confirmText = 'Da',
+            cancelText = 'Anulează'
+        } = {}) {
+            return Swal.fire({
+                title,
+                text,
+                icon,
+                showCancelButton: true,
+                confirmButtonText: confirmText,
+                cancelButtonText: cancelText,
+                reverseButtons: true,
+                focusCancel: true
+            });
+        }
+
+        // Toast (top-right, non-blocking)
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            timerProgressBar: true
+        });
+    </script>
+
     <br><br>
     <footer class="no-print">
         <p style="font-size: larger;">© Color Print</p>

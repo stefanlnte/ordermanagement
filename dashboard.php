@@ -688,56 +688,34 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         }
     </style>
 
+    <!-- Sweet alert -->
     <style>
-        /* SweetAlert2 – Yellow theme */
-        .swal2-popup {
-            border-radius: 10px;
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
-            font-size: 16px;
-        }
-
-        .swal2-title {
-            color: #222;
-        }
-
-        .swal2-html-container {
-            color: #333;
-        }
-
-        .swal2-icon.swal2-success,
-        .swal2-icon.swal2-info,
-        .swal2-icon.swal2-error,
-        .swal2-icon.swal2-warning,
-        .swal2-icon.swal2-question {
-            border-color: #ffd700;
-            color: #222;
-        }
-
-        .swal2-icon.swal2-warning {
-            border-color: #ffcc00;
-            color: #ff9900;
-        }
-
+        /* Butoane */
         .swal2-styled.swal2-confirm {
-            background: #ffd700 !important;
-            /* yellow */
+            background: yellow !important;
+            /* gold */
             color: #000 !important;
-            border: 1px solid #a9a9a9 !important;
-            box-shadow: none !important;
+            border: none !important;
+            border-radius: 4px;
+            font-weight: 600;
         }
 
         .swal2-styled.swal2-cancel {
-            background: #333 !important;
+            background: #555 !important;
+            /* gri neutru */
             color: #fff !important;
-            border: 1px solid #444 !important;
+            border: none !important;
+            border-radius: 4px;
         }
 
+        /* Acțiuni */
         .swal2-actions {
-            gap: 8px;
+            gap: 10px;
         }
 
+        /* Buton de închidere */
         .swal2-popup .swal2-close {
-            color: #333;
+            color: #555;
         }
     </style>
 
