@@ -31,24 +31,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_due_date'])) {
     $update_due_sql = "UPDATE orders SET due_date = ? WHERE order_id = ?";
     $stmt = $conn->prepare($update_due_sql);
     $stmt->bind_param("si", $new_due_date, $order_id);
+
     if ($stmt->execute()) {
-        echo "<script>
-Swal.fire({
-  icon: 'success',
-  title: 'Succes',
-  text: 'Data scadentă a fost actualizată!',
-  position: 'center',
-  showConfirmButton: false,
-  timer: 1500,
-  timerProgressBar: true
-}).then(() => {
-  window.location.href = 'view_order.php?order_id={$order_id}';
-});
-</script>";
-        exit;
+        // ✅ Save a flash message in session
+        $_SESSION['flash_success'] = "Data scadentă a fost actualizată!";
+        header("Location: view_order.php?order_id=$order_id");
+        exit();
     } else {
-        echo "Error updating due date: " . $stmt->error;
+        $_SESSION['flash_error'] = "Eroare la actualizarea datei: " . $stmt->error;
+        header("Location: view_order.php?order_id=$order_id");
+        exit();
     }
+
     $stmt->close();
 }
 
@@ -533,6 +527,9 @@ if ($users_result->num_rows > 0) {
             for (let i = 0; i < daysToGenerate; i++) {
                 const d = new Date();
                 d.setDate(today.getDate() + i);
+
+                // Skip Sundays (0 = Sunday)
+                if (d.getDay() === 0) continue;
 
                 const year = d.getFullYear();
                 const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -1501,6 +1498,33 @@ if ($users_result->num_rows > 0) {
             timerProgressBar: true
         });
     </script>
+
+    <?php if (!empty($_SESSION['flash_success'])): ?>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Succes',
+                text: <?= json_encode($_SESSION['flash_success']) ?>,
+                position: 'center',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true
+            });
+        </script>
+    <?php unset($_SESSION['flash_success']);
+    endif; ?>
+
+    <?php if (!empty($_SESSION['flash_error'])): ?>
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Eroare',
+                text: <?= json_encode($_SESSION['flash_error']) ?>,
+                position: 'center'
+            });
+        </script>
+    <?php unset($_SESSION['flash_error']);
+    endif; ?>
 
     <br><br>
     <footer class="no-print">
