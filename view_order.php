@@ -861,10 +861,6 @@ if ($users_result->num_rows > 0) {
             transform: scale(1.05);
         }
 
-        body>div:nth-child(3)>div.no-print.add-article-form {
-            margin: 25px !important;
-        }
-
         /* Material Design Gray & Yellow Theme */
         .add-article-form {
             background: linear-gradient(135deg, #1a1a1aff, gray);
@@ -873,7 +869,6 @@ if ($users_result->num_rows > 0) {
             border-radius: 8px;
             box-shadow: 0 2px 6px yellow;
             max-width: 400px;
-            margin-left: 10px !important;
         }
 
         .add-article-form form {
@@ -1020,14 +1015,14 @@ if ($users_result->num_rows > 0) {
             <button class="no-print" onclick="togglePin(<?= $order['order_id'] ?>, 1)">Pin Order 📌</button>
         <?php endif; ?>
         <?php if ($order['status'] != 'completed' && $order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
-            <button id="finishButton" class="no-print" onclick="finishOrder()"><i class="fa-solid fa-flag-checkered"></i> Comanda a fost terminată</button>
+            <button id="finishButton" class="no-print" onclick="finishOrder()"><i class="fa-solid fa-flag-checkered"></i> Comandă terminată</button>
         <?php endif; ?>
 
         <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
-            <button id="deliverButton" class="no-print" onclick="deliverOrder()"><i class="fa-solid fa-truck-ramp-box"></i> Comanda a fost Livrată</button>
+            <button id="deliverButton" class="no-print" onclick="deliverOrder()"><i class="fa-solid fa-truck-ramp-box"></i> Comandă livrată</button>
         <?php endif; ?>
 
-        <button id="cancelButton" class="no-print" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>><i class="fa-solid fa-ban"></i> Anulează Comanda</button>
+        <button id="cancelButton" class="no-print" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>><i class="fa-solid fa-ban"></i> Anulează comanda</button>
         <br>
         <button class="no-print" href="javascript:void(0);" onclick="window.history.back();"><i class="fa-solid fa-chevron-left"></i> Înapoi la panou comenzi</button>
     </header>
@@ -1075,7 +1070,7 @@ if ($users_result->num_rows > 0) {
             <button class="no-print" onclick="printOrder()"><i class="fa-solid fa-print"></i> Print Order</button><br>
         </div>
     </div>
-    <div style="min-height: 100vh;">
+    <div style="min-height: 100vh; margin-left: 25px">
         <h2>Comanda nr. <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
         <?php if ($order['is_achitat'] == 1): ?>
             <h2>Comandă achitată</h2>
@@ -1226,10 +1221,10 @@ if ($users_result->num_rows > 0) {
             <p>-------------VĂ MULŢUMIM!------------</p>
 
         </div>
-    </div>
 
-    <h3>Atașamente</h3>
-    <div class="no-print attachments-section">
+    </div>
+    <h3 style="padding-left: 25px">Atașamente</h3>
+    <div class=" no-print attachments-section">
         <form action="upload_attachment.php"
             class="dropzone"
             id="orderDropzone">
@@ -1274,13 +1269,24 @@ if ($users_result->num_rows > 0) {
 
     <script>
         Dropzone.options.orderDropzone = {
-            paramName: "file", // name of the file param
+            paramName: "file",
             maxFilesize: 1024, // MB
-            acceptedFiles: null, // allow all file types
+            acceptedFiles: null,
+            dictDefaultMessage: "Adaugă fișiere",
+            dictFallbackMessage: "Browserul dvs. nu suportă încărcarea",
+            dictFileTooBig: "Fișierul este prea mare ({{filesize}}MiB). Dimensiunea maximă: {{maxFilesize}}MiB.",
+            dictInvalidFileType: "Nu puteți încărca fișiere de acest tip.",
+            dictResponseError: "Serverul a răspuns cu codul {{statusCode}}.",
+            dictCancelUpload: "Anulează încărcarea",
+            dictRemoveFile: "Șterge fișierul",
+            dictMaxFilesExceeded: "Nu puteți încărca mai multe fișiere.",
             init: function() {
                 this.on("success", function(file, response) {
                     console.log("Uploaded:", response);
-                    // Refresh the page after upload
+                    // Do nothing here — just log
+                });
+                this.on("queuecomplete", function() {
+                    // Refresh only after ALL uploads finish
                     window.location.reload();
                 });
             }
