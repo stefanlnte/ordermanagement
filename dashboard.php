@@ -327,6 +327,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <link rel="stylesheet" type="text/css" href="styles.css">
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <!-- Include Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -481,9 +484,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     })
                     .then(response => response.text())
                     .then(data => {
-                        alert('Client actualizat cu succes! 👍');
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Client actualizat!',
+                            position: 'center'
+                        });
                         $('#editClientModal').css('display', 'none');
-                        // Refresh the client dropdown
                         $('#client_id').trigger('change');
                     })
                     .catch(error => console.error('Error:', error));
@@ -682,6 +688,59 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         }
     </style>
 
+    <style>
+        /* SweetAlert2 – Yellow theme */
+        .swal2-popup {
+            border-radius: 10px;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.25);
+            font-size: 16px;
+        }
+
+        .swal2-title {
+            color: #222;
+        }
+
+        .swal2-html-container {
+            color: #333;
+        }
+
+        .swal2-icon.swal2-success,
+        .swal2-icon.swal2-info,
+        .swal2-icon.swal2-error,
+        .swal2-icon.swal2-warning,
+        .swal2-icon.swal2-question {
+            border-color: #ffd700;
+            color: #222;
+        }
+
+        .swal2-icon.swal2-warning {
+            border-color: #ffcc00;
+            color: #ff9900;
+        }
+
+        .swal2-styled.swal2-confirm {
+            background: #ffd700 !important;
+            /* yellow */
+            color: #000 !important;
+            border: 1px solid #a9a9a9 !important;
+            box-shadow: none !important;
+        }
+
+        .swal2-styled.swal2-cancel {
+            background: #333 !important;
+            color: #fff !important;
+            border: 1px solid #444 !important;
+        }
+
+        .swal2-actions {
+            gap: 8px;
+        }
+
+        .swal2-popup .swal2-close {
+            color: #333;
+        }
+    </style>
+
     <!-- Script for adding new order -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -695,18 +754,43 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     .then(response => response.text())
                     .then(data => {
                         if (data.includes('Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ')) {
-                            alert('Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ');
-                            this.reset(); // Reset the form after successful submission
-                            // Assuming you want to navigate to view_order.php after reset
-                            const orderId = data.match(/order_id=(\d+)/)[1];
-                            window.location.href = 'view_order.php?order_id=' + orderId;
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'Comanda a fost adăugată!'
+                            });
+                            this.reset();
+
+                            const match = data.match(/order_id=(\d+)/);
+                            const orderId = match ? match[1] : null;
+
+                            if (orderId) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Comanda a fost adăugată!',
+                                    text: 'Se deschide pagina comenzii...',
+                                    showConfirmButton: false,
+                                    timer: 1500,
+                                    timerProgressBar: true,
+                                    position: 'center'
+                                }).then(() => {
+                                    window.location.href = 'view_order.php?order_id=' + orderId;
+                                });
+                            }
                         } else {
-                            alert('Error adding new order: ' + data);
+                            showAlert({
+                                icon: 'error',
+                                title: 'Eroare',
+                                text: 'Nu s-a putut adăuga comanda: ' + data
+                            });
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('An error occurred while processing your request.');
+                        showAlert({
+                            icon: 'error',
+                            title: 'Eroare de rețea',
+                            text: 'A apărut o problemă la procesarea cererii.'
+                        });
                     });
             });
         });
@@ -1192,6 +1276,55 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             });
         });
     </script>
+
+    <script>
+        // Simple alert
+        function showAlert({
+            title = 'Notificare',
+            text = '',
+            icon = 'info',
+            timer = null
+        } = {}) {
+            return Swal.fire({
+                icon,
+                title,
+                text,
+                timer,
+                timerProgressBar: !!timer,
+                confirmButtonText: 'OK'
+            });
+        }
+
+        // Confirm dialog (returns a Promise)
+        function showConfirm({
+            title = 'Confirmare',
+            text = 'Ești sigur?',
+            icon = 'question',
+            confirmText = 'Da',
+            cancelText = 'Anulează'
+        } = {}) {
+            return Swal.fire({
+                title,
+                text,
+                icon,
+                showCancelButton: true,
+                confirmButtonText: confirmText,
+                cancelButtonText: cancelText,
+                reverseButtons: true,
+                focusCancel: true
+            });
+        }
+
+        // Toast (top-right, non-blocking)
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2500,
+            timerProgressBar: true
+        });
+    </script>
+
     <footer>
         <p style="font-size: larger;">© Color Print</p>
         <a href="dashboard.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-house"></i> Dashboard</a>

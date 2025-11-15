@@ -1148,7 +1148,7 @@ if ($users_result->num_rows > 0) {
                 Bate vântul pe-aici <i class="fa-solid fa-wind"></i>
             </p>
         <?php endif; ?>
-
+        <br>
 
 
         <!-- Add article form -->
@@ -1211,6 +1211,7 @@ if ($users_result->num_rows > 0) {
                 </g>
             </svg>
         </div>
+        <br>
         <div class="contact-info small-text">
             <p><i class="fa-solid fa-location-dot"></i> Str. Roman Mușat, Nr. 21, Roman</p>
             <p>(lângă Biblioteca Municipală și Farm. 32)</p>
