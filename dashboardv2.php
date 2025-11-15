@@ -1042,21 +1042,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     </div>
 
                     <div class="filter-group">
-                        <label>Categorie:</label>
-                        <select id="category_filter" name="category_filter">
-                            <option value="">Toate</option>
-                            <?php
-                            $categories_sql = "SELECT category_id, category_name FROM categories";
-                            $categories_result = $conn->query($categories_sql);
-                            while ($category = $categories_result->fetch_assoc()) {
-                                $selected = ($category_filter == $category['category_id']) ? 'selected' : '';
-                                echo "<option value='" . $category['category_id'] . "' $selected>" . $category['category_name'] . "</option>";
-                            }
-                            ?>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
                         <label>Ordine:</label>
                         <select id="sort_order" name="sort_order">
                             <option value="ASC" <?php if ($sort_order == 'ASC') echo 'selected'; ?>>Ascendent</option>
