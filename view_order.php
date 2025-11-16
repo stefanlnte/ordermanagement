@@ -17,13 +17,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
     $update_sql = "UPDATE orders SET assigned_to = ? WHERE order_id = ?";
     $stmt = $conn->prepare($update_sql);
     $stmt->bind_param("ii", $assigned_to, $order_id);
+
     if ($stmt->execute()) {
-        header("Location: view_order.php?order_id=$order_id");
-        exit();
+        $_SESSION['flash_success'] = "Realocarea strategică a fost realizată!";
     } else {
-        echo "Error updating user: " . $stmt->error;
+        $_SESSION['flash_error'] = "Eroare la actualizarea utilizatorului: " . $stmt->error;
     }
     $stmt->close();
+
+    header("Location: view_order.php?order_id=$order_id");
+    exit();
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_due_date'])) {
@@ -1155,7 +1158,9 @@ if ($users_result->num_rows > 0) {
 
         <button id="cancelButton" class="no-print" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>><i class="fa-solid fa-ban"></i> Anulează comanda</button>
         <br>
-        <button class="no-print" href="javascript:void(0);" onclick="window.history.back();"><i class="fa-solid fa-chevron-left"></i> Înapoi la panou comenzi</button>
+        <button class="no-print" onclick="window.location.href='dashboard.php'">
+            <i class="fa-solid fa-chevron-left"></i> Înapoi la panou comenzi
+        </button>
     </header>
     <div class="order-options">
         <h1 style="font-size: larger;">Opțiuni suplimentare</h1>
