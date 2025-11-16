@@ -25,7 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
     }
     $stmt->close();
 
-    header("Location: view_order.php?order_id=$order_id");
+    $return = $_GET['return'] ?? ($_POST['return'] ?? '');
+    $returnParam = $return ? "&return=" . urlencode($return) : '';
+    header("Location: view_order.php?order_id=$order_id$returnParam");
     exit();
 }
 
@@ -38,11 +40,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_due_date'])) {
     if ($stmt->execute()) {
         // ✅ Save a flash message in session
         $_SESSION['flash_success'] = "Data scadentă a fost actualizată!";
-        header("Location: view_order.php?order_id=$order_id");
+        $return = $_GET['return'] ?? ($_POST['return'] ?? '');
+        $returnParam = $return ? "&return=" . urlencode($return) : '';
+        header("Location: view_order.php?order_id=$order_id$returnParam");
         exit();
     } else {
         $_SESSION['flash_error'] = "Eroare la actualizarea datei: " . $stmt->error;
-        header("Location: view_order.php?order_id=$order_id");
+        $return = $_GET['return'] ?? ($_POST['return'] ?? '');
+        $returnParam = $return ? "&return=" . urlencode($return) : '';
+        header("Location: view_order.php?order_id=$order_id$returnParam");
         exit();
     }
 
@@ -86,6 +92,8 @@ if ($users_result->num_rows > 0) {
     }
 }
 ?>
+
+<?php $returnUrl = $_GET['return'] ?? 'dashboard.php'; ?>
 
 <!DOCTYPE html>
 <html>
@@ -1158,7 +1166,7 @@ if ($users_result->num_rows > 0) {
 
         <button id="cancelButton" class="no-print" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>><i class="fa-solid fa-ban"></i> Anulează comanda</button>
         <br>
-        <button class="no-print" onclick="window.location.href='dashboard.php'">
+        <button class="no-print" onclick="window.location.href='<?= htmlspecialchars($returnUrl) ?>'">
             <i class="fa-solid fa-chevron-left"></i> Înapoi la panou comenzi
         </button>
     </header>
@@ -1166,6 +1174,7 @@ if ($users_result->num_rows > 0) {
         <h1 style="font-size: larger;">Opțiuni suplimentare</h1>
         <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled')  ?>
         <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
+            <input type="hidden" name="return" value="<?= htmlspecialchars($_GET['return'] ?? '') ?>">
             <div class="form-group">
                 <label for="new_due_date_select">Extinde termenul:</label>
                 <select id="new_due_date_select" name="new_due_date"></select>
@@ -1174,6 +1183,7 @@ if ($users_result->num_rows > 0) {
         </form>
 
         <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
+            <input type="hidden" name="return" value="<?= htmlspecialchars($_GET['return'] ?? '') ?>">
             <div class="form-group no-print">
                 <label for="assigned_to">Atribuie comanda lui:</label>
                 <select id="assigned_to" name="assigned_to">
@@ -1290,6 +1300,7 @@ if ($users_result->num_rows > 0) {
         <!-- Add article form -->
         <div class="no-print add-article-form">
             <form id="addArticleForm" method="post" action="add_article.php">
+                <input type="hidden" name="return" value="<?= htmlspecialchars($_GET['return'] ?? '') ?>">
                 <select id="articleSelect" name="article_id" style="width: 300px;">
                     <option value="" disabled selected>Caută sau adaugă articol</option>
                 </select>
@@ -1366,6 +1377,7 @@ if ($users_result->num_rows > 0) {
             class="dropzone"
             id="orderDropzone">
             <input type="hidden" name="order_id" value="<?= $order_id ?>">
+            <input type="hidden" name="return" value="<?= htmlspecialchars($_GET['return'] ?? '') ?>">
         </form>
     </div>
     <div class="no-print">

@@ -245,7 +245,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
             $last_order_id = $stmt->insert_id; // Get the last inserted order ID
             echo "Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ";
             echo "<script>document.getElementById('orderForm').reset();</script>";
-            echo "<script>window.location.href='view_order.php?order_id=" . $last_order_id . "';</script>";
+            echo "<script>window.location.href='view_order.php?order_id=" . $last_order_id .
+                "&return=" . urlencode($_SERVER['REQUEST_URI']) . "';</script>";
             exit();
         } else {
             echo "Error adding new order: " . $stmt->error;
@@ -737,7 +738,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                     timerProgressBar: true,
                                     position: 'center'
                                 }).then(() => {
-                                    window.location.href = 'view_order.php?order_id=' + orderId;
+                                    const returnUrl = document.querySelector('input[name="return"]').value;
+                                    window.location.href = 'view_order.php?order_id=' + orderId +
+                                        (returnUrl ? '&return=' + encodeURIComponent(returnUrl) : '');
                                 });
                             }
                         } else {
@@ -835,7 +838,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             <h2 style="margin-left:20px;">📌 Comenzi urgente</h2>
             <div class="pinned-feed">
                 <?php while ($pin = $pinned_result->fetch_assoc()): ?>
-                    <a href="view_order.php?order_id=<?= $pin['order_id']; ?>">
+                    <a href="view_order.php?order_id=<?= $pin['order_id']; ?>&return=<?= urlencode($_SERVER['REQUEST_URI']); ?>">
                         <div class="card pinned-card">
                             <div class="card-header">
                                 Comanda #<?= $pin['order_id']; ?>
@@ -854,7 +857,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <div class="container">
         <div class="sidebar" data-aos="slide-right">
             <h2>Adaugă Comandă</h2>
-            <form id="orderForm" method="post" action="dashboard.php" autocomplete="off">
+            <form id="orderForm" method="post" action="dashboard.php?<?= htmlspecialchars($_SERVER['QUERY_STRING']) ?>" autocomplete="off">
+                <input type="hidden" name="return"
+                    value="<?= htmlspecialchars($_SERVER['QUERY_STRING'] ? 'dashboard.php?' . $_SERVER['QUERY_STRING'] : 'dashboard.php') ?>">
                 <input type="hidden" name="add_order" value="1">
                 <div class="form-group">
 
@@ -948,6 +953,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 <span class="close">&times;</span>
                 <h2>Editează detalii</h2>
                 <form id="editClientForm">
+                    <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                     <input type="hidden" id="edit_client_id" name="edit_client_id">
                     <div class="form-group">
                         <label for="edit_client_name">Nume Client:</label>
@@ -972,6 +978,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 <thead>
                     <div class="filters" style="margin-bottom: 20px;">
                         <form method="GET" action="dashboard.php">
+                            <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                             <div class="filter-group">
                                 <label>Status:</label>
                                 <select id="status_filter" name="status_filter">
@@ -1061,7 +1068,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                             $row_class = implode(' ', $row_classes);
 
-                            echo "<tr class='$row_class' onclick=\"window.location.href='view_order.php?order_id=" . $row["order_id"] . "'\">";
+                            echo "<tr class='$row_class' 
+        onclick=\"window.location.href='view_order.php?order_id=" . $row["order_id"] .
+                                "&return=" . urlencode($_SERVER['REQUEST_URI']) . "'\">";
                             echo "<td>" . $order_id . "</td>";
                             echo "<td>" . $row["client_name"] . "</td>";
                             echo "<td>" . $row["order_details"] . "</td>";
