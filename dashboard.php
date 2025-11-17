@@ -487,8 +487,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     .then(data => {
                         Toast.fire({
                             icon: 'success',
-                            title: 'Client actualizat!',
-                            position: 'center'
+                            title: 'Client actualizat!'
                         });
                         $('#editClientModal').css('display', 'none');
                         $('#client_id').trigger('change');
@@ -1253,30 +1252,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             });
         }
 
-        // Confirm dialog (returns a Promise)
-        function showConfirm({
-            title = 'Confirmare',
-            text = 'Ești sigur?',
-            icon = 'question',
-            confirmText = 'Da',
-            cancelText = 'Anulează'
-        } = {}) {
-            return Swal.fire({
-                title,
-                text,
-                icon,
-                showCancelButton: true,
-                confirmButtonText: confirmText,
-                cancelButtonText: cancelText,
-                reverseButtons: true,
-                focusCancel: true
-            });
-        }
-
-        // Toast (top-right, non-blocking)
         const Toast = Swal.mixin({
             toast: true,
-            position: 'top-end',
+            position: 'center',
             showConfirmButton: false,
             timer: 2500,
             timerProgressBar: true

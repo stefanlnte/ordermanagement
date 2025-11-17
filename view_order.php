@@ -681,10 +681,9 @@ if ($users_result->num_rows > 0) {
                     .then(res => res.json())
                     .then(data => {
                         if (data && data.success) {
-                            Swal.fire({
+                            Toast.fire({
                                 icon: 'success',
-                                title: 'Succes',
-                                text: 'Prețul implicit a fost actualizat.'
+                                title: 'Prețul implicit a fost actualizat.'
                             });
                             // Optional: refresh Select2 display text with the new price
                             const selected = $('#articleSelect').select2('data')[0];
@@ -1475,41 +1474,9 @@ if ($users_result->num_rows > 0) {
         };
     </script>
     <script>
-        // Simple alert
-        function showAlert(message, icon = 'info', title = 'Notificare') {
-            return Swal.fire({
-                icon: icon, // 'success', 'error', 'warning', 'info', 'question'
-                title: title,
-                text: message,
-                position: 'center', // center the modal
-                confirmButtonText: 'OK'
-            });
-        }
-
-        // Confirm dialog (returns a Promise)
-        function showConfirm({
-            title = 'Confirmare',
-            text = 'Ești sigur?',
-            icon = 'question',
-            confirmText = 'Da',
-            cancelText = 'Anulează'
-        } = {}) {
-            return Swal.fire({
-                title,
-                text,
-                icon,
-                showCancelButton: true,
-                confirmButtonText: confirmText,
-                cancelButtonText: cancelText,
-                reverseButtons: true,
-                focusCancel: true
-            });
-        }
-
-        // Toast (top-right, non-blocking)
         const Toast = Swal.mixin({
             toast: true,
-            position: 'top-end',
+            position: 'center',
             showConfirmButton: false,
             timer: 2500,
             timerProgressBar: true
