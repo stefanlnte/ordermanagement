@@ -141,29 +141,26 @@ LEFT JOIN users u ON o.assigned_to = u.user_id
 LEFT JOIN categories cat ON o.category_id = cat.category_id
 WHERE 1=1";
 
-// Excludem comenzile 'delivered' și 'cancelled' și aici
 if ($status_filter !== 'delivered' && $status_filter !== 'cancelled') {
-    $total_orders_sql .= " AND status NOT IN ('delivered', 'cancelled')";
+    $total_orders_sql .= " AND o.status NOT IN ('delivered', 'cancelled')";
 }
-
-// Adăugăm aceleași filtre ca mai sus
 if ($status_filter) {
-    $total_orders_sql .= " AND status = ?";
+    $total_orders_sql .= " AND o.status = ?";
     $total_params[] = $status_filter;
     $total_types .= 's';
 }
 if ($assigned_filter) {
-    $total_orders_sql .= " AND assigned_to = ?";
+    $total_orders_sql .= " AND o.assigned_to = ?";
     $total_params[] = $assigned_filter;
     $total_types .= 'i';
 }
 if ($category_filter) {
-    $total_orders_sql .= " AND category_id = ?";
+    $total_orders_sql .= " AND o.category_id = ?";
     $total_params[] = $category_filter;
     $total_types .= 'i';
 }
 if ($client_filter) {
-    $total_orders_sql .= " AND client_id = ?";
+    $total_orders_sql .= " AND o.client_id = ?";
     $total_params[] = $client_filter;
     $total_types .= 'i';
 }
