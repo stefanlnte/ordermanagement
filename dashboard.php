@@ -134,7 +134,12 @@ $stmt->execute();
 $orders_result = $stmt->get_result();
 
 // Construim query-ul pentru numărul total de comenzi (pentru paginare)
-$total_orders_sql = "SELECT COUNT(*) as total FROM orders WHERE 1=1";
+$total_orders_sql = "SELECT COUNT(*) as total 
+FROM orders o
+JOIN clients c ON o.client_id = c.client_id
+LEFT JOIN users u ON o.assigned_to = u.user_id
+LEFT JOIN categories cat ON o.category_id = cat.category_id
+WHERE 1=1";
 
 // Excludem comenzile 'delivered' și 'cancelled' și aici
 if ($status_filter !== 'delivered' && $status_filter !== 'cancelled') {
