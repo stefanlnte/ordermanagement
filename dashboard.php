@@ -71,73 +71,77 @@ $pinned_sql = "SELECT o.order_id, o.due_date, o.assigned_to, u.username AS opera
 $pinned_result = $conn->query($pinned_sql);
 
 
-// Fetch filter values
-$status_filter = $_GET['status_filter'] ?? '';
-$assigned_filter = $_GET['assigned_filter'] ?? '';
-$category_filter = $_GET['category_filter'] ?? '';
-$sort_order = $_GET['sort_order'] ?? 'ASC';
-$client_filter = $_GET['client_filter'] ?? '';
-$page = $_GET['page'] ?? 1;
-$limit = 18; // Number of orders per page
-$offset = ($page - 1) * $limit;
+// Preluăm valorile filtrelor din query string (GET), cu fallback la valori implicite
+$status_filter = $_GET['status_filter'] ?? '';       // Filtru pentru statusul comenzii
+$assigned_filter = $_GET['assigned_filter'] ?? '';   // Filtru pentru utilizatorul asignat
+$category_filter = $_GET['category_filter'] ?? '';   // Filtru pentru categorie
+$sort_order = $_GET['sort_order'] ?? 'ASC';          // Ordinea de sortare (ASC/DESC)
+$client_filter = $_GET['client_filter'] ?? '';       // Filtru pentru client
+$page = $_GET['page'] ?? 1;                          // Pagina curentă pentru paginare
+$limit = 18;                                         // Număr de comenzi pe pagină
+$offset = ($page - 1) * $limit;                      // Offset-ul pentru paginare
 
-// Fetch orders with filters and sorting
+// Construim query-ul pentru selectarea comenzilor cu filtre și sortare
 $order_sql = "SELECT o.*, c.client_name, u.username as assigned_user, cat.category_name, o.delivery_date FROM orders o 
               JOIN clients c ON o.client_id = c.client_id 
               LEFT JOIN users u ON o.assigned_to = u.user_id 
               LEFT JOIN categories cat ON o.category_id = cat.category_id 
-              WHERE 1=1";
+              WHERE 1=1"; // WHERE 1=1 pentru a putea adăuga condiții dinamice
 
+// Inițializăm variabile pentru parametrii și tipurile lor (pentru prepared statements)
 $total_params = [];
 $total_types = '';
 $params = [];
 $types = '';
 
-// Exclude orders with status 'delivered' and 'cancelled' by default
+// Excludem comenzile cu status 'delivered' și 'cancelled' în mod implicit
 if ($status_filter !== 'delivered' && $status_filter !== 'cancelled') {
     $order_sql .= " AND o.status NOT IN ('delivered', 'cancelled') ";
 }
 
+// Adăugăm filtre dinamice în funcție de parametrii primiți
 if ($status_filter) {
     $order_sql .= " AND o.status = ?";
     $params[] = $status_filter;
-    $types .= 's';
+    $types .= 's'; // string
 }
 if ($assigned_filter) {
     $order_sql .= " AND o.assigned_to = ?";
     $params[] = $assigned_filter;
-    $types .= 'i';
+    $types .= 'i'; // integer
 }
 if ($category_filter) {
     $order_sql .= " AND o.category_id = ?";
     $params[] = $category_filter;
     $types .= 'i';
 }
-
 if ($client_filter) {
     $order_sql .= " AND o.client_id = ?";
     $params[] = $client_filter;
     $types .= 'i';
 }
 
+// Adăugăm sortarea și paginarea
 $order_sql .= " ORDER BY o.order_id $sort_order LIMIT ? OFFSET ?";
 $params[] = $limit;
 $params[] = $offset;
-$types .= 'ii';
+$types .= 'ii'; // integer, integer
 
+// Pregătim și executăm query-ul pentru comenzile filtrate
 $stmt = $conn->prepare($order_sql);
 $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $orders_result = $stmt->get_result();
 
-// Fetch total number of orders for pagination
+// Construim query-ul pentru numărul total de comenzi (pentru paginare)
 $total_orders_sql = "SELECT COUNT(*) as total FROM orders WHERE 1=1";
 
-// Exclude orders with status 'delivered' and 'cancelled' by default in the total count
+// Excludem comenzile 'delivered' și 'cancelled' și aici
 if ($status_filter !== 'delivered' && $status_filter !== 'cancelled') {
     $total_orders_sql .= " AND status NOT IN ('delivered', 'cancelled')";
 }
 
+// Adăugăm aceleași filtre ca mai sus
 if ($status_filter) {
     $total_orders_sql .= " AND status = ?";
     $total_params[] = $status_filter;
@@ -153,24 +157,24 @@ if ($category_filter) {
     $total_params[] = $category_filter;
     $total_types .= 'i';
 }
-
 if ($client_filter) {
     $total_orders_sql .= " AND client_id = ?";
     $total_params[] = $client_filter;
     $total_types .= 'i';
 }
 
+// Pregătim și executăm query-ul pentru numărul total de comenzi
 $total_stmt = $conn->prepare($total_orders_sql);
 if (!empty($total_types)) {
     $total_stmt->bind_param($total_types, ...$total_params);
 }
 
 $total_stmt->execute();
-$total_stmt->execute();
 $total_result = $total_stmt->get_result();
-$total_orders = $total_result->fetch_assoc()['total'];
+$total_orders = $total_result->fetch_assoc()['total']; // Extragem numărul total
 $total_stmt->close();
 
+// Calculăm numărul total de pagini
 $total_pages = ceil($total_orders / $limit);
 
 // Handle form submission for adding an order

@@ -1417,21 +1417,15 @@ if ($users_result->num_rows > 0) {
                         id
                     })
                     .done(resp => {
-                        Swal.fire({
+                        Toast.fire({
                             icon: 'success',
-                            title: 'Succes',
-                            text: 'Fișierul a fost șters.',
-                            position: 'center',
-                            showConfirmButton: false,
-                            timer: 1500
+                            title: 'Fișierul a fost șters.'
                         }).then(() => location.reload());
                     })
                     .fail(xhr => {
-                        Swal.fire({
+                        Toast.fire({
                             icon: 'error',
-                            title: 'Eroare',
-                            text: xhr.responseText || 'Nu s-a putut șterge fișierul.',
-                            position: 'center'
+                            title: xhr.responseText || 'Nu s-a putut șterge fișierul.'
                         });
                     });
             });
