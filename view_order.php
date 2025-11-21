@@ -1371,7 +1371,7 @@ if ($users_result->num_rows > 0) {
 
     </div>
     <h3 style="padding-left: 25px">Atașamente</h3>
-    <div class=" no-print attachments-section">
+    <div class="no-print attachments-section">
         <form action="upload_attachment.php"
             class="dropzone"
             id="orderDropzone">
@@ -1451,14 +1451,9 @@ if ($users_result->num_rows > 0) {
                     // Do nothing here — just log
                 });
                 this.on("queuecomplete", function() {
-                    Swal.fire({
+                    Toast.fire({
                         icon: 'success',
-                        title: 'Succes',
-                        text: 'Toate fișierele au fost adăugate cu succes!',
-                        position: 'center',
-                        showConfirmButton: false,
-                        timer: 2000,
-                        timerProgressBar: true
+                        title: 'Toate fișierele au fost adăugate cu succes!'
                     }).then(() => {
                         // reîmprospătăm pagina după ce mesajul dispare
                         window.location.reload();
@@ -1479,14 +1474,9 @@ if ($users_result->num_rows > 0) {
 
     <?php if (!empty($_SESSION['flash_success'])): ?>
         <script>
-            Swal.fire({
+            Toast.fire({
                 icon: 'success',
-                title: 'Succes',
-                text: <?= json_encode($_SESSION['flash_success']) ?>,
-                position: 'center',
-                showConfirmButton: false,
-                timer: 1500,
-                timerProgressBar: true
+                title: <?= json_encode($_SESSION['flash_success']) ?>
             });
         </script>
     <?php unset($_SESSION['flash_success']);
@@ -1494,11 +1484,9 @@ if ($users_result->num_rows > 0) {
 
     <?php if (!empty($_SESSION['flash_error'])): ?>
         <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Eroare',
-                text: <?= json_encode($_SESSION['flash_error']) ?>,
-                position: 'center'
+            Toast.fire({
+                icon: 'success',
+                title: <?= json_encode($_SESSION['flash_error']) ?>
             });
         </script>
     <?php unset($_SESSION['flash_error']);
