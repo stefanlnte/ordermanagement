@@ -474,12 +474,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 $('#editClientModal').css('display', 'none');
             });
 
-            // Close the modal when the user clicks anywhere outside of the modal
-            window.onclick = function(event) {
-                if (event.target.id === 'editClientModal') {
-                    $('#editClientModal').css('display', 'none');
-                }
-            };
 
             // Handle edit form submission
             $('#editClientForm').on('submit', function(event) {
