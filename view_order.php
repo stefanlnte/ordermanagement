@@ -150,55 +150,49 @@ if ($users_result->num_rows > 0) {
         }
 
         function saveOrderDetails() {
-            const suplEdit = document.getElementById('detalii_suplimentare_edit');
-            const detaliiSuplimentare = suplEdit ? suplEdit.value : '';
+            const detaliiSuplimentare = $('#detalii_suplimentare_edit').val() || '';
+            const avans = $('#avans_edit').val() || '';
+            const orderId = <?= (int)$order['order_id']; ?>;
 
-            const avansEdit = document.getElementById('avans_edit');
-            const avans = avansEdit ? avansEdit.value : '';
+            $.ajax({
+                url: 'update_order_details.php',
+                method: 'POST',
+                data: {
+                    order_id: orderId,
+                    detalii_suplimentare: detaliiSuplimentare,
+                    avans: avans
+                },
+                success: function() {
+                    // Update UI
+                    $('#detalii_suplimentare_text')
+                        .text(detaliiSuplimentare)
+                        .show();
+                    $('#detalii_suplimentare_edit').hide();
 
-            const orderId = <?php echo (int)$order['order_id']; ?>;
+                    $('#avans_text')
+                        .text(avans)
+                        .show();
+                    $('#avans_edit').hide();
 
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'update_order_details.php', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        // Update UI
-                        const suplText = document.getElementById('detalii_suplimentare_text');
-                        if (suplText) {
-                            suplText.innerText = detaliiSuplimentare;
-                            suplText.style.display = 'block';
-                        }
-                        if (suplEdit) suplEdit.style.display = 'none';
+                    // Toggle buttons back
+                    $('button[onclick="editOrderDetails()"]').show();
+                    $('button[onclick="saveOrderDetails()"]').hide();
 
-                        const avansText = document.getElementById('avans_text');
-                        if (avansText) {
-                            avansText.innerText = avans;
-                            avansText.style.display = 'inline';
-                        }
-                        if (avansEdit) avansEdit.style.display = 'none';
-
-                        // Toggle buttons back
-                        const btnEdit = document.querySelector('button[onclick="editOrderDetails()"]');
-                        const btnSave = document.querySelector('button[onclick="saveOrderDetails()"]');
-                        if (btnEdit) btnEdit.style.display = 'inline';
-                        if (btnSave) btnSave.style.display = 'none';
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Eroare la salvare',
-                            text: xhr.responseText || ('Status: ' + xhr.status),
-                            position: 'center'
-                        });
-                    }
+                    // ✅ Success toast
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Detaliile comenzii au fost salvate!'
+                    });
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Eroare la salvare',
+                        text: xhr.responseText || ('Status: ' + xhr.status),
+                        position: 'center'
+                    });
                 }
-            };
-            xhr.send(
-                'order_id=' + encodeURIComponent(orderId) +
-                '&detalii_suplimentare=' + encodeURIComponent(detaliiSuplimentare) +
-                '&avans=' + encodeURIComponent(avans)
-            );
+            });
         }
 
         function togglePin(orderId, pinState) {
