@@ -458,6 +458,10 @@ if ($users_result->num_rows > 0) {
                 success: function(resp) {
                     // Optional: check JSON response if you return JSON
                     loadOrderArticles(currentOrderId);
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Articolul a fost adăugat!'
+                    });
                     // Reset for the next add (optional)
                     $('#articleSelect').val(null).trigger('change');
                     $('#quantity').val(1);
@@ -501,7 +505,15 @@ if ($users_result->num_rows > 0) {
                 $.post('delete_article.php', {
                         id
                     })
-                    .done(() => loadOrderArticles(currentOrderId))
+                    .done(() => {
+                        // reload articles
+                        loadOrderArticles(currentOrderId);
+                        // show success message
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Articolul a fost șters!'
+                        });
+                    })
                     .fail(xhr => {
                         Swal.fire({
                             icon: 'error',
@@ -1075,6 +1087,15 @@ if ($users_result->num_rows > 0) {
                 visibility: hidden !important;
             }
         }
+
+        @media print {
+            #printArea {
+                margin-left: 0 !important;
+                min-height: auto !important;
+                height: auto !important;
+                padding: 0 !important;
+            }
+        }
     </style>
 
     <!-- Print styles -->
@@ -1215,7 +1236,7 @@ if ($users_result->num_rows > 0) {
             <button class="no-print" onclick="printOrder()"><i class="fa-solid fa-print"></i> Print Order</button><br>
         </div>
     </div>
-    <div style="min-height: 100vh; margin-left: 25px">
+    <div id="printArea" style="min-height: 100vh; margin-left: 25px">
         <h2>Comanda nr. <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
         <?php if ($order['is_achitat'] == 1): ?>
             <h2>Comandă achitată</h2>
@@ -1370,7 +1391,7 @@ if ($users_result->num_rows > 0) {
         </div>
 
     </div>
-    <h3 style="padding-left: 25px">Atașamente</h3>
+    <h3 class="no-print" style="padding-left: 25px">Atașamente</h3>
     <div class="no-print attachments-section">
         <form action="upload_attachment.php"
             class="dropzone"
