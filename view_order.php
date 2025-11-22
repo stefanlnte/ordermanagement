@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
     $stmt->bind_param("ii", $assigned_to, $order_id);
 
     if ($stmt->execute()) {
-        $_SESSION['flash_success'] = "Realocarea strategică a fost realizată!";
+        $_SESSION['flash_success'] = "Reatribuire realizată!";
     } else {
         $_SESSION['flash_error'] = "Eroare la actualizarea utilizatorului: " . $stmt->error;
     }
@@ -935,15 +935,6 @@ if ($users_result->num_rows > 0) {
             z-index: 1;
         }
 
-        .order-options form {
-            display: inline-flex;
-            /* Keeps form elements inline and centered */
-            gap: 10px;
-            /* Space between form elements */
-            width: fit-content;
-            /* Only take as much space as needed */
-        }
-
         /* Rotating gradient border */
         .order-options::before {
             content: '';
@@ -982,15 +973,15 @@ if ($users_result->num_rows > 0) {
         }
 
         .order-options form {
-            display: inline-flex;
+            display: flex;
+            justify-content: center;
+            /* center the whole form */
+            align-items: center;
             gap: 10px;
-            width: fit-content;
-            margin-top: 15px;
+            width: auto;
         }
 
         .order-options .form-group {
-            width: 100%;
-            margin: 0;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -1288,7 +1279,7 @@ if ($users_result->num_rows > 0) {
                     }
                     ?>
                 </select>
-                <button type="submit" name="update_user" class="no-print"><i class="fa-solid fa-people-arrows"></i> Realocare strategică</button>
+                <button type="submit" name="update_user" class="no-print"><i class="fa-solid fa-people-arrows"></i> Reatribuire</button>
             </div>
         </form>
         <?php if ($order['status'] != 'livrata') ?>
