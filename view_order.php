@@ -575,19 +575,57 @@ if ($users_result->num_rows > 0) {
 
     <!-- Funcție buton comanda achitată -->
     <script>
-        function toggleAchitat(orderId, currentState) {
-            var newState = currentState === 1 ? 0 : 1;
+        $(document).ready(function() {
+            $('#toggleAchitatButton').on('click', function() {
+                const orderId = $(this).data('order-id');
+                const currentState = $(this).data('current-state');
+                const newState = currentState === 1 ? 0 : 1;
+                const $container = $('#achitatContainer-' + orderId);
 
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'update_achitat.php', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    location.reload(); // refresh to see permanent state
-                }
-            };
-            xhr.send('order_id=' + orderId + '&is_achitat=' + newState);
-        }
+                $.ajax({
+                    url: 'update_achitat.php',
+                    method: 'POST',
+                    data: {
+                        order_id: orderId,
+                        is_achitat: newState
+                    },
+                    success: function() {
+                        if (newState === 1) {
+                            // Add <h2> with animation
+                            const $badge = $('<h2 class="achitatBadge">Comandă achitată</h2>').hide();
+                            $container.append($badge);
+                            $badge.fadeIn(400);
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'Comanda a fost achitată <i class="fa-solid fa-sack-dollar"></i>'
+                            });
+                        } else {
+                            // Animate out and remove
+                            $container.find('.achitatBadge').fadeOut(400, function() {
+                                $(this).remove();
+                            });
+                        }
+
+                        // Update button state and icon/text
+                        $('#toggleAchitatButton')
+                            .data('current-state', newState)
+                            .html(
+                                newState === 1 ?
+                                '<i class="fa-solid fa-ban"></i> Neachitat' :
+                                '<i class="fa-solid fa-sack-dollar"></i> Comandă achitată'
+                            );
+                    },
+                    error: function(xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Eroare',
+                            text: xhr.responseText || 'Nu s-a putut actualiza starea comenzii.',
+                            position: 'center'
+                        });
+                    }
+                });
+            });
+        });
     </script>
     <!-- Funcție buton comandă în lucru -->
     <script>
@@ -1223,18 +1261,26 @@ if ($users_result->num_rows > 0) {
             <button
                 id="toggleAchitatButton"
                 class="no-print"
-                onclick="toggleAchitat(<?= $order['order_id'] ?>, <?= (int)$order['is_achitat'] ?>)">
-                <?= $order['is_achitat'] ? '<i class="fa-solid fa-ban"></i> Marchează ca neachitat' : '<i class="fa-solid fa-sack-dollar"></i> Comandă achitată' ?>
+                data-order-id="<?= $order['order_id'] ?>"
+                data-current-state="<?= (int)$order['is_achitat'] ?>">
+                <?= $order['is_achitat']
+                    ? '<i class="fa-solid fa-ban"></i> Neachitat'
+                    : '<i class="fa-solid fa-sack-dollar"></i> Comandă achitată' ?>
             </button>
+
+
             <button id="toggleComandaLucruButton" class="no-print" onclick="toggleComandaLucru()"><i class="fa-solid fa-spinner"></i> Comandă în lucru</button>
             <button class="no-print" onclick="printOrder()"><i class="fa-solid fa-print"></i> Print Order</button><br>
         </div>
     </div>
     <div id="printArea" style="min-height: 100vh; margin-left: 25px">
         <h2>Comanda nr. <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
-        <?php if ($order['is_achitat'] == 1): ?>
-            <h2>Comandă achitată</h2>
-        <?php endif; ?>
+        <div id="achitatContainer-<?= $order['order_id'] ?>">
+            <?php if ($order['is_achitat'] == 1): ?>
+                <h2 class="achitatBadge">Comandă achitată</h2>
+            <?php endif; ?>
+        </div>
+
         <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
         <p><strong>Termen: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
         <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
