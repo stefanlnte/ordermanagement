@@ -909,7 +909,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <select id="datePickerSelect" name="due_date"></select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" style="display: none;">
                     <label for="category_id">Categorie:</label>
                     <select id="category_id" name="category_id">
                         <?php

@@ -1142,14 +1142,14 @@ if ($users_result->num_rows > 0) {
             body {
                 overflow: hidden !important;
                 position: relative !important;
-                line-height: 1.1;
-                font-size: 13px;
+                line-height: 1.2;
+                font-size: 12px;
             }
 
             p {
                 margin-top: 0;
-                margin-bottom: 5px;
-                line-height: 1.1;
+                margin-bottom: 0.25em !important;
+                line-height: 1.2;
             }
 
             /* Remove box shadow and other non-print styles */
