@@ -43,18 +43,61 @@
 button {
   border-radius: 5px;
   border: 1px grey solid;
-  padding: 10px;
+  padding: 10px 20px;
   margin: 5px;
   cursor: pointer;
   text-align: center;
   text-decoration: none;
-  transition: 500ms;
+  transition: all 500ms ease;
   font-family: 'Poppins', sans-serif;
+  background-color: white;
+  color: #333;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  font-weight: 500;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 5px;
+  padding: 2px;
+  background: linear-gradient(45deg, orange, yellow, rgb(140, 255, 0), yellow);
+  background-size: 400% 400%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 500ms ease;
+  z-index: -1;
+  animation: gradientSweep 1s linear infinite;
 }
 
 button:hover {
   background-color: yellow;
-  transition: 500ms;
+  transition: 1s;
+  transform: translateY(-2px);
+}
+
+button:hover::before {
+  opacity: 1;
+}
+
+@keyframes gradientSweep {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 input[type='submit'] {
