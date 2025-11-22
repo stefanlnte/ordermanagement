@@ -196,15 +196,26 @@ if ($users_result->num_rows > 0) {
         }
 
         function togglePin(orderId, pinState) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'toggle_pin.php', true);
-            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    location.reload();
-                }
-            };
-            xhr.send('order_id=' + orderId + '&is_pinned=' + pinState);
+            $.post('toggle_pin.php', {
+                    order_id: orderId,
+                    is_pinned: pinState
+                })
+                .done(() => {
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Pin actualizat 📌'
+                    });
+                    // optional: reload after a short delay
+                    setTimeout(() => location.reload(), 1200);
+                })
+                .fail(xhr => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Eroare',
+                        text: xhr.responseText || 'Nu s-a putut actualiza pin-ul.',
+                        position: 'center'
+                    });
+                });
         }
 
         function finishOrder() {
@@ -908,22 +919,20 @@ if ($users_result->num_rows > 0) {
         .order-options {
             display: flex;
             align-items: center;
-            /* Center items horizontally */
             justify-content: center;
-            /* Center items vertically */
             flex-direction: column;
-            /* Stack items vertically */
             max-width: 700px;
             margin: 20px auto;
             padding: 20px;
             background: linear-gradient(135deg, #1a1a1aff, gray);
-            /* Black gradient */
             color: white;
             border-radius: 10px;
             box-shadow: 0 2px 5px yellow;
             text-align: center;
-            /* Center text within the container */
             box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
         }
 
         .order-options form {
@@ -935,25 +944,53 @@ if ($users_result->num_rows > 0) {
             /* Only take as much space as needed */
         }
 
+        /* Rotating gradient border */
+        .order-options::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: linear-gradient(45deg, orange, yellow, rgb(140, 255, 0), yellow);
+            background-size: 300% 300%;
+            z-index: -1;
+            animation: rotateGradient 6s linear infinite;
+            transform-origin: center;
+            border-radius: 15px;
+        }
+
+        /* Inner mask to preserve layout */
+        .order-options::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            right: 3px;
+            bottom: 3px;
+            background: linear-gradient(135deg, #1a1a1aff, gray);
+            border-radius: 8px;
+            z-index: -1;
+        }
+
+        @keyframes rotateGradient {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .order-options form {
+            display: inline-flex;
+            gap: 10px;
+            width: fit-content;
+            margin-top: 15px;
+        }
+
         .order-options .form-group {
             width: 100%;
-            /* Ensure the form group uses available space */
             margin: 0;
-        }
-
-        .order-options select {
-            padding: 8px;
-            border-radius: 5px;
-        }
-
-        .order-options button {
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        /* Optional: Add a break between long text */
-        .order-options .form-group {
             display: flex;
             align-items: center;
             gap: 10px;
