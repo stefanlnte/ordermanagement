@@ -70,6 +70,40 @@ while ($row = $clients_result->fetch_assoc()) {
     $client_labels[] = $row['client_name'];
     $client_counts[] = (int)$row['orders_count'];
 }
+
+/* ------------------ CLIENT VALUE CHART: Total Value Locked ------------------ */
+// optional: only count delivered
+/* ------------------ CLIENT VALUE CHART: Total Value Locked ------------------ */
+$tvl_sql = "
+    SELECT c.client_name, SUM(o.total) AS total_value_locked
+    FROM orders o
+    JOIN clients c ON o.client_id = c.client_id
+    WHERE o.status = 'delivered'
+    GROUP BY c.client_id
+    ORDER BY total_value_locked DESC
+    LIMIT 10
+";
+$tvl_result = $conn->query($tvl_sql);
+
+if (!$tvl_result) {
+    die("TVL query failed: " . $conn->error);
+}
+
+$tvl_labels = [];
+$tvl_values = [];
+while ($row = $tvl_result->fetch_assoc()) {
+    $tvl_labels[] = $row['client_name'];
+    $tvl_values[] = (float)$row['total_value_locked'];
+}
+$tvl_result = $conn->query($tvl_sql);
+
+$tvl_labels = [];
+$tvl_values = [];
+while ($row = $tvl_result->fetch_assoc()) {
+    $tvl_labels[] = $row['client_name'];
+    $tvl_values[] = (float)$row['total_value_locked'];
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="ro">
@@ -141,9 +175,30 @@ while ($row = $clients_result->fetch_assoc()) {
             <div id="loyalClients"></div>
         </div>
 
+        <div class="chart-box">
+            <h2>Total Value Locked (Top 10 Clienți)</h2>
+            <div id="tvlChart"></div>
+        </div>
+
     </div>
 
     <script>
+        /* TOTAL VALUE LOCKED CHART */
+        new ApexCharts(document.querySelector("#tvlChart"), {
+            chart: {
+                type: 'bar',
+                background: '#fff'
+            },
+            series: [{
+                name: 'Valoare totală',
+                data: <?php echo json_encode($tvl_values); ?>
+            }],
+            xaxis: {
+                categories: <?php echo json_encode($tvl_labels); ?>
+            },
+            colors: ['#00BCD4']
+        }).render();
+
         /* PIE CHART */
         new ApexCharts(document.querySelector("#ordersPie"), {
             chart: {
