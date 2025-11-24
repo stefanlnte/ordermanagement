@@ -1263,6 +1263,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <p style="font-size: larger;">© Color Print</p>
         <a href="dashboard.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-house"></i> Dashboard</a>
         <a href="archive.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-box-archive"></i> Arhivă</a>
+        <a href="statistics.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-chart-line"></i> Statistici</a>
         <a href="unpaid_orders.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-ban"></i> Comenzi nefacturate</a>
     </footer>
 </body>
