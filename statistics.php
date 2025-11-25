@@ -45,6 +45,7 @@ $clients_sql = "
     SELECT c.client_name, COUNT(o.order_id) AS orders_count
     FROM orders o
     JOIN clients c ON o.client_id = c.client_id
+    WHERE c.client_name NOT IN ('Test', 'Ciprian', 'Bogdan Bacosca', 'Leonte Stefan', 'Bob', 'Alexandra Gherasimescu', 'Bogdan Boss')
     GROUP BY c.client_id
     ORDER BY orders_count DESC
     LIMIT 20
