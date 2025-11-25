@@ -25,6 +25,34 @@ while ($row = $result->fetch_assoc()) {
     $series[] = (int)$row['delivered_count'];
 }
 
+/* ------------------ AREA CHART ------------------ */
+$area_sql = "
+    SELECT u.username, DATE(o.due_date) AS day, COUNT(o.order_id) AS delivered_count
+    FROM orders o
+    JOIN users u ON o.assigned_to = u.user_id
+    WHERE o.status = 'delivered'
+    GROUP BY u.user_id, DATE(o.due_date)
+    ORDER BY day ASC
+";
+$area_result = $conn->query($area_sql);
+
+$area_data = [];
+while ($row = $area_result->fetch_assoc()) {
+    $area_data[$row['username']][] = [
+        // format as ISO datetime for ApexCharts
+        'x' => $row['day'] . "T00:00:00",
+        'y' => (int)$row['delivered_count']
+    ];
+}
+
+$area_series = [];
+foreach ($area_data as $username => $dataPoints) {
+    $area_series[] = [
+        'name' => $username,
+        'data' => $dataPoints
+    ];
+}
+
 /* ------------------ LINE CHART: Orders per Day ------------------ */
 $line_sql = "
     SELECT DATE(o.due_date) AS order_day, COUNT(*) AS total_orders
@@ -112,6 +140,12 @@ while ($row = $clients_result->fetch_assoc()) {
             <div id="ordersPie"></div>
         </div>
 
+        <!-- Stacked area Chart -->
+        <div class="chart-box">
+            <h2>Evoluția comenzilor livrate pe utilizator</h2>
+            <div id="ordersArea"></div>
+        </div>
+
         <!-- Line Chart -->
         <div class="chart-box">
             <h2>Comenzi pe zi</h2>
@@ -138,6 +172,40 @@ while ($row = $clients_result->fetch_assoc()) {
             colors: ['#FFD700', '#4CAF50', '#2196F3', '#9C27B0', '#FF5722', '#00BCD4', '#E91E63'],
             legend: {
                 position: 'bottom'
+            }
+        }).render();
+
+        /* STACKED BAR CHART: Delivered Orders Per Day by User */
+        new ApexCharts(document.querySelector("#ordersArea"), {
+            chart: {
+                type: 'bar',
+                background: '#fff',
+                stacked: true
+            },
+            series: <?php echo json_encode($area_series); ?>,
+            xaxis: {
+                type: 'datetime',
+                labels: {
+                    rotate: -45,
+                    format: 'dd MMM'
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            colors: ['#2196F3', '#4CAF50', '#FF5722', '#9C27B0', '#00BCD4'],
+            legend: {
+                position: 'bottom'
+            },
+            tooltip: {
+                shared: true,
+                intersect: false
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '70%'
+                }
             }
         }).render();
 
