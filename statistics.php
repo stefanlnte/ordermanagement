@@ -40,20 +40,6 @@ while ($row = $line_result->fetch_assoc()) {
     $line_counts[] = (int)$row['total_orders'];
 }
 
-/* ------------------ STACKED CHART: Status Counts ------------------ */
-$status_sql = "
-    SELECT o.status, COUNT(*) AS count
-    FROM orders o
-    GROUP BY o.status
-";
-$status_result = $conn->query($status_sql);
-$status_labels = [];
-$status_counts = [];
-while ($row = $status_result->fetch_assoc()) {
-    $status_labels[] = $row['status'];
-    $status_counts[] = (int)$row['count'];
-}
-
 /* ------------------ CLIENT CHART: Most Loyal Clients ------------------ */
 $clients_sql = "
     SELECT c.client_name, COUNT(o.order_id) AS orders_count
@@ -61,7 +47,7 @@ $clients_sql = "
     JOIN clients c ON o.client_id = c.client_id
     GROUP BY c.client_id
     ORDER BY orders_count DESC
-    LIMIT 10
+    LIMIT 20
 ";
 $clients_result = $conn->query($clients_sql);
 $client_labels = [];
@@ -71,40 +57,8 @@ while ($row = $clients_result->fetch_assoc()) {
     $client_counts[] = (int)$row['orders_count'];
 }
 
-/* ------------------ CLIENT VALUE CHART: Total Value Locked ------------------ */
-// optional: only count delivered
-/* ------------------ CLIENT VALUE CHART: Total Value Locked ------------------ */
-$tvl_sql = "
-    SELECT c.client_name, SUM(o.total) AS total_value_locked
-    FROM orders o
-    JOIN clients c ON o.client_id = c.client_id
-    WHERE o.status = 'delivered'
-    GROUP BY c.client_id
-    ORDER BY total_value_locked DESC
-    LIMIT 10
-";
-$tvl_result = $conn->query($tvl_sql);
-
-if (!$tvl_result) {
-    die("TVL query failed: " . $conn->error);
-}
-
-$tvl_labels = [];
-$tvl_values = [];
-while ($row = $tvl_result->fetch_assoc()) {
-    $tvl_labels[] = $row['client_name'];
-    $tvl_values[] = (float)$row['total_value_locked'];
-}
-$tvl_result = $conn->query($tvl_sql);
-
-$tvl_labels = [];
-$tvl_values = [];
-while ($row = $tvl_result->fetch_assoc()) {
-    $tvl_labels[] = $row['client_name'];
-    $tvl_values[] = (float)$row['total_value_locked'];
-}
-
 ?>
+
 <!DOCTYPE html>
 <html lang="ro">
 
@@ -141,7 +95,7 @@ while ($row = $tvl_result->fetch_assoc()) {
         }
     </style>
     <header class="no-print" id="header">
-        <button class="no-print" onclick="window.location.href='dashboard.php'">
+        <button class="no-print" onclick="window.history.back()">
             <i class="fa-solid fa-chevron-left"></i> Înapoi la panou comenzi
         </button>
     </header>
@@ -163,42 +117,15 @@ while ($row = $tvl_result->fetch_assoc()) {
             <div id="ordersLine"></div>
         </div>
 
-        <!-- Stacked Chart -->
-        <div class="chart-box">
-            <h2>Status comenzi</h2>
-            <div id="statusStacked"></div>
-        </div>
-
         <!-- Loyal Clients Chart -->
         <div class="chart-box">
-            <h2>Cei mai fideli clienți (Top 10)</h2>
+            <h2>Cei mai fideli clienți (Top 20)</h2>
             <div id="loyalClients"></div>
-        </div>
-
-        <div class="chart-box">
-            <h2>Total Value Locked (Top 10 Clienți)</h2>
-            <div id="tvlChart"></div>
         </div>
 
     </div>
 
     <script>
-        /* TOTAL VALUE LOCKED CHART */
-        new ApexCharts(document.querySelector("#tvlChart"), {
-            chart: {
-                type: 'bar',
-                background: '#fff'
-            },
-            series: [{
-                name: 'Valoare totală',
-                data: <?php echo json_encode($tvl_values); ?>
-            }],
-            xaxis: {
-                categories: <?php echo json_encode($tvl_labels); ?>
-            },
-            colors: ['#00BCD4']
-        }).render();
-
         /* PIE CHART */
         new ApexCharts(document.querySelector("#ordersPie"), {
             chart: {
@@ -226,23 +153,6 @@ while ($row = $tvl_result->fetch_assoc()) {
             xaxis: {
                 categories: <?php echo json_encode($line_dates); ?>
             }
-        }).render();
-
-        /* STACKED CHART */
-        new ApexCharts(document.querySelector("#statusStacked"), {
-            chart: {
-                type: 'bar',
-                stacked: true,
-                background: '#fff'
-            },
-            series: [{
-                name: 'Comenzi',
-                data: <?php echo json_encode($status_counts); ?>
-            }],
-            xaxis: {
-                categories: <?php echo json_encode($status_labels); ?>
-            },
-            colors: ['#4CAF50', '#FF5722', '#FFD700', '#9C27B0']
         }).render();
 
         /* LOYAL CLIENTS CHART */
