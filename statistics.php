@@ -55,10 +55,11 @@ foreach ($area_data as $username => $dataPoints) {
 
 /* ------------------ LINE CHART: Orders per Day ------------------ */
 $line_sql = "
-SELECT DATE(o.order_date) AS order_day, COUNT(*) AS total_orders
-FROM orders o
-GROUP BY DATE(o.order_date)
-ORDER BY order_day ASC;
+    SELECT DATE(o.order_date) AS order_day, COUNT(*) AS total_orders
+    FROM orders o
+    WHERE o.status <> 'cancelled'
+    GROUP BY DATE(o.order_date)
+    ORDER BY order_day ASC;
 ";
 $line_result = $conn->query($line_sql);
 $line_dates = [];
