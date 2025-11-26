@@ -55,10 +55,10 @@ foreach ($area_data as $username => $dataPoints) {
 
 /* ------------------ LINE CHART: Orders per Day ------------------ */
 $line_sql = "
-    SELECT DATE(o.due_date) AS order_day, COUNT(*) AS total_orders
-    FROM orders o
-    GROUP BY DATE(o.due_date)
-    ORDER BY order_day ASC
+SELECT DATE(o.order_date) AS order_day, COUNT(*) AS total_orders
+FROM orders o
+GROUP BY DATE(o.order_date)
+ORDER BY order_day ASC;
 ";
 $line_result = $conn->query($line_sql);
 $line_dates = [];
@@ -70,20 +70,22 @@ while ($row = $line_result->fetch_assoc()) {
 
 /* ------------------ CLIENT CHART: Most Loyal Clients ------------------ */
 $clients_sql = "
-    SELECT c.client_name, COUNT(o.order_id) AS orders_count
+    SELECT c.client_name, COUNT(o.order_id) AS delivered_orders_count
     FROM orders o
     JOIN clients c ON o.client_id = c.client_id
-    WHERE c.client_name NOT IN ('Test', 'Ciprian', 'Bogdan Bacosca', 'Leonte Stefan', 'Bob', 'Alexandra Gherasimescu', 'Bogdan Boss')
-    GROUP BY c.client_id
-    ORDER BY orders_count DESC
+    WHERE o.status = 'delivered'
+      AND c.client_name NOT IN ('Test','Ciprian','Bogdan Bacosca','Leonte Stefan','Bob','Alexandra Gherasimescu','Bogdan Boss')
+    GROUP BY c.client_id, c.client_name
+    ORDER BY delivered_orders_count DESC
     LIMIT 20
 ";
 $clients_result = $conn->query($clients_sql);
+
 $client_labels = [];
 $client_counts = [];
 while ($row = $clients_result->fetch_assoc()) {
     $client_labels[] = $row['client_name'];
-    $client_counts[] = (int)$row['orders_count'];
+    $client_counts[] = (int)$row['delivered_orders_count'];
 }
 
 ?>
