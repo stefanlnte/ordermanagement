@@ -505,6 +505,125 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
+    <!-- Search Modal -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('lookupModal');
+            const footerLink = document.getElementById('footerLookupLink');
+
+            footerLink.addEventListener('click', function(e) {
+                e.preventDefault(); // nu naviga nicăieri
+                modal.style.display = 'block';
+                setTimeout(function() {
+                    $('#order_lookup').select2('open');
+                }, 100);
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Open with button
+            const modal = document.getElementById('lookupModal');
+            const openBtn = document.getElementById('openLookupBtn');
+            const closeX = document.querySelector('.lookup-close'); // matches first working file
+            const orderLookup = $('#order_lookup');
+
+            // Initialize Select2 ONCE
+            function highlightTerm(text, term) {
+                if (!text) return '';
+                if (!term) return text;
+                const regex = new RegExp('(' + term + ')', 'gi');
+                return text.replace(regex, '<span class="highlight">$1</span>');
+            }
+
+            $('#order_lookup').select2({
+                placeholder: 'Detalii comandă...',
+                minimumInputLength: 1,
+                allowClear: true,
+                ajax: {
+                    url: 'search_orders.php',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            search_orders: 1,
+                            q: params.term
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                },
+                templateResult: function(order) {
+                    if (!order.id) return order.text;
+                    const term = $('#order_lookup').data('select2').dropdown.$search.val();
+                    return $(`
+            <div>
+                <div><strong>#${order.id}</strong> – ${highlightTerm(order.client_name, term)}</div>
+                <div style="font-size:12px;color:#555;">
+                    ${highlightTerm(order.order_details, term)}
+                </div>
+                <div style="font-size:11px;color:#999;">
+                    ${highlightTerm(order.detalii_suplimentare, term)}
+                </div>
+            </div>
+        `);
+                },
+                templateSelection: function(order) {
+                    return order.client_name ? `#${order.id} – ${order.client_name}` : order.text;
+                },
+                escapeMarkup: function(markup) {
+                    return markup;
+                } // allow HTML for highlighting
+            }).on('select2:select', function(e) {
+                var orderId = e.params.data.id;
+                if (orderId) {
+                    // 👇 grab the hidden return input value
+                    var returnUrl = document.querySelector('#lookupForm input[name="return"]').value;
+                    window.location.href = 'view_order.php?order_id=' + orderId +
+                        (returnUrl ? '&return=' + encodeURIComponent(returnUrl) : '');
+                }
+            });
+
+            function openModalAndFocus() {
+                modal.style.display = 'block';
+                // Open the select2 dropdown shortly after showing modal
+                setTimeout(function() {
+                    orderLookup.select2('open');
+                }, 100);
+            }
+
+            // Button opens modal
+            if (openBtn) {
+                openBtn.addEventListener('click', openModalAndFocus);
+            }
+
+            // X closes modal
+            if (closeX) {
+                closeX.addEventListener('click', function() {
+                    modal.style.display = 'none';
+                });
+            }
+
+            // Click outside closes modal
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+
+            // Ctrl+S (or Cmd+S) opens modal + focuses search
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                    e.preventDefault();
+                    openModalAndFocus();
+                }
+            });
+        });
+    </script>
+
     <!-- Date picker -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -976,6 +1095,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <div class="filters" style="margin-bottom: 20px;">
                         <form method="GET" action="dashboard.php">
                             <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
+
                             <div class="filter-group">
                                 <label>Status:</label>
                                 <select id="status_filter" name="status_filter">
@@ -1259,14 +1379,30 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
+    <!-- Lookup Modal -->
+    <div id="lookupModal" class="modal">
+        <div class="modal-content">
+            <span class="lookup-close">&times;</span>
+            <h2>Căutare avansată</h2>
+            <form id="lookupForm">
+                <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
+                <div class="form-group">
+                    <select id="order_lookup" style="width:100%;"></select>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <footer>
-        <p style="font-size: larger;">© Color Print</p>
-        <a href="dashboard.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-house"></i> Dashboard</a>
+        <a href="dashboard.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-house"></i> Pagina principală</a>
         <a href="archive.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-box-archive"></i> Arhivă</a>
         <a href="statistics.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-chart-line"></i> Statistici</a>
+        <a href="#" id="footerLookupLink" style="text-decoration: none; color: white;">
+            <i class="fa-solid fa-magnifying-glass"></i> Căutare avansată
+        </a>
         <a href="unpaid_orders.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-ban"></i> Comenzi nefacturate</a>
     </footer>
-</body>
 
+</body>
 
 </html>

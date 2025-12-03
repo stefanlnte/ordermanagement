@@ -49,14 +49,15 @@ footer {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100px;
+  gap: 5px;
+  height: 150px;
   background: radial-gradient(circle at top left, grey 0%, transparent 40%),
     radial-gradient(circle at bottom right, grey 0%, transparent 40%),
     linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
   background-blend-mode: screen, normal;
   box-shadow: 0 -3px 6px rgba(251, 255, 0, 0.5); /* Adaugă un efect de umbră pentru a diferenția header-ul */
   color: white !important;
-  padding: 40px;
+  padding: 25px;
   margin-top: 20px !important;
   font-size: medium;
 }

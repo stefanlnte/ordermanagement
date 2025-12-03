@@ -340,6 +340,41 @@ div.pagination :hover {
   font-size: 0.9em;
 }
 
+.highlight {
+  background-color: yellow;
+  font-weight: bold;
+}
+
+/* Lookup modal content */
+#lookupModal .modal-content {
+  background-color: #fff;
+  margin: 10% auto; /* center vertically */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 600px;
+  min-height: 250px; /* 👈 more height by default */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  position: relative; /* needed for close button positioning */
+}
+
+/* Close button (X) */
+#lookupModal .lookup-close {
+  position: absolute;
+  top: 12px;
+  right: 16px; /* 👈 right side */
+  font-size: 28px;
+  font-weight: bold;
+  color: #555;
+  cursor: pointer; /* 👈 pointer on hover */
+  transition: color 0.2s ease;
+}
+
+#lookupModal .lookup-close:hover {
+  color: #000; /* darker on hover */
+}
+
 .filters form {
   display: flex;
   justify-content: space-between;
