@@ -8,6 +8,33 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
+/* ------------------ LINE CHART: Revenue per User ------------------ */
+$revenue_sql = "
+    SELECT u.username, DATE(o.order_date) AS day, SUM(o.total + o.avans) AS total_revenue
+    FROM orders o
+    JOIN users u ON o.assigned_to = u.user_id
+    WHERE o.status = 'delivered'
+    GROUP BY u.user_id, DATE(o.order_date)
+    ORDER BY day ASC
+";
+$revenue_result = $conn->query($revenue_sql);
+
+$revenue_data = [];
+while ($row = $revenue_result->fetch_assoc()) {
+    $revenue_data[$row['username']][] = [
+        'x' => $row['day'] . "T00:00:00",
+        'y' => (float)$row['total_revenue']
+    ];
+}
+
+$revenue_series = [];
+foreach ($revenue_data as $username => $dataPoints) {
+    $revenue_series[] = [
+        'name' => $username,
+        'data' => $dataPoints
+    ];
+}
+
 /* ------------------ PIE CHART: Delivered Orders by User ------------------ */
 $delivered_sql = "
     SELECT u.username, COUNT(o.order_id) AS delivered_count
@@ -27,11 +54,11 @@ while ($row = $result->fetch_assoc()) {
 
 /* ------------------ AREA CHART ------------------ */
 $area_sql = "
-    SELECT u.username, DATE(o.due_date) AS day, COUNT(o.order_id) AS delivered_count
+    SELECT u.username, DATE(o.order_date) AS day, COUNT(o.order_id) AS delivered_count
     FROM orders o
     JOIN users u ON o.assigned_to = u.user_id
     WHERE o.status = 'delivered'
-    GROUP BY u.user_id, DATE(o.due_date)
+    GROUP BY u.user_id, DATE(o.order_date)
     ORDER BY day ASC
 ";
 $area_result = $conn->query($area_sql);
@@ -137,6 +164,12 @@ while ($row = $clients_result->fetch_assoc()) {
     <div class="stats-container">
         <h1>📊 Statistici Comenzi</h1>
 
+        <!-- Revenue Race Chart -->
+        <div class="chart-box">
+            <h2>🏁 Cursa banilor – Venituri pe utilizator</h2>
+            <div id="revenueRace"></div>
+        </div>
+
         <!-- Pie Chart -->
         <div class="chart-box">
             <h2>Comenzi livrate pe utilizator</h2>
@@ -164,6 +197,47 @@ while ($row = $clients_result->fetch_assoc()) {
     </div>
 
     <script>
+        /* REVENUE RACE LINE CHART */
+        new ApexCharts(document.querySelector("#revenueRace"), {
+            chart: {
+                type: 'line',
+                background: '#fff'
+            },
+            series: <?php echo json_encode($revenue_series); ?>,
+            xaxis: {
+                type: 'datetime',
+                labels: {
+                    rotate: -45,
+                    format: 'dd MMM'
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'Valoare comenzi (RON)'
+                }
+            },
+            colors: [
+                '#FF9800', // portocaliu
+                '#4CAF50', // verde
+                '#2196F3', // albastru
+                '#9C27B0', // mov
+                '#E91E63', // roz
+                '#00BCD4', // turcoaz
+                '#FFD700' // galben auriu
+            ],
+            legend: {
+                position: 'bottom'
+            },
+            tooltip: {
+                shared: true,
+                intersect: false,
+                y: {
+                    formatter: function(val) {
+                        return val.toLocaleString('ro-RO') + " RON";
+                    }
+                }
+            }
+        }).render();
         /* PIE CHART */
         new ApexCharts(document.querySelector("#ordersPie"), {
             chart: {
