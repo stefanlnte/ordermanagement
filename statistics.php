@@ -11,13 +11,13 @@ if (!isset($_SESSION['username'])) {
 /* ------------------ LINE CHART: Revenue per User ------------------ */
 $revenue_sql = "
     SELECT u.username,
-           DATE(o.order_date) AS day,
+           DATE(o.delivery_date) AS day,
            SUM(o.total + o.avans) AS total_revenue
     FROM orders o
     JOIN users u ON o.assigned_to = u.user_id
     WHERE o.status = 'delivered'
-      AND o.order_date >= '2025-12-01'
-    GROUP BY u.user_id, DATE(o.order_date)
+      AND o.delivery_date >= '2025-12-01'
+    GROUP BY u.user_id, DATE(o.delivery_date)
     ORDER BY day ASC;
 ";
 $revenue_result = $conn->query($revenue_sql);
