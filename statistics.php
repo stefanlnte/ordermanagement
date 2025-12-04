@@ -10,12 +10,14 @@ if (!isset($_SESSION['username'])) {
 
 /* ------------------ LINE CHART: Revenue per User ------------------ */
 $revenue_sql = "
-    SELECT u.username, DATE(o.order_date) AS day, SUM(o.total + o.avans) AS total_revenue
-    FROM orders o
-    JOIN users u ON o.assigned_to = u.user_id
-    WHERE o.status = 'delivered'
-    GROUP BY u.user_id, DATE(o.order_date)
-    ORDER BY day ASC
+    SELECT u.username,
+       DATE(o.order_date) AS day,
+       SUM(o.total + o.avans) AS total_revenue
+FROM orders o
+JOIN users u ON o.assigned_to = u.user_id
+WHERE o.status = 'delivered'
+GROUP BY u.user_id, DATE(o.order_date)
+ORDER BY day ASC;
 ";
 $revenue_result = $conn->query($revenue_sql);
 
@@ -54,12 +56,14 @@ while ($row = $result->fetch_assoc()) {
 
 /* ------------------ AREA CHART ------------------ */
 $area_sql = "
-    SELECT u.username, DATE(o.order_date) AS day, COUNT(o.order_id) AS delivered_count
-    FROM orders o
-    JOIN users u ON o.assigned_to = u.user_id
-    WHERE o.status = 'delivered'
-    GROUP BY u.user_id, DATE(o.order_date)
-    ORDER BY day ASC
+   SELECT u.username,
+       DATE(o.order_date) AS day,
+       COUNT(o.order_id) AS delivered_count
+FROM orders o
+JOIN users u ON o.assigned_to = u.user_id
+WHERE o.status = 'delivered'
+GROUP BY u.user_id, DATE(o.order_date)
+ORDER BY day ASC;
 ";
 $area_result = $conn->query($area_sql);
 

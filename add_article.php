@@ -68,5 +68,24 @@ if ($stmt->execute()) {
     http_response_code(500);
     echo "Failed to add article to order.";
 }
+
+// Recalculate order total
+$sum_sql = "SELECT SUM(quantity * price_per_unit) AS total_articles
+            FROM order_articles
+            WHERE order_id = ?";
+$stmt = $conn->prepare($sum_sql);
+$stmt->bind_param("i", $order_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$row = $result->fetch_assoc();
+$total_articles = $row['total_articles'] ?? 0;
+$stmt->close();
+
+// Update orders.total
+$update_sql = "UPDATE orders SET total = ? WHERE order_id = ?";
+$stmt = $conn->prepare($update_sql);
+$stmt->bind_param("di", $total_articles, $order_id);
+$stmt->execute();
+
 $stmt->close();
 $conn->close();
