@@ -57,13 +57,13 @@ while ($row = $result->fetch_assoc()) {
 
 /* ------------------ AREA CHART ------------------ */
 $area_sql = "
-   SELECT u.username,
-       DATE(o.order_date) AS day,
+  SELECT u.username,
+       DATE(o.delivery_date) AS day,
        COUNT(o.order_id) AS delivered_count
 FROM orders o
 JOIN users u ON o.assigned_to = u.user_id
 WHERE o.status = 'delivered'
-GROUP BY u.user_id, DATE(o.order_date)
+GROUP BY u.user_id, DATE(o.delivery_date)
 ORDER BY day ASC;
 ";
 $area_result = $conn->query($area_sql);
