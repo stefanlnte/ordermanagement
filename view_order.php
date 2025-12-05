@@ -183,6 +183,11 @@ if ($users_result->num_rows > 0) {
                         icon: 'success',
                         title: 'Detaliile comenzii au fost salvate!'
                     });
+
+                    // ✅ Refresh after short delay so toast is visible
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500); // 1.5 seconds delay
                 },
                 error: function(xhr) {
                     Swal.fire({
@@ -1414,16 +1419,10 @@ if ($users_result->num_rows > 0) {
                 step="0.01">
         </p>
 
-        <div id="totalWrapper">
-            <strong>Total:</strong> <span id="totalPrice">0.00</span>
-        </div>
-        <input type="number" id="total_edit" style="display:none;" value="<?php echo $order['total']; ?>" step="0.01">
-        <?php
-        $rest_de_plata = $order['total'] - $order['avans'];
-        if ($rest_de_plata > 0) {
-            echo "<p>Rest de Plata: $rest_de_plata lei</p>";
-        }
-        ?>
+        <p id="totalWrapper">
+            <strong>Sumă de achitat:</strong> <span id="totalPrice">0.00</span>
+        </p>
+
         <br>
         <div>
             <svg height="80px" clip-rule="evenodd" fill-rule="evenodd" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" version="1.1" viewBox="0 0 386 148.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
