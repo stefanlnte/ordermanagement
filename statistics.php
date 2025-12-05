@@ -8,7 +8,7 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-/* ------------------ LINE CHART: Revenue per User ------------------ */
+/* ------------------ Stacked bar chart - Revenue per User ------------------ */
 $revenue_sql = "
     SELECT u.username,
            DATE(o.delivery_date) AS day,
@@ -25,7 +25,7 @@ $revenue_result = $conn->query($revenue_sql);
 $revenue_data = [];
 while ($row = $revenue_result->fetch_assoc()) {
     $revenue_data[$row['username']][] = [
-        'x' => $row['day'] . "T00:00:00",
+        'x' => $row['day'] . "T00:00:00+02:00",  // Romania offset
         'y' => (float)$row['total_revenue']
     ];
 }
@@ -72,7 +72,7 @@ $area_data = [];
 while ($row = $area_result->fetch_assoc()) {
     $area_data[$row['username']][] = [
         // format as ISO datetime for ApexCharts
-        'x' => $row['day'] . "T00:00:00",
+        'x' => $row['day'] . "T00:00:00+02:00",  // Romania offset
         'y' => (int)$row['delivered_count']
     ];
 }
@@ -202,11 +202,12 @@ while ($row = $clients_result->fetch_assoc()) {
     </div>
 
     <script>
-        /* REVENUE RACE LINE CHART */
+        /* STACKED BAR CHART: Revenue per User */
         new ApexCharts(document.querySelector("#revenueRace"), {
             chart: {
-                type: 'line',
-                background: '#fff'
+                type: 'bar',
+                background: '#fff',
+                stacked: true
             },
             series: <?php echo json_encode($revenue_series); ?>,
             xaxis: {
@@ -218,7 +219,7 @@ while ($row = $clients_result->fetch_assoc()) {
             },
             yaxis: {
                 title: {
-                    text: 'Valoare comenzi (RON)'
+                    text: 'Venituri (RON)'
                 }
             },
             colors: [
@@ -241,8 +242,15 @@ while ($row = $clients_result->fetch_assoc()) {
                         return val.toLocaleString('ro-RO') + " RON";
                     }
                 }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '70%'
+                }
             }
         }).render();
+
         /* PIE CHART */
         new ApexCharts(document.querySelector("#ordersPie"), {
             chart: {
