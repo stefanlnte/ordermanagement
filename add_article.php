@@ -81,11 +81,24 @@ $row = $result->fetch_assoc();
 $total_articles = $row['total_articles'] ?? 0;
 $stmt->close();
 
+// Fetch current avans
+$stmt = $conn->prepare("SELECT COALESCE(avans,0) AS avans FROM orders WHERE order_id = ?");
+$stmt->bind_param("i", $order_id);
+$stmt->execute();
+$res = $stmt->get_result();
+$row = $res->fetch_assoc();
+$current_avans = (float)($row['avans'] ?? 0);
+$stmt->close();
+
+// Compute new total
+$new_total = $total_articles - $current_avans;
+if ($new_total < 0) $new_total = 0;
+
 // Update orders.total
 $update_sql = "UPDATE orders SET total = ? WHERE order_id = ?";
 $stmt = $conn->prepare($update_sql);
-$stmt->bind_param("di", $total_articles, $order_id);
+$stmt->bind_param("di", $new_total, $order_id);
 $stmt->execute();
-
 $stmt->close();
+
 $conn->close();

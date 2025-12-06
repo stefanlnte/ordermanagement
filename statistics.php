@@ -166,14 +166,26 @@ while ($row = $clients_result->fetch_assoc()) {
     </div>
 
     <script>
-        /* STACKED BAR CHART: Revenue per User */
+        const userColors = {
+            "Bogdan": "limegreen",
+            "Bob": "yellow",
+            "Stefan": "steelblue",
+            "Adrian": "firebrick",
+            "Seby": "black",
+            "Petronela": "violet"
+        };
+
+        // Build colors array aligned to series order
+        const revenueSeries = <?php echo json_encode($revenue_series); ?>;
+        const revenueColors = revenueSeries.map(s => userColors[s.name] || "gray");
+
         new ApexCharts(document.querySelector("#revenueRace"), {
             chart: {
                 type: 'bar',
                 background: '#fff',
                 stacked: true
             },
-            series: <?php echo json_encode($revenue_series); ?>,
+            series: revenueSeries,
             xaxis: {
                 type: 'datetime',
                 labels: {
@@ -186,15 +198,7 @@ while ($row = $clients_result->fetch_assoc()) {
                     text: 'Venituri (RON)'
                 }
             },
-            colors: [
-                '#FF9800', // portocaliu
-                '#4CAF50', // verde
-                '#2196F3', // albastru
-                '#9C27B0', // mov
-                '#E91E63', // roz
-                '#00BCD4', // turcoaz
-                '#FFD700' // galben auriu
-            ],
+            colors: revenueColors, // <- array, not function
             legend: {
                 position: 'bottom'
             },
@@ -202,9 +206,7 @@ while ($row = $clients_result->fetch_assoc()) {
                 shared: true,
                 intersect: false,
                 y: {
-                    formatter: function(val) {
-                        return val.toLocaleString('ro-RO') + " RON";
-                    }
+                    formatter: val => val.toLocaleString('ro-RO') + " RON"
                 }
             },
             plotOptions: {
@@ -215,23 +217,20 @@ while ($row = $clients_result->fetch_assoc()) {
             }
         }).render();
 
-        /* PIE CHART */
+        // Make labels available to JS
+        const pieLabels = <?php echo json_encode($labels); ?>;
+
+        // Build colors array per label, no function here
+        const pieColors = pieLabels.map(name => userColors[name] || "gray");
+
         new ApexCharts(document.querySelector("#ordersPie"), {
             chart: {
                 type: 'pie',
                 background: '#fff'
             },
             series: <?php echo json_encode($series); ?>,
-            labels: <?php echo json_encode($labels); ?>,
-            colors: [
-                '#FF9800', // portocaliu
-                '#4CAF50', // verde
-                '#2196F3', // albastru
-                '#9C27B0', // mov
-                '#E91E63', // roz
-                '#00BCD4', // turcoaz
-                '#FFD700' // galben auriu
-            ],
+            labels: pieLabels,
+            colors: pieColors, // <- array, not a function
             legend: {
                 position: 'bottom'
             }

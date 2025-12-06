@@ -2,36 +2,48 @@
 require 'db.php';
 
 $order_id = (int)($_POST['order_id'] ?? 0);
-$detalii = $_POST['detalii_suplimentare'] ?? '';
-$avans   = $_POST['avans'] ?? null; // optional
+$detalii  = array_key_exists('detalii_suplimentare', $_POST) ? $_POST['detalii_suplimentare'] : null;
+$has_avans = array_key_exists('avans', $_POST);
+$avans_val = $has_avans ? (float)$_POST['avans'] : null;
 
 if (!$order_id) {
     http_response_code(400);
     exit('Lipsă order_id');
 }
 
-// Build dynamic SQL depending on what fields are provided
-$fields = [];
+// Build SET parts dynamically, but always set total
+$sets   = [];
 $params = [];
 $types  = '';
 
-if ($detalii !== null) {
-    $fields[] = "detalii_suplimentare = ?";
+if (!is_null($detalii)) {
+    $sets[]  = "detalii_suplimentare = ?";
     $params[] = $detalii;
     $types   .= 's';
 }
-if ($avans !== null && $avans !== '') {
-    $fields[] = "avans = ?";
-    $params[] = $avans;
-    $types   .= 'd'; // double
+
+if ($has_avans) {
+    // We set avans explicitly if provided (including 0)
+    $sets[]   = "avans = ?";
+    $params[] = $avans_val;
+    $types   .= 'd';
 }
 
-if (empty($fields)) {
+// total = sum(order_articles) - avans
+// If avans not provided in this call, use current avans from orders
+$sets[] = "total = (SELECT COALESCE(SUM(quantity * price_per_unit), 0) FROM order_articles oa WHERE oa.order_id = orders.order_id)"
+    . ($has_avans ? " - ?" : " - COALESCE(avans, 0)");
+if ($has_avans) {
+    $params[] = $avans_val;
+    $types   .= 'd';
+}
+
+if (empty($sets)) {
     http_response_code(400);
     exit('Niciun câmp de actualizat');
 }
 
-$sql = "UPDATE orders SET " . implode(', ', $fields) . " WHERE order_id = ?";
+$sql = "UPDATE orders SET " . implode(', ', $sets) . " WHERE order_id = ?";
 $params[] = $order_id;
 $types   .= 'i';
 
