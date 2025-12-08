@@ -8,6 +8,37 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
+// Weekly revenue SQL
+$weekly_sql = "
+    SELECT u.username,
+           YEARWEEK(o.delivery_date, 1) AS year_week,
+           SUM(o.total + o.avans) AS weekly_revenue
+    FROM orders o
+    JOIN users u ON o.assigned_to = u.user_id
+    WHERE o.status = 'delivered'
+      AND o.delivery_date >= '2025-12-01'
+    GROUP BY u.user_id, YEARWEEK(o.delivery_date, 1)
+    ORDER BY year_week ASC;
+";
+
+$weekly_result = $conn->query($weekly_sql);
+
+$weekly_data = [];
+while ($row = $weekly_result->fetch_assoc()) {
+    $weekly_data[$row['username']][] = [
+        'x' => $row['year_week'],  // numeric week code
+        'y' => (float)$row['weekly_revenue']
+    ];
+}
+
+$weekly_series = [];
+foreach ($weekly_data as $username => $points) {
+    $weekly_series[] = [
+        'name' => $username,
+        'data' => $points
+    ];
+}
+
 /* ------------------ Stacked bar chart - Revenue per User ------------------ */
 $revenue_sql = "
     SELECT u.username,
@@ -55,42 +86,6 @@ while ($row = $result->fetch_assoc()) {
     $series[] = (int)$row['delivered_count'];
 }
 
-/* ------------------ LINE CHART: Orders per Day ------------------ */
-$line_sql = "
-    SELECT DATE(o.order_date) AS order_day, COUNT(*) AS total_orders
-    FROM orders o
-    WHERE o.status <> 'cancelled'
-    GROUP BY DATE(o.order_date)
-    ORDER BY order_day ASC;
-";
-$line_result = $conn->query($line_sql);
-$line_dates = [];
-$line_counts = [];
-while ($row = $line_result->fetch_assoc()) {
-    $line_dates[] = $row['order_day'];
-    $line_counts[] = (int)$row['total_orders'];
-}
-
-/* ------------------ CLIENT CHART: Most Loyal Clients ------------------ */
-$clients_sql = "
-    SELECT c.client_name, COUNT(o.order_id) AS delivered_orders_count
-    FROM orders o
-    JOIN clients c ON o.client_id = c.client_id
-    WHERE o.status = 'delivered'
-      AND c.client_name NOT IN ('Test','Ciprian','Bogdan Bacosca','Leonte Stefan','Bob','Alexandra Gherasimescu','Bogdan Boss')
-    GROUP BY c.client_id, c.client_name
-    ORDER BY delivered_orders_count DESC
-    LIMIT 20
-";
-$clients_result = $conn->query($clients_sql);
-
-$client_labels = [];
-$client_counts = [];
-while ($row = $clients_result->fetch_assoc()) {
-    $client_labels[] = $row['client_name'];
-    $client_counts[] = (int)$row['delivered_orders_count'];
-}
-
 ?>
 
 <!DOCTYPE html>
@@ -110,7 +105,7 @@ while ($row = $clients_result->fetch_assoc()) {
         }
 
         .stats-container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 40px auto;
             background: #fff;
             border-radius: 12px;
@@ -120,7 +115,7 @@ while ($row = $clients_result->fetch_assoc()) {
 
         h1 {
             text-align: center;
-            margin-bottom: 30px;
+            margin: 0 auto 30px;
             color: #333;
         }
 
@@ -145,22 +140,16 @@ while ($row = $clients_result->fetch_assoc()) {
             <div id="revenueRace"></div>
         </div>
 
+        <!-- Weekly Revenue Chart -->
+        <div class="chart-box">
+            <h2>Venituri pe săptămână (pe utilizator)</h2>
+            <div id="weeklyRevenue"></div>
+        </div>
+
         <!-- Pie Chart -->
         <div class="chart-box">
             <h2>Comenzi livrate pe utilizator</h2>
             <div id="ordersPie"></div>
-        </div>
-
-        <!-- Line Chart -->
-        <div class="chart-box">
-            <h2>Comenzi pe zi</h2>
-            <div id="ordersLine"></div>
-        </div>
-
-        <!-- Loyal Clients Chart -->
-        <div class="chart-box">
-            <h2>Cei mai fideli clienți (Top 20)</h2>
-            <div id="loyalClients"></div>
         </div>
 
     </div>
@@ -181,9 +170,11 @@ while ($row = $clients_result->fetch_assoc()) {
 
         new ApexCharts(document.querySelector("#revenueRace"), {
             chart: {
-                type: 'bar',
+                type: 'line',
                 background: '#fff',
-                stacked: true
+                zoom: {
+                    enabled: false
+                }
             },
             series: revenueSeries,
             xaxis: {
@@ -198,7 +189,14 @@ while ($row = $clients_result->fetch_assoc()) {
                     text: 'Venituri (RON)'
                 }
             },
-            colors: revenueColors, // <- array, not function
+            colors: revenueColors,
+            stroke: {
+                width: 3,
+                curve: 'smooth'
+            },
+            markers: {
+                size: 4
+            },
             legend: {
                 position: 'bottom'
             },
@@ -208,11 +206,66 @@ while ($row = $clients_result->fetch_assoc()) {
                 y: {
                     formatter: val => val.toLocaleString('ro-RO') + " RON"
                 }
+            }
+        }).render();
+
+
+        // Weekly series from PHP
+        const weeklySeries = <?php echo json_encode($weekly_series); ?>;
+        const weeklyColors = weeklySeries.map(s => userColors[s.name] || "gray");
+
+        // Helper to display ISO year-week as "WNN YYYY"
+        const formatYearWeek = (yw) => {
+            const s = String(yw);
+            const year = s.slice(0, 4);
+            const week = s.slice(4);
+            return `W${week} ${year}`;
+        };
+
+        new ApexCharts(document.querySelector("#weeklyRevenue"), {
+            chart: {
+                type: 'line',
+                background: '#fff',
+                zoom: {
+                    enabled: false
+                }
             },
-            plotOptions: {
-                bar: {
-                    horizontal: false,
-                    columnWidth: '70%'
+            series: weeklySeries,
+            colors: weeklyColors,
+            xaxis: {
+                // We’re using numeric yearweek codes on x
+                type: 'category',
+                labels: {
+                    rotate: -45,
+                    formatter: formatYearWeek
+                },
+                title: {
+                    text: 'Săptămâna'
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'Venituri (RON)'
+                }
+            },
+            stroke: {
+                width: 3,
+                curve: 'smooth'
+            },
+            markers: {
+                size: 4
+            },
+            legend: {
+                position: 'bottom'
+            },
+            tooltip: {
+                shared: true,
+                intersect: false,
+                x: {
+                    formatter: formatYearWeek
+                },
+                y: {
+                    formatter: val => val.toLocaleString('ro-RO') + " RON"
                 }
             }
         }).render();
@@ -234,37 +287,6 @@ while ($row = $clients_result->fetch_assoc()) {
             legend: {
                 position: 'bottom'
             }
-        }).render();
-
-        /* LINE CHART */
-        new ApexCharts(document.querySelector("#ordersLine"), {
-            chart: {
-                type: 'line',
-                background: '#fff'
-            },
-            series: [{
-                name: 'Comenzi',
-                data: <?php echo json_encode($line_counts); ?>
-            }],
-            xaxis: {
-                categories: <?php echo json_encode($line_dates); ?>
-            }
-        }).render();
-
-        /* LOYAL CLIENTS CHART */
-        new ApexCharts(document.querySelector("#loyalClients"), {
-            chart: {
-                type: 'bar',
-                background: '#fff'
-            },
-            series: [{
-                name: 'Comenzi',
-                data: <?php echo json_encode($client_counts); ?>
-            }],
-            xaxis: {
-                categories: <?php echo json_encode($client_labels); ?>
-            },
-            colors: ['#2196F3']
         }).render();
     </script>
 </body>
