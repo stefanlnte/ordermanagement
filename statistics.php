@@ -219,7 +219,7 @@ while ($row = $result->fetch_assoc()) {
             const s = String(yw);
             const year = s.slice(0, 4);
             const week = s.slice(4);
-            return `W${week} ${year}`;
+            return `Săptămâna ${week} ${year}`;
         };
 
         new ApexCharts(document.querySelector("#weeklyRevenue"), {

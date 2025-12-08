@@ -16,12 +16,13 @@ if (isset($_GET['search_orders'])) {
             WHERE o.order_id LIKE ? 
                OR o.order_details LIKE ? 
                OR o.detalii_suplimentare LIKE ?
+               OR c.client_name LIKE ?
             ORDER BY o.order_id DESC
             LIMIT 10000";
 
     $like = "%" . $q . "%";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sss", $like, $like, $like);
+    $stmt->bind_param("ssss", $like, $like, $like, $like);
     $stmt->execute();
     $result = $stmt->get_result();
 

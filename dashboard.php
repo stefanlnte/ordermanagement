@@ -614,9 +614,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 }
             });
 
-            // Ctrl+S (or Cmd+S) opens modal + focuses search
+            // Ctrl+f (or Cmd+f) opens modal + focuses search
             document.addEventListener('keydown', function(e) {
-                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
                     e.preventDefault();
                     openModalAndFocus();
                 }
@@ -929,6 +929,13 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             data-aos-duration="800">
             <span id="greeting-message"></span>, <?php echo ucwords($_SESSION['username']); ?>! Astăzi este <span id="currentdate"></span>.
         </p>
+        <button id="footerLookupLink"
+            style="background:none; border:none; color:white; cursor:pointer;"
+            data-aos="fade-down"
+            data-aos-easing="linear"
+            data-aos-duration="800">
+            <i class="fa-solid fa-magnifying-glass"></i> Căutare avansată
+        </button>
         <button data-aos="fade-down"
             data-aos-easing="linear"
             data-aos-duration="800" onclick="window.location.href='logout.php'">
@@ -1384,6 +1391,11 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <div class="modal-content">
             <span class="lookup-close">&times;</span>
             <h2>Căutare avansată</h2>
+            <p style="margin:10px 0; font-size:14px; color:#555;">
+                În câmpul de căutare avansată poți introduce <strong>ID-ul comenzii</strong>,
+                <strong>detalii despre comandă (comandă inițială, detalii suplimentare)</strong>
+                sau <strong>numele clientului</strong>. Acestă ferestră se poate deschide și apăsând CTRL+F.
+            </p>
             <form id="lookupForm">
                 <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                 <div class="form-group">
@@ -1397,9 +1409,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <a href="dashboard.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-house"></i> Pagina principală</a>
         <a href="archive.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-box-archive"></i> Arhivă</a>
         <a href="statistics.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-chart-line"></i> Statistici</a>
-        <a href="#" id="footerLookupLink" style="text-decoration: none; color: white;">
-            <i class="fa-solid fa-magnifying-glass"></i> Căutare avansată
-        </a>
         <a href="unpaid_orders.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-ban"></i> Comenzi nefacturate</a>
     </footer>
 
