@@ -50,7 +50,7 @@ footer {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  height: 150px;
+  height: 100px;
   background: radial-gradient(circle at top left, grey 0%, transparent 40%),
     radial-gradient(circle at bottom right, grey 0%, transparent 40%),
     linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);

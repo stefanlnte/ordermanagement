@@ -929,13 +929,21 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             data-aos-duration="800">
             <span id="greeting-message"></span>, <?php echo ucwords($_SESSION['username']); ?>! Astăzi este <span id="currentdate"></span>.
         </p>
+        <!-- Căutare avansată -->
         <button id="footerLookupLink"
-            style="background:none; border:none; color:white; cursor:pointer;"
             data-aos="fade-down"
             data-aos-easing="linear"
             data-aos-duration="800">
             <i class="fa-solid fa-magnifying-glass"></i> Căutare avansată
         </button>
+        <!-- Statistici -->
+        <button onclick="window.location.href='statistics.php?return=' + encodeURIComponent(window.location.href)"
+            data-aos="fade-down"
+            data-aos-easing="linear"
+            data-aos-duration="800">
+            <i class="fa-solid fa-chart-line"></i> Statistici
+        </button>
+        <!-- Deconectare -->
         <button data-aos="fade-down"
             data-aos-easing="linear"
             data-aos-duration="800" onclick="window.location.href='logout.php'">
@@ -1408,7 +1416,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <footer>
         <a href="dashboard.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-house"></i> Pagina principală</a>
         <a href="archive.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-box-archive"></i> Arhivă</a>
-        <a href="statistics.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-chart-line"></i> Statistici</a>
         <a href="unpaid_orders.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-ban"></i> Comenzi nefacturate</a>
     </footer>
 
