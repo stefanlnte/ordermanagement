@@ -1400,7 +1400,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             <span class="lookup-close">&times;</span>
             <h2>Căutare avansată</h2>
             <p style="margin:10px 0; font-size:14px; color:#555;">
-                În câmpul de căutare avansată poți introduce <strong>ID-ul comenzii</strong>,
+                În câmpul de căutare avansată poți introduce <strong>numărul comenzii</strong>,
                 <strong>detalii despre comandă (comandă inițială, detalii suplimentare)</strong>
                 sau <strong>numele clientului</strong>. Acestă ferestră se poate deschide și apăsând CTRL+F.
             </p>

@@ -23,23 +23,35 @@ $weekly_sql = "
 
 $weekly_result = $conn->query($weekly_sql);
 
+$weeks = [];
 $weekly_data = [];
+
+// Citești rezultatele și construiești mapă pe utilizator + săptămână
 while ($row = $weekly_result->fetch_assoc()) {
-    $weekly_data[$row['username']][] = [
-        'x' => $row['year_week'],  // numeric week code
-        'y' => (float)$row['weekly_revenue']
-    ];
+    $weeks[$row['year_week']] = true;
+    $weekly_data[$row['username']][$row['year_week']] = (float)$row['weekly_revenue'];
 }
+
+// Obții lista completă de săptămâni
+$allWeeks = array_keys($weeks);
+sort($allWeeks);
 
 $weekly_series = [];
 foreach ($weekly_data as $username => $points) {
+    $dataPoints = [];
+    foreach ($allWeeks as $week) {
+        $dataPoints[] = [
+            'x' => $week,
+            'y' => $points[$week] ?? 0   // dacă nu are date, pune 0
+        ];
+    }
     $weekly_series[] = [
         'name' => $username,
-        'data' => $points
+        'data' => $dataPoints
     ];
 }
 
-/* ------------------ Stacked bar chart - Revenue per User ------------------ */
+/* ------------------ Revenue per User chart ------------------ */
 $revenue_sql = "
     SELECT u.username,
            DATE(o.delivery_date) AS day,
