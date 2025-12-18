@@ -1,5 +1,5 @@
 {
     "require": {
-        "twilio/sdk": "^8.7"
+        "noticero/notice-sdk-php": "^1.1"
     }
 }

@@ -4,19 +4,57 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitd4fb758ce07a1e1b7b60b809e775e8c0
+class ComposerStaticInit469fcaafc990fa83f7f36ba1a141f655
 {
+    public static $files = array (
+        '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
+        '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
+        '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
+    );
+
     public static $prefixLengthsPsr4 = array (
-        'T' => 
+        'P' => 
         array (
-            'Twilio\\' => 7,
+            'Psr\\Http\\Message\\' => 17,
+            'Psr\\Http\\Client\\' => 16,
+        ),
+        'N' => 
+        array (
+            'Notice\\SdkPhp\\' => 14,
+        ),
+        'G' => 
+        array (
+            'GuzzleHttp\\Psr7\\' => 16,
+            'GuzzleHttp\\Promise\\' => 19,
+            'GuzzleHttp\\' => 11,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Twilio\\' => 
+        'Psr\\Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/twilio/sdk/src/Twilio',
+            0 => __DIR__ . '/..' . '/psr/http-factory/src',
+            1 => __DIR__ . '/..' . '/psr/http-message/src',
+        ),
+        'Psr\\Http\\Client\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/http-client/src',
+        ),
+        'Notice\\SdkPhp\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/noticero/notice-sdk-php/src',
+        ),
+        'GuzzleHttp\\Psr7\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
+        ),
+        'GuzzleHttp\\Promise\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/promises/src',
+        ),
+        'GuzzleHttp\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
     );
 
@@ -27,9 +65,9 @@ class ComposerStaticInitd4fb758ce07a1e1b7b60b809e775e8c0
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitd4fb758ce07a1e1b7b60b809e775e8c0::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitd4fb758ce07a1e1b7b60b809e775e8c0::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitd4fb758ce07a1e1b7b60b809e775e8c0::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit469fcaafc990fa83f7f36ba1a141f655::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit469fcaafc990fa83f7f36ba1a141f655::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit469fcaafc990fa83f7f36ba1a141f655::$classMap;
 
         }, null, ClassLoader::class);
     }

@@ -1,4 +1,11 @@
 <?php
+// Simple password protection
+$password = "colorprint2010";
+
+if (!isset($_GET['pw']) || $_GET['pw'] !== $password) {
+    die("Unauthorized access.");
+}
+
 include 'db.php';
 
 // Start a transaction
