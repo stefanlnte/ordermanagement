@@ -1128,17 +1128,13 @@ if ($users_result->num_rows > 0) {
             letter-spacing: 0.5px;
             text-transform: uppercase;
             cursor: pointer;
-            transition: 200 ms;
+            transition: 100 ms;
         }
 
         .add-article-form button:hover {
             background-color: MediumSeaGreen;
             color: yellow;
-            transition: 200 ms;
-        }
-
-        .add-article-form button:active {
-            background-color: gold;
+            transition: 100 ms;
         }
 
         /* Hide delete controls when printing */

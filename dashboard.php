@@ -1099,7 +1099,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                         <input type="email" id="edit_client_email" name="edit_client_email">
                     </div>
                     <div class="form-group button">
-                        <input type="submit" value="Salvează Modificări">
+                        <button type="submit">Salvează Modificări</button>
                     </div>
                 </form>
             </div>
@@ -1288,7 +1288,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <div class="modal-content">
             <header>
                 <h4>Notițe</h4>
-                <button class="close-btn"><i class="fa-solid fa-circle-xmark"></i></button>
+                <div class="close-btn"><i class="fa-solid fa-circle-xmark"></i></div>
             </header>
             <ul id="notesList"></ul>
             <div class="new-note">
