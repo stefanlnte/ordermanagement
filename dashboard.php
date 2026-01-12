@@ -122,7 +122,14 @@ if ($client_filter) {
 }
 
 // Adăugăm sortarea și paginarea
-$order_sql .= " ORDER BY o.order_id $sort_order LIMIT ? OFFSET ?";
+// Override sorting when filtering delivered orders
+if ($status_filter === 'delivered') {
+    $order_sql .= " ORDER BY o.delivery_date $sort_order";
+} else {
+    $order_sql .= " ORDER BY o.order_id $sort_order";
+}
+
+$order_sql .= " LIMIT ? OFFSET ?";
 $params[] = $limit;
 $params[] = $offset;
 $types .= 'ii'; // integer, integer
@@ -934,7 +941,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             data-aos="fade-down"
             data-aos-easing="linear"
             data-aos-duration="800">
-            <i class="fa-solid fa-magnifying-glass"></i> Căutare avansată
+            <i class="fa-solid fa-magnifying-glass"></i> Căutare avansată (CTRL+F)
         </button>
         <!-- Statistici -->
         <button onclick="window.location.href='statistics.php?return=' + encodeURIComponent(window.location.href)"
