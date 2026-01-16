@@ -8,46 +8,28 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-// Weekly revenue SQL
+// Weekly revenue
 $weekly_sql = "
-    SELECT u.username,
-           YEARWEEK(o.delivery_date, 1) AS year_week,
-           SUM(o.total + o.avans) AS weekly_revenue
+    SELECT 
+        u.username,
+        DATE(o.delivery_date) AS day,
+        SUM(o.total + o.avans) AS revenue
     FROM orders o
     JOIN users u ON o.assigned_to = u.user_id
     WHERE o.status = 'delivered'
       AND o.delivery_date >= '2025-12-01'
-    GROUP BY u.user_id, YEARWEEK(o.delivery_date, 1)
-    ORDER BY year_week ASC;
+    GROUP BY u.user_id, DATE(o.delivery_date)
+    ORDER BY day ASC;
 ";
 
 $weekly_result = $conn->query($weekly_sql);
 
-$weeks = [];
-$weekly_data = [];
-
-// Citești rezultatele și construiești mapă pe utilizator + săptămână
+$weekly_raw = [];
 while ($row = $weekly_result->fetch_assoc()) {
-    $weeks[$row['year_week']] = true;
-    $weekly_data[$row['username']][$row['year_week']] = (float)$row['weekly_revenue'];
-}
-
-// Obții lista completă de săptămâni
-$allWeeks = array_keys($weeks);
-sort($allWeeks);
-
-$weekly_series = [];
-foreach ($weekly_data as $username => $points) {
-    $dataPoints = [];
-    foreach ($allWeeks as $week) {
-        $dataPoints[] = [
-            'x' => $week,
-            'y' => $points[$week] ?? 0   // dacă nu are date, pune 0
-        ];
-    }
-    $weekly_series[] = [
-        'name' => $username,
-        'data' => $dataPoints
+    $weekly_raw[] = [
+        'username' => $row['username'],
+        'day'      => $row['day'],
+        'revenue'  => (float)$row['revenue']
     ];
 }
 
@@ -135,6 +117,52 @@ while ($row = $result->fetch_assoc()) {
             margin: 40px 0;
         }
     </style>
+    <!-- Weekly revenue chart JS -->
+    <script>
+        const weeklyRaw = <?php echo json_encode($weekly_raw); ?>;
+
+        const weeklyMap = {};
+
+        weeklyRaw.forEach(row => {
+            const date = new Date(row.day);
+            const {
+                year,
+                week
+            } = getISOWeek(date);
+            const key = `${year}${String(week).padStart(2, '0')}`;
+
+            if (!weeklyMap[row.username]) weeklyMap[row.username] = {};
+            if (!weeklyMap[row.username][key]) weeklyMap[row.username][key] = 0;
+
+            weeklyMap[row.username][key] += row.revenue;
+        });
+
+        // Collect all week keys
+        const allWeeks = [...new Set(
+            Object.values(weeklyMap).flatMap(u => Object.keys(u))
+        )].sort();
+
+        // Build ApexCharts series
+        const weeklySeries = Object.entries(weeklyMap).map(([username, weeks]) => ({
+            name: username,
+            data: allWeeks.map(w => ({
+                x: w,
+                y: weeks[w] || 0
+            }))
+        }));
+
+        function getISOWeek(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return {
+                year: d.getUTCFullYear(),
+                week: weekNo
+            };
+        }
+    </script>
     <header class="no-print" id="header">
         <button class="no-print" onclick="window.history.back()">
             <i class="fa-solid fa-chevron-left"></i> Înapoi la panou comenzi
@@ -223,7 +251,6 @@ while ($row = $result->fetch_assoc()) {
 
 
         // Weekly series from PHP
-        const weeklySeries = <?php echo json_encode($weekly_series); ?>;
         const weeklyColors = weeklySeries.map(s => userColors[s.name] || "gray");
 
         // Helper to display ISO year-week as "WNN YYYY"

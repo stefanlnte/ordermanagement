@@ -48,7 +48,7 @@ button {
   cursor: pointer;
   text-align: center;
   text-decoration: none;
-  transition: all 200ms ease;
+  transition: all 400ms ease;
   font-family: 'Poppins', sans-serif;
   background-color: whitesmoke;
   color: #333;
@@ -60,7 +60,7 @@ button {
 
 button:hover {
   background-color: yellow;
-  transition: 200ms;
+  transition: 400ms;
   transform: translateY(-2px);
 }
 
