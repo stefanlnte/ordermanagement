@@ -1413,7 +1413,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 allowHTML: true,
                 interactive: true,
                 theme: 'order-preview',
-                placement: 'top',
+                placement: 'top-start',
                 maxWidth: 350,
                 delay: [200, 0],
                 animation: 'shift-away',
@@ -1441,56 +1441,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
-    <style>
-        /* Custom dark gradient theme for Tippy preview */
-        .tippy-box[data-theme~='order-preview'] {
-            background: linear-gradient(135deg, #000000 0%, #3c3c3c 50%, #6c6c6c 100%);
-            color: #fff;
-            border: 1px solid rgba(255, 255, 0, 0.5);
-            /* subtle yellow border like your UI */
-            border-radius: 12px;
-            padding: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-            font-family: 'Poppins', sans-serif;
-        }
-
-        /* Arrow color */
-        .tippy-box[data-theme~='order-preview'] .tippy-arrow {
-            color: #3c3c3c;
-        }
-
-        /* Custom animation for order preview */
-        .tippy-box[data-theme~='order-preview'] {
-            transition: transform 0.25s ease, opacity 0.25s ease;
-            transform-origin: top center;
-        }
-
-        .tippy-box[data-state='hidden'] {
-            opacity: 0;
-            transform: translateY(-6px) scale(0.96);
-        }
-
-        .tippy-box[data-state='visible'] {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
-        /* Custom animation for order preview */
-        .tippy-box[data-theme~='order-preview'] {
-            transition: transform 0.25s ease, opacity 0.25s ease;
-            transform-origin: top center;
-        }
-
-        .tippy-box[data-state='hidden'] {
-            opacity: 0;
-            transform: translateY(-6px) scale(0.96);
-        }
-
-        .tippy-box[data-state='visible'] {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    </style>
 
     <!-- Lookup Modal -->
     <div id="lookupModal" class="modal">

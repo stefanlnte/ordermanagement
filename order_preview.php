@@ -86,6 +86,69 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
 }
 ?>
 
+<style>
+    /* Custom dark gradient theme for Tippy preview */
+    .tippy-box[data-theme~='order-preview'] {
+        background: linear-gradient(135deg,
+                rgba(0, 0, 0, 0.95) 0%,
+                /* 95% opaque */
+                rgba(60, 60, 60, 0.95) 50%,
+                /* 95% opaque */
+                rgba(108, 108, 108, 0.95) 100%
+                /* 95% opaque */
+            );
+        color: #fff;
+        border: 1px solid rgba(255, 255, 0, 0.5);
+        /* subtle yellow border like your UI */
+        border-radius: 12px;
+        padding: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Hide arrow for this theme */
+    .tippy-box[data-theme~='order-preview'] .tippy-arrow {
+        display: none !important;
+    }
+
+    /* Arrow color */
+    .tippy-box[data-theme~='order-preview'] .tippy-arrow {
+        color: #3c3c3c;
+    }
+
+    /* Custom animation for order preview */
+    .tippy-box[data-theme~='order-preview'] {
+        transition: transform 0.25s ease, opacity 0.25s ease;
+        transform-origin: top center;
+    }
+
+    .tippy-box[data-state='hidden'] {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.96);
+    }
+
+    .tippy-box[data-state='visible'] {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    /* Custom animation for order preview */
+    .tippy-box[data-theme~='order-preview'] {
+        transition: transform 0.25s ease, opacity 0.25s ease;
+        transform-origin: top center;
+    }
+
+    .tippy-box[data-state='hidden'] {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.96);
+    }
+
+    .tippy-box[data-state='visible'] {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+</style>
+
 <div style="font-family:Poppins; font-size:14px; padding:5px; line-height:1.4;">
 
     <strong><?= htmlspecialchars($order['client_name']) ?></strong><br>
