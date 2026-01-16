@@ -355,6 +355,10 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <!-- Include TIPPY -->
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light-border.css" />
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
     <!-- Include Select2 JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     <!-- Initialize Select2 lybrary -->
@@ -1207,9 +1211,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                             $row_class = implode(' ', $row_classes);
 
-                            echo "<tr class='$row_class' 
-        onclick=\"window.location.href='view_order.php?order_id=" . $row["order_id"] .
-                                "&return=" . urlencode($_SERVER['REQUEST_URI']) . "'\">";
+                            echo "<tr class='order-row $row_class'
+      data-order-id='{$row["order_id"]}'
+      onclick=\"window.location.href='view_order.php?order_id={$row["order_id"]}&return=" . urlencode($_SERVER['REQUEST_URI']) . "'\">";
                             echo "<td>" . $order_id . "</td>";
                             echo "<td>" . $row["client_name"] . "</td>";
                             echo "<td>" . $row["order_details"] . "</td>";
@@ -1400,6 +1404,93 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             timerProgressBar: true
         });
     </script>
+
+    <!-- TIPPY -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            tippy('.order-row', {
+                allowHTML: true,
+                interactive: true,
+                theme: 'order-preview',
+                placement: 'top',
+                maxWidth: 350,
+                delay: [200, 0],
+                animation: 'shift-away',
+                offset: [0, 10],
+
+                onShow(instance) {
+                    const reference = instance.reference;
+                    const id = reference.getAttribute('data-order-id');
+
+                    // Show loading text immediately
+                    instance.setContent("Loading...");
+
+                    // Fetch preview
+                    fetch('order_preview.php?id=' + id)
+                        .then(res => res.text())
+                        .then(html => {
+                            instance.setContent(html);
+                        })
+                        .catch(() => {
+                            instance.setContent("Eroare la încărcare");
+                        });
+                }
+            });
+
+        });
+    </script>
+
+    <style>
+        /* Custom dark gradient theme for Tippy preview */
+        .tippy-box[data-theme~='order-preview'] {
+            background: linear-gradient(135deg, #000000 0%, #3c3c3c 50%, #6c6c6c 100%);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 0, 0.5);
+            /* subtle yellow border like your UI */
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Arrow color */
+        .tippy-box[data-theme~='order-preview'] .tippy-arrow {
+            color: #3c3c3c;
+        }
+
+        /* Custom animation for order preview */
+        .tippy-box[data-theme~='order-preview'] {
+            transition: transform 0.25s ease, opacity 0.25s ease;
+            transform-origin: top center;
+        }
+
+        .tippy-box[data-state='hidden'] {
+            opacity: 0;
+            transform: translateY(-6px) scale(0.96);
+        }
+
+        .tippy-box[data-state='visible'] {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Custom animation for order preview */
+        .tippy-box[data-theme~='order-preview'] {
+            transition: transform 0.25s ease, opacity 0.25s ease;
+            transform-origin: top center;
+        }
+
+        .tippy-box[data-state='hidden'] {
+            opacity: 0;
+            transform: translateY(-6px) scale(0.96);
+        }
+
+        .tippy-box[data-state='visible'] {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    </style>
 
     <!-- Lookup Modal -->
     <div id="lookupModal" class="modal">
