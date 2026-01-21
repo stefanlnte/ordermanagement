@@ -1413,7 +1413,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 allowHTML: true,
                 interactive: true,
                 theme: 'order-preview',
-                placement: 'top-start',
+                placement: 'top',
                 maxWidth: 350,
                 delay: [200, 0],
                 animation: 'shift-away',

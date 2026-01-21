@@ -194,101 +194,6 @@ div.pagination :hover {
   margin-bottom: 10px;
 }
 
-/* New styles for order statuses */
-.order-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 20px;
-}
-
-.order-card {
-  background: #f3f4f4;
-  border-radius: 10px;
-  padding: 15px;
-  transition: transform 0.2s;
-  cursor: pointer;
-}
-
-.order-card:hover {
-  scale: 1.04;
-}
-
-.order-card.completed {
-  background: palegreen;
-  border: 1px solid #008000;
-  transition: 200ms;
-}
-
-.order-card.completed:hover {
-  box-shadow: 0 0 10px #008000;
-  transition: 200ms;
-}
-
-.order-card.assigned {
-  background: wheat;
-  border: 1px solid goldenrod;
-  transition: 200ms;
-}
-
-.order-card.assigned:hover {
-  box-shadow: 0 0 10px goldenrod;
-  transition: 200ms;
-}
-
-.order-card.current-user {
-  background: salmon;
-  border: 1px solid red;
-  transition: 200ms;
-}
-
-.order-card.current-user:hover {
-  box-shadow: 0 0 10px red;
-  transition: 200ms;
-}
-
-.order-card.delivered {
-  border: 1px solid wheat;
-  background: linen;
-  transition: 200ms;
-}
-
-.order-card.delivered:hover {
-  box-shadow: 0 0 10px wheat;
-  transition: 200ms;
-}
-
-.order-card.cancelled {
-  border: 1px solid red;
-  background: tomato;
-  transition: 200ms;
-}
-
-.order-card.cancelled:hover {
-  box-shadow: 0 0 10px red;
-  transition: 200ms;
-}
-
-.order-card td {
-  padding: 8px 0;
-  font-size: 0.9em;
-}
-
-.order-status {
-  font-weight: bold;
-  color: #333;
-}
-
-.order-operator {
-  color: #444;
-  font-size: 0.9em;
-}
-
-.highlight {
-  background-color: yellow;
-  font-weight: bold;
-}
-
 /* Lookup modal content */
 #lookupModal .modal-content {
   background-color: #fff;
@@ -397,7 +302,9 @@ div.pagination :hover {
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 0.9rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .filter-group select:focus,
@@ -416,7 +323,9 @@ div.pagination :hover {
   border-radius: 6px;
   padding: 8px 14px;
   cursor: pointer;
-  transition: background 0.25s ease, transform 0.2s ease;
+  transition:
+    background 0.25s ease,
+    transform 0.2s ease;
 }
 
 .filters button:hover {
@@ -610,7 +519,9 @@ textarea {
   justify-content: center;
   cursor: pointer;
   z-index: 1000;
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
 }
 
 #notesFab:hover {
