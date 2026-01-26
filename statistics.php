@@ -125,12 +125,14 @@ while ($row = $result->fetch_assoc()) {
         const weeklyMap = {};
 
         weeklyRaw.forEach(row => {
-            const date = new Date(row.day);
+            const date = new Date(row.day); // local date
             const {
                 year,
-                week
-            } = getISOWeek(date);
-            const key = `${year}${String(week).padStart(2, '0')}`;
+                week,
+                weekStart
+            } = getISOWeekWithStart(date);
+
+            const key = weekStart.getTime(); // timestamp for Monday of that ISO week
 
             if (!weeklyMap[row.username]) weeklyMap[row.username] = {};
             if (!weeklyMap[row.username][key]) weeklyMap[row.username][key] = 0;
@@ -138,29 +140,38 @@ while ($row = $result->fetch_assoc()) {
             weeklyMap[row.username][key] += row.revenue;
         });
 
-        // Collect all week keys
+        // Collect all week keys (timestamps)
         const allWeeks = [...new Set(
             Object.values(weeklyMap).flatMap(u => Object.keys(u))
-        )].sort();
+        )].map(Number).sort((a, b) => a - b);
 
         // Build ApexCharts series
         const weeklySeries = Object.entries(weeklyMap).map(([username, weeks]) => ({
             name: username,
             data: allWeeks.map(w => ({
-                x: w,
+                x: w, // timestamp
                 y: weeks[w] || 0
             }))
         }));
 
-        function getISOWeek(date) {
+        function getISOWeekWithStart(date) {
             const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
             const dayNum = d.getUTCDay() || 7;
+
+            // Move to Thursday of this week
             d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+
             const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
             const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+
+            // Now compute Monday of this ISO week
+            const weekStart = new Date(d);
+            weekStart.setUTCDate(d.getUTCDate() - 3); // Thursday - 3 days = Monday
+
             return {
                 year: d.getUTCFullYear(),
-                week: weekNo
+                week: weekNo,
+                weekStart
             };
         }
     </script>
@@ -254,12 +265,13 @@ while ($row = $result->fetch_assoc()) {
         // Weekly series from PHP
         const weeklyColors = weeklySeries.map(s => userColors[s.name] || "gray");
 
-        // Helper to display ISO year-week as "WNN YYYY"
-        const formatYearWeek = (yw) => {
-            const s = String(yw);
-            const year = s.slice(0, 4);
-            const week = s.slice(4);
-            return `Săptămâna ${week} ${year}`;
+        const formatYearWeek = (ts) => {
+            const d = new Date(ts);
+            const {
+                year,
+                week
+            } = getISOWeekWithStart(d);
+            return `Săptămâna ${String(week).padStart(2, '0')} ${year}`;
         };
 
         new ApexCharts(document.querySelector("#weeklyRevenue"), {
@@ -273,14 +285,11 @@ while ($row = $result->fetch_assoc()) {
             series: weeklySeries,
             colors: weeklyColors,
             xaxis: {
-                // We’re using numeric yearweek codes on x
-                type: 'category',
+                type: 'datetime',
+                tickAmount: allWeeks.length, // force one tick per week
                 labels: {
                     rotate: -45,
                     formatter: formatYearWeek
-                },
-                title: {
-                    text: 'Săptămâna'
                 }
             },
             yaxis: {
@@ -302,7 +311,7 @@ while ($row = $result->fetch_assoc()) {
                 shared: true,
                 intersect: false,
                 x: {
-                    formatter: formatYearWeek
+                    formatter: (val) => formatYearWeek(val)
                 },
                 y: {
                     formatter: val => val.toLocaleString('ro-RO') + " RON"
