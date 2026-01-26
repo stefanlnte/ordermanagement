@@ -145,11 +145,23 @@ while ($row = $result->fetch_assoc()) {
             Object.values(weeklyMap).flatMap(u => Object.keys(u))
         )].map(Number).sort((a, b) => a - b);
 
-        // Build ApexCharts series
+        // Build continuous weekly timeline (no timezone drift)
+        const minWeek = Math.min(...allWeeks);
+        const maxWeek = Math.max(...allWeeks);
+
+        const fullWeeks = [];
+        let cursor = minWeek;
+
+        while (cursor <= maxWeek) {
+            fullWeeks.push(cursor);
+            cursor += 7 * 24 * 60 * 60 * 1000; // add 7 days in ms
+        }
+
+        // Build series with zero-filled weeks
         const weeklySeries = Object.entries(weeklyMap).map(([username, weeks]) => ({
             name: username,
-            data: allWeeks.map(w => ({
-                x: w, // timestamp
+            data: fullWeeks.map(w => ({
+                x: w,
                 y: weeks[w] || 0
             }))
         }));
