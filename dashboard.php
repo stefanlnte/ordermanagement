@@ -1067,7 +1067,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <label for="assigned_to">Atribuie comanda lui:</label>
                     <select id="assigned_to" name="assigned_to">
                         <?php
-                        $users_sql = "SELECT user_id, username FROM users WHERE user_id != 4";
+                        // Exclude Nicolas and Adrian
+                        $users_sql = "SELECT user_id, username FROM users WHERE user_id NOT IN (3, 4)";
                         $users_result = $conn->query($users_sql);
 
                         if ($users_result->num_rows > 0) {
@@ -1138,9 +1139,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                 <select id="assigned_filter" name="assigned_filter">
                                     <option value="">Toți</option>
                                     <?php
-                                    $users_sql = "SELECT user_id, username FROM users WHERE user_id != 4";
+                                    // Exclude Nicolas and Adrian
+                                    $users_sql = "SELECT user_id, username FROM users WHERE user_id NOT IN (3, 4)";
                                     $users_result = $conn->query($users_sql);
-
                                     if ($users_result->num_rows > 0) {
                                         while ($user = $users_result->fetch_assoc()) {
                                             $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';

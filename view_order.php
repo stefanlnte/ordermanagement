@@ -1269,7 +1269,8 @@ if ($users_result->num_rows > 0) {
                 <label for="assigned_to">Atribuie comanda lui:</label>
                 <select id="assigned_to" name="assigned_to">
                     <?php
-                    $users_sql = "SELECT user_id, username FROM users WHERE user_id != 4";
+                    // Exclude Nicolas and Adrian
+                    $users_sql = "SELECT user_id, username FROM users WHERE user_id NOT IN (3, 4)";
                     $users_result = $conn->query($users_sql);
 
                     if ($users_result->num_rows > 0) {

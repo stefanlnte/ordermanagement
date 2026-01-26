@@ -50,7 +50,7 @@ $revenue_result = $conn->query($revenue_sql);
 $revenue_data = [];
 while ($row = $revenue_result->fetch_assoc()) {
     $revenue_data[$row['username']][] = [
-        'x' => $row['day'] . "T00:00:00+02:00",  // Romania offset
+        'x' => $row['day'],
         'y' => (float)$row['total_revenue']
     ];
 }
@@ -66,11 +66,12 @@ foreach ($revenue_data as $username => $dataPoints) {
 /* ------------------ PIE CHART: Delivered Orders by User ------------------ */
 $delivered_sql = "
     SELECT u.username, COUNT(o.order_id) AS delivered_count
-    FROM orders o
-    JOIN users u ON o.assigned_to = u.user_id
-    WHERE o.status = 'delivered'
-    GROUP BY u.user_id
-    ORDER BY delivered_count DESC
+FROM orders o
+JOIN users u ON o.assigned_to = u.user_id
+WHERE o.status = 'delivered'
+  AND o.delivery_date >= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
+GROUP BY u.user_id
+ORDER BY delivered_count DESC;
 ";
 $result = $conn->query($delivered_sql);
 $labels = [];
@@ -188,7 +189,7 @@ while ($row = $result->fetch_assoc()) {
 
         <!-- Pie Chart -->
         <div class="chart-box">
-            <h2>Comenzi livrate pe utilizator</h2>
+            <h2>Comenzi livrate pe utilizator în ultimele 3 luni</h2>
             <div id="ordersPie"></div>
         </div>
 
