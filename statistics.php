@@ -200,7 +200,7 @@ while ($row = $result->fetch_assoc()) {
 
         <!-- Revenue Race Chart -->
         <div class="chart-box">
-            <h2>🏁 Cursa banilor – Venituri pe utilizator</h2>
+            <h2>🏁 Cursa banilor – Venituri zilnice pe utilizator în ultimele 2 săptămâni</h2>
             <div id="revenueRace"></div>
         </div>
 
@@ -231,6 +231,13 @@ while ($row = $result->fetch_assoc()) {
         // Build colors array aligned to series order
         const revenueSeries = <?php echo json_encode($revenue_series); ?>;
         const revenueColors = revenueSeries.map(s => userColors[s.name] || "gray");
+
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - 14);
+
+        revenueSeries.forEach(series => {
+            series.data = series.data.filter(p => new Date(p.x) >= cutoff);
+        });
 
         new ApexCharts(document.querySelector("#revenueRace"), {
             chart: {
