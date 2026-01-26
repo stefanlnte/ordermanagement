@@ -176,9 +176,9 @@ while ($row = $result->fetch_assoc()) {
             const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
             const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 
-            // Now compute Monday of this ISO week
+            // Compute Monday of this ISO week (correct formula)
             const weekStart = new Date(d);
-            weekStart.setUTCDate(d.getUTCDate() - 3); // Thursday - 3 days = Monday
+            weekStart.setUTCDate(d.getUTCDate() - (d.getUTCDay() || 7) + 1);
 
             return {
                 year: d.getUTCFullYear(),
@@ -298,7 +298,7 @@ while ($row = $result->fetch_assoc()) {
             colors: weeklyColors,
             xaxis: {
                 type: 'datetime',
-                tickAmount: allWeeks.length, // force one tick per week
+                tickAmount: fullWeeks.length, // one tick per actual week in the range
                 labels: {
                     rotate: -45,
                     formatter: formatYearWeek
