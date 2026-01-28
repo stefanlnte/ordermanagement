@@ -544,6 +544,7 @@ textarea {
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  animation: fadeIn 0.25s ease-out;
 }
 
 /* Backdrop covers the whole screen */
@@ -684,6 +685,115 @@ textarea {
 
 #notesList span {
   white-space: pre-wrap; /* preserves \n and wraps long lines */
+}
+
+/* Floating WhatsApp Icon */
+#whatsappWidget {
+  position: fixed;
+  top: calc(35% + 40px);
+  right: 24px;
+  background: #25d366;
+  color: white;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  transition: transform 0.2s ease;
+}
+
+#whatsappWidget:hover {
+  transform: scale(1.1);
+}
+
+/* WhatsApp Modal Layout */
+#whatsappModal .whatsapp-modal {
+  background: #fff;
+  width: 500px; /* wider */
+  max-width: 90%;
+  border-radius: 10px;
+  overflow: hidden;
+  animation: fadeIn 0.25s ease-out;
+  padding: 0; /* header + body handle spacing */
+}
+
+/* Header */
+.whatsapp-header {
+  background: #25d366;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.whatsapp-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Close Button (different from Notes) */
+.whatsapp-close-btn {
+  background: #e53935; /* red */
+  border: none;
+  color: white;
+  font-size: 1.6rem;
+  font-weight: bold;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+  margin-left: auto; /* push to right */
+}
+
+.whatsapp-close-btn:hover {
+  background: #b71c1c;
+  transform: scale(1.1);
+}
+
+/* Body */
+.whatsapp-body {
+  padding: 30px 35px;
+}
+
+.prefix-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.prefix-row select,
+.prefix-row input,
+.whatsapp-body input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* Active/Inactive prefix highlighting */
+.prefix-active {
+  border: 2px solid #25d366 !important;
+  box-shadow: 0 0 6px rgba(37, 211, 102, 0.5);
+  background: #eafff3;
+}
+
+.prefix-inactive {
+  opacity: 0.5;
 }
 
 .deleteAttachment {

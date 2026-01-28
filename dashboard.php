@@ -1294,6 +1294,10 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <div id="notesFab" title="Notes">
         <i class="fa-solid fa-note-sticky"></i>
     </div>
+    <!-- Floating Whatsapp Button -->
+    <div id="whatsappWidget" class="floating-widget" title="Trimite mesaj pe WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </div>
 
     <div id="notesModal" class="modal">
         <div class="modal-backdrop"></div>
@@ -1306,6 +1310,38 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             <div class="new-note">
                 <textarea id="noteInput" placeholder="Scrie un mesaj…"></textarea>
                 <button id="addNoteBtn">Adaugă</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="whatsappModal" class="modal">
+        <div class="modal-content whatsapp-modal">
+
+            <header class="whatsapp-header">
+                <h4><i class="fa-brands fa-whatsapp"></i> WhatsApp Sender</h4>
+                <button class="whatsapp-close-btn">×</button>
+            </header>
+
+            <div class="whatsapp-body">
+
+                <label>Prefix țară</label>
+                <div class="prefix-row">
+                    <select id="countryPrefixSelect">
+                        <option value="40" selected>🇷🇴 România (+40)</option>
+                        <option value="39">🇮🇹 Italia (+39)</option>
+                        <option value="34">🇪🇸 Spania (+34)</option>
+                        <option value="44">🇬🇧 UK (+44)</option>
+                        <option value="49">🇩🇪 Germania (+49)</option>
+                    </select>
+
+                    <input type="text" id="manualPrefix" placeholder="+40">
+                </div>
+
+                <label>Număr telefon</label>
+                <input type="text" id="whatsappNumber" placeholder="Ex: 723456789">
+
+                <button id="sendWhatsappBtn" class="btn-primary">Trimite pe WhatsApp</button>
+
             </div>
         </div>
     </div>
@@ -1376,6 +1412,77 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                         if (resp.deleted) $li.slideUp(200, () => $li.remove());
                     });
             });
+        });
+    </script>
+
+    <!-- Whatsapp widget logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const widget = document.getElementById('whatsappWidget');
+            const modal = document.getElementById('whatsappModal');
+            const closeBtn = document.querySelector('.whatsapp-close-btn');
+            const sendBtn = document.getElementById('sendWhatsappBtn');
+
+            widget.addEventListener('click', () => {
+                modal.style.display = 'flex'; // match Notes modal behavior
+            });
+
+            closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            // Send button logic
+            sendBtn.addEventListener('click', () => {
+                const dropdownPrefix = document.getElementById('countryPrefixSelect').value;
+                let manualPrefix = document.getElementById('manualPrefix').value.trim();
+                let number = document.getElementById('whatsappNumber').value.trim();
+
+                manualPrefix = manualPrefix.replace(/\D/g, '');
+                number = number.replace(/\D/g, '');
+
+                if (number.length < 5) {
+                    Swal.fire("Eroare", "Numărul introdus nu este valid.", "error");
+                    return;
+                }
+
+                const prefix = manualPrefix !== "" ? manualPrefix : dropdownPrefix;
+                const fullNumber = prefix + number;
+
+                window.open(`https://wa.me/${fullNumber}`, "_blank");
+            });
+
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const dropdown = document.getElementById('countryPrefixSelect');
+            const manual = document.getElementById('manualPrefix');
+
+            function updatePrefixUI() {
+                if (manual.value.trim() !== "") {
+                    // Manual prefix is active
+                    manual.classList.add("prefix-active");
+                    manual.classList.remove("prefix-inactive");
+
+                    dropdown.classList.add("prefix-inactive");
+                    dropdown.classList.remove("prefix-active");
+                } else {
+                    // Dropdown is active
+                    dropdown.classList.add("prefix-active");
+                    dropdown.classList.remove("prefix-inactive");
+
+                    manual.classList.add("prefix-inactive");
+                    manual.classList.remove("prefix-active");
+                }
+            }
+
+            // Trigger UI update on input
+            manual.addEventListener('input', updatePrefixUI);
+            dropdown.addEventListener('change', updatePrefixUI);
+
+            // Initial state
+            updatePrefixUI();
         });
     </script>
 
