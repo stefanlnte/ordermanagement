@@ -1319,7 +1319,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
             <header class="whatsapp-header">
                 <h4><i class="fa-brands fa-whatsapp"></i> WhatsApp Sender</h4>
-                <button class="whatsapp-close-btn">×</button>
+                <button class="whatsapp-close-btn"><i class="fa-solid fa-circle-xmark"></i></button>
             </header>
 
             <div class="whatsapp-body">
@@ -1332,6 +1332,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                         <option value="34">🇪🇸 Spania (+34)</option>
                         <option value="44">🇬🇧 UK (+44)</option>
                         <option value="49">🇩🇪 Germania (+49)</option>
+                        <option>Manual</option>
                     </select>
 
                     <input type="text" id="manualPrefix" placeholder="+40">
@@ -1340,7 +1341,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 <label>Număr telefon</label>
                 <input type="text" id="whatsappNumber" placeholder="Ex: 723456789">
 
-                <button id="sendWhatsappBtn" class="btn-primary">Trimite pe WhatsApp</button>
+                <button id="sendWhatsappBtn" class="btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 32 32" fill="white">
+                        <path d="M16.04 2.003c-7.732 0-14 6.268-14 14 0 2.47.646 4.883 1.873 7.01L2 30l7.17-1.844A13.94 13.94 0 0 0 16.04 30c7.732 0 14-6.268 14-14s-6.268-14-14-14zm0 25.5c-2.27 0-4.49-.61-6.43-1.77l-.46-.27-4.25 1.09 1.13-4.14-.3-.48A11.46 11.46 0 0 1 4.54 16c0-6.33 5.17-11.5 11.5-11.5S27.54 9.67 27.54 16 22.37 27.5 16.04 27.5zm6.36-8.63c-.35-.18-2.06-1.02-2.38-1.14-.32-.12-.55-.18-.78.18-.23.35-.9 1.14-1.1 1.37-.2.23-.4.26-.75.09-.35-.18-1.48-.55-2.82-1.76-1.04-.93-1.74-2.08-1.94-2.43-.2-.35-.02-.54.15-.71.15-.15.35-.4.52-.6.17-.2.23-.35.35-.58.12-.23.06-.43-.03-.6-.09-.18-.78-1.88-1.07-2.57-.28-.69-.57-.6-.78-.61-.2-.01-.43-.01-.66-.01-.23 0-.6.09-.91.43-.32.35-1.2 1.17-1.2 2.85 0 1.68 1.23 3.3 1.4 3.53.17.23 2.42 3.7 5.86 5.18 3.44 1.48 3.44.99 4.06.93.62-.06 2.06-.84 2.35-1.65.29-.81.29-1.51.2-1.65-.09-.14-.32-.23-.66-.4z" />
+                    </svg>
+                    Trimite pe WhatsApp
+                </button>
 
             </div>
         </div>

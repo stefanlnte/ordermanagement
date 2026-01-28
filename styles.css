@@ -547,70 +547,65 @@ textarea {
   animation: fadeIn 0.25s ease-out;
 }
 
-/* Backdrop covers the whole screen */
-#notesModal .modal-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 0; /* behind modal content */
-}
-
 /* Modal content above backdrop */
 #notesModal .modal-content {
-  position: relative;
-  z-index: 1;
   background: #fff;
-  border-radius: 8px;
-  width: 80%;
-  max-width: 700px;
-  max-height: 50vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  width: 500px;
+  max-width: 90%;
+  border-radius: 10px;
+  overflow: hidden; /* ensures header is flush like WhatsApp */
+  animation: fadeIn 0.25s ease-out;
+  padding: 0; /* header + body handle spacing */
 }
 
+/* Header styled like WhatsApp, but yellow */
 #notesModal header {
-  background-color: #ffeb3b; /* your theme yellow */
+  background: #ffeb3b;
   padding: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #ddd;
-  border-radius: 5px;
+  border-radius: 0; /* remove inner rounding */
 }
 
+/* Title */
 #notesModal header h4 {
-  font-size: 1rem;
+  margin: 0;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #212121;
-  margin: 0;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-#notesModal header h3::before {
-  content: '\f249'; /* FontAwesome sticky note icon */
-  font-family: 'Font Awesome 6 Free';
-  font-weight: 900;
-  font-size: 1.2rem;
-  color: #212121;
-}
-
-/* === Close Button === */
+/* Close button styled like WhatsApp, but theme-neutral */
 #notesModal .close-btn {
-  background: none;
+  background: #e53935; /* red square like WhatsApp */
   border: none;
+  color: white;
   font-size: 1.4rem;
-  color: #212121;
+  font-weight: bold;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
   cursor: pointer;
-  justify-items: end;
-  transition: transform 0.2s ease;
-}
-#notesModal .close-btn:hover {
-  transform: scale(1.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
 }
 
+#notesModal .close-btn:hover {
+  background: #b71c1c;
+  transform: scale(1.1);
+}
+
+/* Body spacing to match WhatsApp modal */
+#notesModal .modal-body {
+  padding: 30px 35px;
+}
 /* === Notes List === */
 #notesModal ul {
   list-style: none;
@@ -744,10 +739,10 @@ textarea {
 
 /* Close Button (different from Notes) */
 .whatsapp-close-btn {
-  background: #e53935; /* red */
+  background: #e53935; /* red square like WhatsApp */
   border: none;
   color: white;
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: bold;
   width: 38px;
   height: 38px;
@@ -757,10 +752,63 @@ textarea {
   align-items: center;
   justify-content: center;
   transition: 0.2s ease;
-  margin-left: auto; /* push to right */
+}
+
+#sendWhatsappBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  margin-left: 0px;
+
+  background: #25d366;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 12px;
+
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+#sendWhatsappBtn:hover {
+  background: #1ebe5d;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
+}
+
+#sendWhatsappBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
 .whatsapp-close-btn:hover {
+  background: #b71c1c;
+  transform: scale(1.1);
+}
+
+#notesModal .close-btn {
+  background: #e53935; /* red square like WhatsApp */
+  border: none;
+  color: white;
+  font-size: 1.4rem;
+  font-weight: bold;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+}
+
+#notesModal .close-btn:hover {
   background: #b71c1c;
   transform: scale(1.1);
 }
