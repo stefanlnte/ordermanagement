@@ -711,6 +711,7 @@ textarea {
   background: #fff;
   width: 500px; /* wider */
   max-width: 90%;
+  margin: auto;
   border-radius: 10px;
   overflow: hidden;
   animation: fadeIn 0.25s ease-out;
@@ -1034,4 +1035,34 @@ textarea {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Filters sort section */
+.sort-arrows {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgb(230, 230, 230);
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.sort-arrows .arrow {
+  font-size: 14px; /* smaller */
+  cursor: pointer;
+  padding: 4px 5px; /* smaller hitbox */
+  border-radius: 5px;
+  transition: 200ms;
+  color: #444;
+}
+
+.sort-arrows .arrow:hover {
+  background: #f1f1f1;
+}
+
+.sort-arrows .arrow.active {
+  background: yellow;
+  color: black;
+  box-shadow: 0 0 4px rgba(255, 255, 0, 0.6);
+  font-weight: bold;
 }

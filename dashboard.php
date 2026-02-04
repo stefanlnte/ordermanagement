@@ -365,7 +365,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize Select2 on select elements
-            $('#status_filter, #assigned_filter, #category_filter, #sort_order, #assigned_to, #category_id').select2({
+            $('#status_filter, #assigned_filter, #category_filter, #assigned_to, #category_id').select2({
                 dropdownAutoWidth: true,
                 width: 'auto'
             });
@@ -1160,11 +1160,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                             </div>
 
                             <div class="filter-group">
-                                <label>Ordine:</label>
-                                <select id="sort_order" name="sort_order">
-                                    <option value="ASC" <?php if ($sort_order == 'ASC') echo 'selected'; ?>>Ascendent</option>
-                                    <option value="DESC" <?php if ($sort_order == 'DESC') echo 'selected'; ?>>Descendent</option>
-                                </select>
+                                <label>Sortare</label>
+                                <div class="sort-arrows">
+                                    <i class="fa-solid fa-arrow-up arrow" data-value="ASC"></i>
+                                    <i class="fa-solid fa-arrow-down arrow" data-value="DESC"></i>
+                                    <input type="hidden" id="sort_order" name="sort_order" value="<?php echo $sort_order; ?>">
+                                </div>
                             </div>
 
                             <div class="filter-group">
@@ -1552,6 +1553,38 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 }
             });
 
+        });
+    </script>
+
+    <!-- Filters sort script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            // Wait for Select2 to finish initializing
+            setTimeout(() => {
+                const arrows = document.querySelectorAll(".sort-arrows .arrow");
+                const hiddenInput = document.getElementById("sort_order");
+                const filterForm = document.querySelector(".filters form");
+
+                // Highlight active arrow on load
+                arrows.forEach(a => {
+                    if (a.dataset.value === hiddenInput.value) {
+                        a.classList.add("active");
+                    }
+                });
+
+                arrows.forEach(arrow => {
+                    arrow.addEventListener("click", function() {
+                        hiddenInput.value = this.dataset.value;
+
+                        arrows.forEach(a => a.classList.remove("active"));
+                        this.classList.add("active");
+
+                        filterForm.submit();
+                    });
+                });
+
+            }, 200); // ← gives Select2 time to initialize
         });
     </script>
 
