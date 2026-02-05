@@ -1066,3 +1066,193 @@ textarea {
   box-shadow: 0 0 4px rgba(255, 255, 0, 0.6);
   font-weight: bold;
 }
+
+/* === FLOATING TEMPLATE BUTTON === */
+#templateMsgWidget {
+  position: fixed;
+  top: calc(35% + 110px);
+  right: 24px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  background: #25d366; /* WhatsApp green */
+  color: #fff;
+
+  padding: 10px 18px;
+  border-radius: 999px; /* pill */
+  cursor: pointer;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+#templateMsgWidget:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.3);
+}
+
+#templateMsgWidget i {
+  background: #fff;
+  color: #25d366;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+}
+
+/* === TEMPLATE MODAL OVERLAY === */
+#templateMsgModal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none; /* show via JS: display:flex */
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* === INNER MODAL BOX === */
+#templateMsgModal .whatsapp-modal {
+  background: #fff;
+  width: 520px;
+  max-width: 90%;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.25s ease-out;
+  padding: 0; /* header + body handle spacing */
+}
+
+/* === HEADER === */
+#templateMsgModal .whatsapp-header {
+  background: #25d366;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #1a8f48;
+}
+
+#templateMsgModal .whatsapp-header h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Close button */
+#templateMsgModal .whatsapp-close-btn {
+  background: #e53935;
+  border: none;
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: bold;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+}
+
+#templateMsgModal .whatsapp-close-btn:hover {
+  background: #b71c1c;
+  transform: scale(1.08);
+}
+
+/* === BODY === */
+#templateMsgModal .whatsapp-body {
+  padding: 24px 26px 26px;
+}
+
+/* Form groups */
+#templateMsgModal .form-group {
+  margin-bottom: 16px;
+}
+
+/* Label */
+#templateMsgModal label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Select + textarea base */
+#templateMsgModal .form-control,
+#templateMsgModal select,
+#templateMsgModal textarea {
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+/* Textarea specific: full width + taller */
+#templateMsgModal textarea#templateMessage {
+  min-height: 170px;
+  resize: vertical;
+}
+
+/* === SEND BUTTON === */
+#templateMsgModal #sendTemplateMsgBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+
+  background: #25d366;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 12px;
+
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+#templateMsgModal #sendTemplateMsgBtn:hover {
+  background: #1ebe5d;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
+}
+
+#templateMsgModal #sendTemplateMsgBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* Simple fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

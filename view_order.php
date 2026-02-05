@@ -1577,6 +1577,120 @@ if ($users_result->num_rows > 0) {
     <?php unset($_SESSION['flash_error']);
     endif; ?>
 
+
+    <script>
+        $(document).ready(function() {
+
+            const clientPhone = <?= json_encode($client_phone) ?>;
+            const clientName = <?= json_encode($client_name) ?>;
+            const orderId = <?= (int)$order['order_id'] ?>;
+
+            // Open modal
+            $("#templateMsgWidget").on("click", function() {
+                $("#templateMsgModal").fadeIn(150).css("display", "flex");
+            });
+
+            // Close modal
+            $("#closeTemplateMsg").on("click", function() {
+                $("#templateMsgModal").fadeOut(150);
+            });
+
+            // Close when clicking outside
+            $(window).on("click", function(e) {
+                if (e.target.id === "templateMsgModal") {
+                    $("#templateMsgModal").fadeOut(150);
+                }
+            });
+
+            // Fill textarea when selecting template
+            $("#templateSelect").on("change", function() {
+                let text = $(this).val();
+
+                if (!text) return;
+
+                text = text
+                    .replace("{{client}}", clientName)
+                    .replace("{{order}}", orderId);
+
+                $("#templateMessage").val(text);
+            });
+
+            // Send message using server-built wa.me link as base
+            $("#sendTemplateMsgBtn").on("click", function() {
+                const msg = $("#templateMessage").val().trim();
+
+                if (!msg) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Mesaj gol",
+                        text: "Completează mesajul înainte de a trimite."
+                    });
+                    return;
+                }
+
+                const encoded = encodeURIComponent(msg);
+
+                // Use server-side wa.me link if available
+                // This uses the PHP $waLink created above
+                const baseWaLink = <?= json_encode($waLink) ?>;
+
+                // If the server link already contains a query string, append with &
+                const separator = baseWaLink.includes('?') ? '&' : '?';
+                const url = `${baseWaLink}${separator}text=${encoded}`;
+
+                const newWindow = window.open(url, "_blank");
+                if (!newWindow) {
+                    window.location.href = url;
+                }
+
+                $("#templateMsgModal").fadeOut(150);
+            });
+
+        });
+
+        // Client-side helper that follows the same +4 prefix approach
+        function openWhatsAppWithMessage(rawPhone, rawMessage) {
+            // 1. Build number with +4 prefix and strip non-digits from the raw phone
+            const countryCode = "+4";
+            const digitsOnly = String(rawPhone || '').replace(/\D/g, '');
+            const waNumber = countryCode + digitsOnly; // matches your PHP approach
+
+            // 2. Basic validation
+            if (!digitsOnly || digitsOnly.length < 6) {
+                console.error('Invalid phone after normalization:', waNumber);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Număr invalid',
+                    text: 'Numărul clientului nu este valid.'
+                });
+                return;
+            }
+
+            // 3. Prepare message and encode
+            const message = String(rawMessage || '').trim();
+            if (!message) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Mesaj gol',
+                    text: 'Completează mesajul înainte de a trimite.'
+                });
+                return;
+            }
+            const encoded = encodeURIComponent(message);
+
+            // 4. Always use wa.me and include the encoded +4-prefixed number
+            const waUrl = `https://wa.me/${encodeURIComponent(waNumber)}?text=${encoded}`;
+
+            // 5. Open link
+            const newWindow = window.open(waUrl, '_blank');
+            if (!newWindow) {
+                window.location.href = waUrl;
+            }
+
+            console.log('WhatsApp URL:', waUrl);
+        }
+    </script>
+
     <br><br>
     <footer class="no-print">
         <p style="font-size: larger;">© Color Print</p>
@@ -1584,6 +1698,60 @@ if ($users_result->num_rows > 0) {
         <a href="archive.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-box-archive"></i> Arhivă</a>
         <a href="unpaid_orders.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-ban"></i> Comenzi nefacturate</a>
     </footer>
+
+    <!-- Floating Template Message Button -->
+    <div id="templateMsgWidget" class="no-print" title="Trimite mesaj">
+        <i class="fa-brands fa-whatsapp"></i>
+        <span>Șabloane</span>
+    </div>
+
+    <!-- Template Message Modal -->
+    <div id="templateMsgModal" class="modal">
+        <div class="whatsapp-modal">
+
+            <!-- Header -->
+            <div class="whatsapp-header">
+                <h4><i class="fa-brands fa-whatsapp"></i> Mesaj Template</h4>
+                <button class="whatsapp-close-btn" id="closeTemplateMsg">&times;</button>
+            </div>
+
+            <!-- Body -->
+            <div class="whatsapp-body">
+
+                <!-- Template Selector -->
+                <div class="form-group">
+                    <label for="templateSelect">Alege șablon:</label>
+                    <select id="templateSelect" class="form-control">
+                        <option value="">— Selectează —</option>
+                        <option value="Salutare {{client}}, comanda ta #{{order}} este terminată. Te așteptăm la Color Print pentru ridicarea comenzii.">Comandă terminată</option>
+                        <option value="Salutare {{client}}, comanda ta #{{order}} este pregătită pentru ridicare. Te așteptăm la Color Print.">Reminder: Comandă gata</option>
+                        <option value="Salutare {{client}}, comanda ta #{{order}} este gata de câteva zile. Te rugăm să ne spui când ai posibilitatea să o ridici.">Reminder: Comandă neridicată</option>
+                        <option value="Salutare {{client}}, comanda ta #{{order}} este în lucru. Te anunțăm imediat ce este gata.">Comandă în lucru</option>
+                        <option value="Salutare {{client}}, comanda ta #{{order}} necesită puțin timp suplimentar. Revenim cu un mesaj imediat ce este gata.">Comandă întârziată</option>
+                        <option value="Salutare {{client}}, o parte din comanda #{{order}} este gata. Te anunțăm imediat ce finalizăm și restul.">Comandă finalizată parțial</option>
+                        <option value="Salutare {{client}}, înainte să începem comanda #{{order}}, te rugăm să confirmi bunul de tipar. Ne poți spune dacă totul este în regulă?">Confirmare bun de tipar</option>
+                    </select>
+                </div>
+
+                <!-- Textarea -->
+                <div class="form-group text-center">
+                    <label for="templateMessage">
+                        Mesaj
+                    </label>
+                    <textarea id="templateMessage"
+                        rows="5"
+                        placeholder="Selectează un șablon sau scrie text"
+                        style="max-width: 500px; width: 100%;"></textarea>
+                </div>
+
+                <!-- Send Button -->
+                <button id="sendTemplateMsgBtn">
+                    <i class="fa-brands fa-whatsapp"></i> Trimite mesaj
+                </button>
+
+            </div>
+        </div>
+    </div>
 
 </body>
 
