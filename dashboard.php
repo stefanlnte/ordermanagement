@@ -1018,11 +1018,11 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <div class="flex-container">
                         <div class="form-group">
                             <label for="client_name"><strong>Nume Client:</strong></label>
-                            <input placeholder="Prenume și Nume" type="text" id="client_name" name="client_name">
+                            <input required placeholder="Prenume și Nume" type="text" id="client_name" name="client_name">
                         </div>
                         <div class="form-group">
                             <label for="client_phone"><strong>Telefon Client:</strong></label>
-                            <input placeholder="07XXXXXXXX" type="text" id="client_phone" name="client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
+                            <input required placeholder="07XXXXXXXX" type="text" id="client_phone" name="client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
                         </div>
                         <div class="form-group">
                             <label for="client_email">Email Client:</label>
@@ -1585,6 +1585,32 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 });
 
             }, 200); // ← gives Select2 time to initialize
+        });
+    </script>
+
+    <!-- Script for using required in add order form -->
+
+    <script>
+        // Call this after Select2 is initialized
+        function syncClientRequiredState() {
+            const hasClient = !!$('#client_id').val(); // Select2 value
+            if (hasClient) {
+                // A client is selected: remove required so browser won't block submit
+                $('#client_name, #client_phone').prop('required', false);
+                // Optional: hide new-client fields for clarity
+                $('#new_client_fields').hide();
+            } else {
+                // No client selected: enforce required again
+                $('#client_name, #client_phone').prop('required', true);
+                $('#new_client_fields').show();
+            }
+        }
+
+        // Run on page load
+        $(document).ready(function() {
+            syncClientRequiredState();
+            // Update when Select2 changes or is cleared
+            $('#client_id').on('select2:select select2:unselect change', syncClientRequiredState);
         });
     </script>
 
