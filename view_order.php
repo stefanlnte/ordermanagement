@@ -95,6 +95,40 @@ if ($users_result->num_rows > 0) {
 
 <?php $returnUrl = $_GET['return'] ?? 'dashboard.php'; ?>
 
+<!-- Countdown -->
+<?php
+// raw value from DB
+$rawDue = $order['due_date'] ?? null;
+$dueDateIso = null;
+
+if ($rawDue) {
+    // If only DATE (YYYY-MM-DD), set deadline to end of day
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $rawDue)) {
+        $normalized = $rawDue . ' 23:59:59';
+    } else {
+        $normalized = $rawDue; // assume DATETIME
+    }
+
+    try {
+        $tz = new DateTimeZone(date_default_timezone_get()); // or 'UTC' if you store UTC
+        $dt = new DateTimeImmutable($normalized, $tz);
+        $dueDateIso = $dt->format(DateTime::ATOM); // ISO 8601 with offset
+    } catch (Exception $e) {
+        error_log('Invalid due_date: ' . $rawDue . ' — ' . $e->getMessage());
+        $dueDateIso = null;
+    }
+}
+
+$serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_timezone_get())))->format(DateTime::ATOM);
+?>
+<script>
+    const SLA = {
+        dueDateIso: <?= json_encode($dueDateIso) ?>,
+        serverNowIso: <?= json_encode($serverNowIso) ?>,
+        warnThresholdSeconds: 24 * 3600 // change to 4*3600 or 48*3600 if you prefer
+    };
+</script>
+
 <!DOCTYPE html>
 <html>
 
@@ -1313,6 +1347,16 @@ if ($users_result->num_rows > 0) {
 
         <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
         <p><strong>Termen: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
+        <!-- SLA Countdown -->
+        <div id="slaContainer" class="no-print" style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <div id="slaBadge" aria-hidden="true" style="width:12px;height:12px;border-radius:50%;background:#999;"></div>
+            <div>
+                <div style="font-size:14px;color:#333;">
+                    <span style="color:#666;">Countdown</span>
+                </div>
+                <div id="slaTimer" aria-live="polite" style="font-weight:600;font-size:16px;margin-top:4px;">—</div>
+            </div>
+        </div>
         <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
         <p><strong>Creată de: </strong><?php echo ucwords($order['created_user']); ?></p>
         <p><strong>Nume client: </strong><?php echo $client_name; ?></p>
@@ -1689,6 +1733,100 @@ if ($users_result->num_rows > 0) {
 
             console.log('WhatsApp URL:', waUrl);
         }
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('SLA debug', SLA);
+
+            const dueIso = SLA.dueDateIso;
+            const serverNowIso = SLA.serverNowIso;
+            const warnThreshold = SLA.warnThresholdSeconds || 24 * 3600;
+
+            const timerEl = document.getElementById('slaTimer');
+            const badgeEl = document.getElementById('slaBadge');
+
+            if (!dueIso) {
+                if (timerEl) timerEl.innerText = 'Data scadentă nu este setată';
+                if (badgeEl) badgeEl.style.background = '#999';
+                return;
+            }
+
+            const dueMs = Date.parse(dueIso);
+            if (isNaN(dueMs)) {
+                timerEl.innerText = 'Data scadentă invalidă';
+                badgeEl.style.background = '#999';
+                console.error('Invalid dueIso', dueIso);
+                return;
+            }
+
+            // mutable offset: clientNow - serverNow (ms)
+            let clientServerOffset = Date.now() - Date.parse(serverNowIso);
+
+            function remainingSeconds() {
+                const estimatedServerNow = Date.now() - clientServerOffset;
+                return Math.floor((dueMs - estimatedServerNow) / 1000);
+            }
+
+            function pad(n) {
+                return String(n).padStart(2, '0');
+            }
+
+            function formatWithSeconds(sec) {
+                if (sec <= 0) return '00:00:00';
+                const days = Math.floor(sec / 86400);
+                sec %= 86400;
+                const hours = Math.floor(sec / 3600);
+                sec %= 3600;
+                const mins = Math.floor(sec / 60);
+                const secs = sec % 60;
+                if (days > 0) return `${days}z ${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+                return `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+            }
+
+            function update() {
+                const rem = remainingSeconds();
+                if (rem <= 0) {
+                    timerEl.innerText = 'Termen depășit';
+                    badgeEl.style.background = '#e74c3c';
+                    return;
+                }
+
+                // color logic
+                if (rem <= warnThreshold) {
+                    badgeEl.style.background = '#f1c40f';
+                } else {
+                    badgeEl.style.background = '#2ecc71';
+                }
+
+                timerEl.innerText = formatWithSeconds(rem);
+            }
+
+            // initial render and per-second tick
+            update();
+            const tick = setInterval(update, 1000);
+
+            // resync server time every 60s and update offset (no reload)
+            setInterval(function() {
+                fetch('server_time.php', {
+                        cache: 'no-store'
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data && data.serverNowIso) {
+                            const newServerMs = Date.parse(data.serverNowIso);
+                            if (!isNaN(newServerMs)) {
+                                const newClientMs = Date.now();
+                                const newOffset = newClientMs - newServerMs;
+                                const drift = Math.abs(newOffset - clientServerOffset);
+                                clientServerOffset = newOffset;
+                                if (drift > 2000) update(); // immediate correction if big drift
+                            }
+                        }
+                    })
+                    .catch(err => console.warn('SLA resync failed', err));
+            }, 60000);
+        });
     </script>
 
     <br><br>

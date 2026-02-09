@@ -1622,7 +1622,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 if (text.includes("Termen depășit")) {
                     $(this).css({
                         "background-color": "firebrick",
-                        "color": "snow"
+                        "color": "whitesmoke"
                     });
                 }
             });
