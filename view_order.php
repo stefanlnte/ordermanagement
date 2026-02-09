@@ -1723,19 +1723,21 @@ if ($users_result->num_rows > 0) {
                     <label for="templateSelect">Alege șablon:</label>
                     <select id="templateSelect" class="form-control">
                         <option value="">— Selectează —</option>
-                        <option value="Salutare {{client}}, comanda dvs. #{{order}} este terminată. Vă așteptăm la Color Print pentru ridicarea comenzii.">Comandă terminată</option>
+                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este terminată. Vă așteptăm la Color Print pentru ridicarea comenzii.">Comandă terminată</option>
 
-                        <option value="Salutare {{client}}, comanda dvs. #{{order}} este pregătită pentru ridicare. Vă așteptăm la Color Print.">Reminder: Comandă gata</option>
+                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este pregătită pentru ridicare. Vă așteptăm la Color Print.">Reminder: Comandă gata</option>
 
-                        <option value="Salutare {{client}}, comanda dvs. #{{order}} este gata și vă așteaptă la noi. Când aveți un moment, vă rugăm să ne spuneți când vă este convenabil să o ridicați.">Reminder: Comandă neridicată</option>
+                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este gata și vă așteaptă la noi. Când aveți un moment, vă rugăm să ne spuneți când vă este convenabil să o ridicați.">Reminder: Comandă neridicată</option>
 
-                        <option value="Salutare {{client}}, comanda dvs. #{{order}} este în lucru. Vă anunțăm imediat ce este gata.">Comandă în lucru</option>
+                        <option value="Bună ziua {{client}}, comanda dumneavoastră #{{order}} este pregătită pentru ridicare la Color Print. Vă rugăm să o ridicați cât mai curând. Vă mulțumim.">Reminder: Comandă neridicată 2</option>
 
-                        <option value="Salutare {{client}}, comanda dvs. #{{order}} necesită puțin timp suplimentar. Revenim cu un mesaj imediat ce este gata.">Comandă întârziată</option>
+                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este în lucru. Vă anunțăm imediat ce este gata.">Comandă în lucru</option>
 
-                        <option value="Salutare {{client}}, o parte din comanda dvs. #{{order}} este gata. Vă anunțăm imediat ce finalizăm și restul.">Comandă finalizată parțial</option>
+                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} necesită puțin timp suplimentar. Revenim cu un mesaj imediat ce este gata.">Comandă întârziată</option>
 
-                        <option value="Salutare {{client}}, înainte să începem comanda dvs. #{{order}}, vă rugăm să confirmați bunul de tipar. Ne puteți spune dacă totul este în regulă?">Confirmare bun de tipar</option>
+                        <option value="Bună ziua {{client}}, o parte din comanda dvs. #{{order}} este gata. Vă anunțăm imediat ce finalizăm și restul.">Comandă finalizată parțial</option>
+
+                        <option value="Bună ziua {{client}}, înainte să începem comanda dvs. #{{order}}, vă rugăm să confirmați bunul de tipar. Ne puteți spune dacă totul este în regulă?">Confirmare bun de tipar</option>
                     </select>
                 </div>
 

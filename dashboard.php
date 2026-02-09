@@ -1614,6 +1614,21 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
+    <!-- Style overdue orders -->
+    <script>
+        $(document).ready(function() {
+            $("table tbody tr").each(function() {
+                const text = $(this).text();
+                if (text.includes("Termen depășit")) {
+                    $(this).css({
+                        "background-color": "firebrick",
+                        "color": "snow"
+                    });
+                }
+            });
+        });
+    </script>
+
 
     <!-- Lookup Modal -->
     <div id="lookupModal" class="modal">
