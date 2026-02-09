@@ -102,17 +102,18 @@ $rawDue = $order['due_date'] ?? null;
 $dueDateIso = null;
 
 if ($rawDue) {
-    // If only DATE (YYYY-MM-DD), set deadline to end of day
+    // Dacă DB stochează doar DATE (YYYY-MM-DD) -> deadline la 18:00 acelei zile
     if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $rawDue)) {
-        $normalized = $rawDue . ' 23:59:59';
+        $normalized = $rawDue . ' 18:00:00';
     } else {
-        $normalized = $rawDue; // assume DATETIME
+        // Dacă e DATETIME, păstrăm ora exactă din DB
+        $normalized = $rawDue;
     }
 
     try {
-        $tz = new DateTimeZone(date_default_timezone_get()); // or 'UTC' if you store UTC
+        $tz = new DateTimeZone(date_default_timezone_get()); // sau 'UTC' dacă folosești UTC
         $dt = new DateTimeImmutable($normalized, $tz);
-        $dueDateIso = $dt->format(DateTime::ATOM); // ISO 8601 with offset
+        $dueDateIso = $dt->format(DateTime::ATOM); // ISO 8601 cu offset
     } catch (Exception $e) {
         error_log('Invalid due_date: ' . $rawDue . ' — ' . $e->getMessage());
         $dueDateIso = null;
@@ -125,7 +126,7 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
     const SLA = {
         dueDateIso: <?= json_encode($dueDateIso) ?>,
         serverNowIso: <?= json_encode($serverNowIso) ?>,
-        warnThresholdSeconds: 24 * 3600 // change to 4*3600 or 48*3600 if you prefer
+        warnThresholdSeconds: 24 * 3600
     };
 </script>
 
@@ -1352,9 +1353,8 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
             <div id="slaBadge" aria-hidden="true" style="width:12px;height:12px;border-radius:50%;background:#999;"></div>
             <div>
                 <div style="font-size:14px;color:#333;">
-                    <span style="color:#666;">Countdown</span>
+                    <div id="slaTimer" aria-live="polite" style="font-weight:600;font-size:16px;margin-top:4px;">—</div>
                 </div>
-                <div id="slaTimer" aria-live="polite" style="font-weight:600;font-size:16px;margin-top:4px;">—</div>
             </div>
         </div>
         <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
@@ -1737,8 +1737,6 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('SLA debug', SLA);
-
             const dueIso = SLA.dueDateIso;
             const serverNowIso = SLA.serverNowIso;
             const warnThreshold = SLA.warnThresholdSeconds || 24 * 3600;
@@ -1760,7 +1758,7 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
                 return;
             }
 
-            // mutable offset: clientNow - serverNow (ms)
+            // offset mutabil: clientNow - serverNow (ms)
             let clientServerOffset = Date.now() - Date.parse(serverNowIso);
 
             function remainingSeconds() {
@@ -1772,16 +1770,25 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
                 return String(n).padStart(2, '0');
             }
 
-            function formatWithSeconds(sec) {
-                if (sec <= 0) return '00:00:00';
-                const days = Math.floor(sec / 86400);
-                sec %= 86400;
-                const hours = Math.floor(sec / 3600);
-                sec %= 3600;
-                const mins = Math.floor(sec / 60);
-                const secs = sec % 60;
-                if (days > 0) return `${days}z ${pad(hours)}:${pad(mins)}:${pad(secs)}`;
-                return `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+            // Formatare: zile = blocuri de 24h; ultima zi este până la dueMs (care poate fi 18:00)
+            function formatWithSeconds(totalSec) {
+                if (totalSec <= 0) return 'Termen depășit';
+                const days = Math.floor(totalSec / 86400); // 24h blocks
+                let rem = totalSec - days * 86400; // restul în secunde pentru ultima zi
+                const hours = Math.floor(rem / 3600);
+                rem -= hours * 3600;
+                const mins = Math.floor(rem / 60);
+                const secs = rem % 60;
+
+                // pluralizare română pentru "zi"
+                let dayPart = '';
+                if (days === 1) dayPart = '1 zi ';
+                else if (days > 1) dayPart = `${days} zile `;
+
+                if (days === 0) {
+                    return `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+                }
+                return `${dayPart}${pad(hours)}:${pad(mins)}:${pad(secs)}`;
             }
 
             function update() {
@@ -1793,16 +1800,13 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
                 }
 
                 // color logic
-                if (rem <= warnThreshold) {
-                    badgeEl.style.background = '#f1c40f';
-                } else {
-                    badgeEl.style.background = '#2ecc71';
-                }
+                if (rem <= warnThreshold) badgeEl.style.background = '#f1c40f';
+                else badgeEl.style.background = '#2ecc71';
 
                 timerEl.innerText = formatWithSeconds(rem);
             }
 
-            // initial render and per-second tick
+            // initial render + per-second tick
             update();
             const tick = setInterval(update, 1000);
 
@@ -1817,10 +1821,7 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
                             const newServerMs = Date.parse(data.serverNowIso);
                             if (!isNaN(newServerMs)) {
                                 const newClientMs = Date.now();
-                                const newOffset = newClientMs - newServerMs;
-                                const drift = Math.abs(newOffset - clientServerOffset);
-                                clientServerOffset = newOffset;
-                                if (drift > 2000) update(); // immediate correction if big drift
+                                clientServerOffset = newClientMs - newServerMs;
                             }
                         }
                     })
