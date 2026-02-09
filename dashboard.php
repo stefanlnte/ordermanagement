@@ -909,30 +909,67 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <header id="header">
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                var currentDate = new Date();
-                var options = {
+                const dateEl = document.getElementById('currentdate');
+                const greetEl = document.getElementById('greeting-message');
+
+                // Format data în română
+                const now = new Date();
+                const options = {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                 };
-                var formattedDate = currentDate.toLocaleDateString('ro-RO', options);
-                document.getElementById('currentdate').textContent = formattedDate;
+                if (dateEl) dateEl.textContent = now.toLocaleDateString('ro-RO', options);
 
-                // Determinarea mesajului de întâmpinare
-                var currentHour = currentDate.getHours();
-                var greetingMessage = "";
+                // Mesaje amuzante pentru fiecare oră (0..23)
+                const hourMessages = [
+                    "Magazin închis 🌙", // 0
+                    "Magazin închis 🌙", // 1
+                    "Magazin închis 🌙", // 2
+                    "Magazin închis 🌙", // 3
+                    "Magazin închis 🌙", // 4
+                    "Magazin închis 🌙", // 5
+                    "Magazin închis 🌙", // 6
+                    "Magazin închis 🌙", // 7
+                    "Bună dimineața — cafea la start ☕️😄", // 8
+                    "Verifică comenile - go go go ☕️🚀", // 9
+                    "Energie la maxim, încă o cafea ☕️", // 10
+                    "Aproape pauză, visează la prânz 🍕🤤", // 11
+                    "Poftă bună! (dar termină comenzile) 🍽️😋", // 12
+                    "Pauză scurtă, apoi la treabă! 🍽️💪", // 13
+                    "După-amiază productivă, nu distrageți colegii 🎯", // 14
+                    "Cafea de relansare ☕️⚡", // 15
+                    "Aproape gata… click‑click și gata! 🖱️✨", // 16
+                    "Happy Hour, pune muzică de final 🎶🏁", // 17
+                    "închidem! Strângeți comenzile, aplauze 👏🔔", // 18
+                    "Magazin închis 🌙", // 19
+                    "Magazin închis 🌙", // 20
+                    "Magazin închis 🌙", // 21
+                    "Magazin închis 🌙", // 22
+                    "Magazin închis 🌙" // 23
+                ];
 
-                if (currentHour < 12) {
-                    greetingMessage = "Bună dimineața ☕";
-                } else if (currentHour >= 12 && currentHour < 14) {
-                    greetingMessage = "Poftă bună 🍕";
-                } else {
-                    greetingMessage = "Bună ziua ⚡";
+                // Setează mesajul pentru o dată dată
+                function setGreetingForDate(d) {
+                    const h = d.getHours();
+                    const msg = hourMessages[h] || "Bună ziua";
+                    if (greetEl) greetEl.textContent = msg;
                 }
 
-                // Actualizarea doar a mesajului de întâmpinare
-                document.getElementById('greeting-message').textContent = greetingMessage;
+                // Inițializare imediată
+                setGreetingForDate(new Date());
+
+                // Programare: actualizează exact la începutul fiecărei minute
+                function scheduleMinuteTick() {
+                    const now = new Date();
+                    const msToNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+                    setTimeout(function() {
+                        setGreetingForDate(new Date());
+                        setInterval(() => setGreetingForDate(new Date()), 60 * 1000);
+                    }, msToNextMinute);
+                }
+                scheduleMinuteTick();
             });
         </script>
         <p data-aos="fade-down"
