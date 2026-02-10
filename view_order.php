@@ -1350,10 +1350,10 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
         <p><strong>Termen: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
         <!-- SLA Countdown -->
         <div id="slaContainer" class="no-print" style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-            <div id="slaBadge" aria-hidden="true" style="width:12px;height:12px;border-radius:50%;background:#999;"></div>
+            <div id="slaBadge" aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:#999;"></div>
             <div>
                 <div style="font-size:14px;color:#333;">
-                    <div id="slaTimer" aria-live="polite" style="font-weight:600;font-size:16px;margin-top:4px;">—</div>
+                    <div id="slaTimer" aria-live="polite" style="font-weight:600;font-size:20px;">—</div>
                 </div>
             </div>
         </div>
@@ -1526,6 +1526,68 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
         }
         echo "</ul>";
         ?>
+    </div>
+
+    <!-- Floating Template Message Button -->
+    <div id="templateMsgWidget" class="no-print" title="Trimite mesaj">
+        <i class="fa-brands fa-whatsapp"></i>
+        <span>Șabloane</span>
+    </div>
+
+    <!-- Template Message Modal -->
+    <div id="templateMsgModal" class="modal">
+        <div class="whatsapp-modal">
+
+            <!-- Header -->
+            <div class="whatsapp-header">
+                <h4><i class="fa-brands fa-whatsapp"></i> Mesaj Template</h4>
+                <button class="whatsapp-close-btn" id="closeTemplateMsg">&times;</button>
+            </div>
+
+            <!-- Body -->
+            <div class="whatsapp-body">
+
+                <!-- Template Selector -->
+                <div class="form-group">
+                    <label for="templateSelect">Alege șablon:</label>
+                    <select id="templateSelect" class="form-control">
+                        <option value="">— Selectează —</option>
+                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este terminată. Vă așteptăm la Color Print pentru ridicarea comenzii.">Comandă terminată</option>
+
+                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este pregătită pentru ridicare. Vă așteptăm la Color Print.">Reminder: Comandă gata</option>
+
+                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este gata și vă așteaptă la noi. Când aveți un moment, vă rugăm să ne spuneți când vă este convenabil să o ridicați.">Reminder: Comandă neridicată</option>
+
+                        <option value="Bună ziua {{client}}, comanda dumneavoastră #{{order}} este pregătită pentru ridicare la Color Print. Vă rugăm să o ridicați cât mai curând. Vă mulțumim.">Reminder: Comandă neridicată 2</option>
+
+                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este în lucru. Vă anunțăm imediat ce este gata.">Comandă în lucru</option>
+
+                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} necesită puțin timp suplimentar. Revenim cu un mesaj imediat ce este gata.">Comandă întârziată</option>
+
+                        <option value="Bună ziua {{client}}, o parte din comanda dvs. #{{order}} este gata. Vă anunțăm imediat ce finalizăm și restul.">Comandă finalizată parțial</option>
+
+                        <option value="Bună ziua {{client}}, înainte să începem comanda dvs. #{{order}}, vă rugăm să confirmați bunul de tipar. Ne puteți spune dacă totul este în regulă?">Confirmare bun de tipar</option>
+                    </select>
+                </div>
+
+                <!-- Textarea -->
+                <div class="form-group text-center">
+                    <label for="templateMessage">
+                        Mesaj
+                    </label>
+                    <textarea id="templateMessage"
+                        rows="5"
+                        placeholder="Selectează un șablon sau scrie text"
+                        style="max-width: 500px; width: 100%;"></textarea>
+                </div>
+
+                <!-- Send Button -->
+                <button id="sendTemplateMsgBtn">
+                    <i class="fa-brands fa-whatsapp"></i> Trimite mesaj
+                </button>
+
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1837,68 +1899,6 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
         <a href="archive.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-box-archive"></i> Arhivă</a>
         <a href="unpaid_orders.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-ban"></i> Comenzi nefacturate</a>
     </footer>
-
-    <!-- Floating Template Message Button -->
-    <div id="templateMsgWidget" class="no-print" title="Trimite mesaj">
-        <i class="fa-brands fa-whatsapp"></i>
-        <span>Șabloane</span>
-    </div>
-
-    <!-- Template Message Modal -->
-    <div id="templateMsgModal" class="modal">
-        <div class="whatsapp-modal">
-
-            <!-- Header -->
-            <div class="whatsapp-header">
-                <h4><i class="fa-brands fa-whatsapp"></i> Mesaj Template</h4>
-                <button class="whatsapp-close-btn" id="closeTemplateMsg">&times;</button>
-            </div>
-
-            <!-- Body -->
-            <div class="whatsapp-body">
-
-                <!-- Template Selector -->
-                <div class="form-group">
-                    <label for="templateSelect">Alege șablon:</label>
-                    <select id="templateSelect" class="form-control">
-                        <option value="">— Selectează —</option>
-                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este terminată. Vă așteptăm la Color Print pentru ridicarea comenzii.">Comandă terminată</option>
-
-                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este pregătită pentru ridicare. Vă așteptăm la Color Print.">Reminder: Comandă gata</option>
-
-                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este gata și vă așteaptă la noi. Când aveți un moment, vă rugăm să ne spuneți când vă este convenabil să o ridicați.">Reminder: Comandă neridicată</option>
-
-                        <option value="Bună ziua {{client}}, comanda dumneavoastră #{{order}} este pregătită pentru ridicare la Color Print. Vă rugăm să o ridicați cât mai curând. Vă mulțumim.">Reminder: Comandă neridicată 2</option>
-
-                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este în lucru. Vă anunțăm imediat ce este gata.">Comandă în lucru</option>
-
-                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} necesită puțin timp suplimentar. Revenim cu un mesaj imediat ce este gata.">Comandă întârziată</option>
-
-                        <option value="Bună ziua {{client}}, o parte din comanda dvs. #{{order}} este gata. Vă anunțăm imediat ce finalizăm și restul.">Comandă finalizată parțial</option>
-
-                        <option value="Bună ziua {{client}}, înainte să începem comanda dvs. #{{order}}, vă rugăm să confirmați bunul de tipar. Ne puteți spune dacă totul este în regulă?">Confirmare bun de tipar</option>
-                    </select>
-                </div>
-
-                <!-- Textarea -->
-                <div class="form-group text-center">
-                    <label for="templateMessage">
-                        Mesaj
-                    </label>
-                    <textarea id="templateMessage"
-                        rows="5"
-                        placeholder="Selectează un șablon sau scrie text"
-                        style="max-width: 500px; width: 100%;"></textarea>
-                </div>
-
-                <!-- Send Button -->
-                <button id="sendTemplateMsgBtn">
-                    <i class="fa-brands fa-whatsapp"></i> Trimite mesaj
-                </button>
-
-            </div>
-        </div>
-    </div>
 
 </body>
 

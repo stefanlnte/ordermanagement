@@ -11,9 +11,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Poppins', sans-serif;
-  height: 100%;
   background-color: white;
-  overflow: auto;
   z-index: 1;
 }
 
@@ -27,7 +25,8 @@ a {
   display: flex;
   top: 0;
   z-index: 1000; /* Asigură-te că este deasupra altor elemente */
-  background: radial-gradient(circle at top left, grey 0%, transparent 40%),
+  background:
+    radial-gradient(circle at top left, grey 0%, transparent 40%),
     radial-gradient(circle at bottom right, grey 0%, transparent 40%),
     linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
   background-blend-mode: screen, normal;
@@ -51,7 +50,8 @@ footer {
   justify-content: center;
   gap: 5px;
   height: 100px;
-  background: radial-gradient(circle at top left, grey 0%, transparent 40%),
+  background:
+    radial-gradient(circle at top left, grey 0%, transparent 40%),
     radial-gradient(circle at bottom right, grey 0%, transparent 40%),
     linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
   background-blend-mode: screen, normal;

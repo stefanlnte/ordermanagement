@@ -38,6 +38,7 @@
 .main-content {
   flex: 1;
   order: 2;
+  margin-right: 15px;
 }
 
 button {
@@ -164,7 +165,7 @@ div.pagination :hover {
 
   .main-content {
     flex: 1;
-    padding: 10px;
+    margin-top: 12px;
   }
 }
 
@@ -190,7 +191,7 @@ div.pagination :hover {
   background-color: #ddd;
 }
 
-.form-group {
+#orderForm .form-group {
   margin-bottom: 10px;
 }
 
