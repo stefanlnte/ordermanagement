@@ -912,7 +912,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 const dateEl = document.getElementById('currentdate');
                 const greetEl = document.getElementById('greeting-message');
 
-                // Data în română
+                // Afișare dată în română
                 const now = new Date();
                 const options = {
                     weekday: 'long',
@@ -922,24 +922,114 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 };
                 if (dateEl) dateEl.textContent = now.toLocaleDateString('ro-RO', options);
 
-                // Mesaje pentru orele când magazinul este deschis
-                const openMessages = {
-                    8: "Bună dimineața — cafea la start ☕️😄",
-                    9: "Verifică comenile - spor ☕️🚀",
-                    10: "Energie la maxim, încă o cafea ☕️",
-                    11: "Aproape pauză, visează la prânz 🍕🤤",
-                    12: "Poftă bună! 🍽️😋",
-                    13: "Înapoi la treabă! 🍽️💪",
-                    14: "După-amiază productivă 🎯",
-                    15: "Cafea de relansare ☕️⚡",
-                    16: "Încă puțin... click‑click și gata! 🖱️✨",
-                    17: "Happy Hour, pune muzică de final 🎶🏁",
-                    18: "Închidem! Strângeți comenzile, aplauze 👏🔔"
+                // Mesaje amuzante pentru COPY CENTER (08:00–18:00)
+                const messagesByHour = {
+                    8: [
+                        "Bună dimineața! hai că putem 💪",
+                        "Bună dimineața — hai la cafea ☕️😄",
+                        "Începem ziua cu energie bună 😎",
+                        "Cafeaua de la ora 8 — ritualul care pune ziua în mișcare. ☕",
+                        "Deschidem ziua cu energie ⚡",
+                        "Start de zi cu vibe pozitiv 👍",
+                        "Toner plin, chef maxim! 🔥📄"
+                    ],
+                    9: [
+                        "Hai că prindem ritmul… încet, dar îl prindem 🖨️",
+                        "Comenzile curg, noi le prindem 😎",
+                        "Ora 9 și suntem pe val 🌊",
+                        "Verifică comenile - spor ☕️🚀",
+                        "Productivitate powered by cafea — să nu ne mințim 😅☕",
+                        "Comenzile vin, noi suntem pregătiți 😎",
+                        "Azi suntem pe flow 🏄‍♂️",
+                        "Hai că suntem productivi azi 🖨️"
+                    ],
+                    10: [
+                        "Începem să funcționăm ca oameni normali 👽",
+                        "Cafeaua își face efectul ☕🔥",
+                        "Lucrăm cu spor și chef 😎",
+                        "Energie la maxim, încă o cafea ☕️",
+                        "Totul merge ca uns 😁",
+                        "Lucrăm cu spor și chef 😎 — probabil un bug în sistem, dar nu-l raportăm 🤖",
+                        "Totul merge excelent 😁 — suspect de bine, sincer 🤨"
+                    ],
+                    11: [
+                        "Aproape prânz — rezistăm eroic 💪",
+                        "Aproape prânz — urlă foamea 🍽️",
+                        "Pescuim comenzi 😂",
+                        "Aproape pauză, visează la prânz 🍕🤤",
+                        "Hai că suntem pe val — să nu vină tsunamiul 😂",
+                        "Încă puțin și pauză — stomacul deja protestează 🍽️😅",
+                    ],
+                    12: [
+                        "Hai cu pauza! 🍽️",
+                        "Poftă bună! 🍽️😋",
+                        "Ne alimentăm pentru restul zilei 😋",
+                        "Ne încărcăm bateriile 🪫🔋",
+                        "Prânz strategic 😎",
+                        "Relaxare scurtă 🧘‍♀️"
+                    ],
+                    13: [
+                        "Revenim în forță 💪",
+                        "Înapoi la treabă! 🍽️💪",
+                        "Revenim în acțiune 🎬",
+                        "După masă — ne mișcăm, dar nu brusc 😂"
+                    ],
+                    14: [
+                        "Continuăm în forță 💪",
+                        "Hai că merge treaba 🖨️",
+                        "Fresh… adică am băut cafea. Multă. 😄☕",
+                        "Cofeina încă luptă pentru noi ☕"
+                    ],
+                    15: [
+                        "Ora 15 — cafeaua numărul trei ☕😂",
+                        "Ora 15 — încă suntem în formă 💪",
+                        "Ora 15 — încă suntem în picioare 😎",
+                        "Continuăm cu spor — cât mai avem 😁",
+                        "Cafeaua încă luptă pentru noi 😂☕",
+                        "Hai că mai avem puțin 😄",
+                        "Încă o cafea și gata 😎☕"
+                    ],
+                    16: [
+                        "Final de zi în apropiere 🔎",
+                        "E ora 16 — Ma che tare! 😎",
+                        "Hai că nu mai e mult 💪",
+                        "Încă puțin... click‑click și gata! 🖱️✨",
+                        "Finalul zilei se apropie încet 😁",
+                        "Hai că nu mai e mult 😁✨"
+                    ],
+                    17: [
+                        "Încă puțin și gata pe azi ✅",
+                        "Tragem linie și finalizăm ce-a mai rămas 🖨️",
+                        "Încheiem ziua cu vibe bun 😎",
+                        "Ora 17 și deja se simte aerul de libertate 🗽",
+                        "Se vede lumina de la capătul tunelului 🚨",
+                        "Finalizăm tot ce putem 🖨️",
+                        "Încă puțin și suntem liberi 🗽",
+                        "Happy Hour, pune muzică de final 🎶🏁"
+                    ],
+                    18: [
+                        "Program încheiat! 😄🎉",
+                        "Închidem! Strângeți comenzile, aplauze 👏🔔",
+                        "Gata pe azi 😎",
+                        "Program încheiat! Aplauze 👏🎉",
+                        "Sfârșit de program 🎉",
+                        "Ne vedem mâine 🌙",
+                        "Program încheiat! Am supraviețuit 😄🎉",
+                        "Sfârșit de program — felicitări! 😁👏"
+                    ]
                 };
 
+                // Funcția care afișează mesajul în funcție de oră
                 function setGreetingForDate(d) {
                     const h = d.getHours();
-                    const msg = openMessages[h] || "Magazin închis 🌙";
+                    let msg = "Magazin închis 🌙";
+
+                    if (messagesByHour[h] && messagesByHour[h].length > 0) {
+                        const lista = messagesByHour[h];
+                        const randomIndex = Math.floor(Math.random() * lista.length);
+                        msg = lista[randomIndex];
+                    }
+
                     if (greetEl) greetEl.textContent = msg;
                 }
 
@@ -955,13 +1045,14 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                         setInterval(() => setGreetingForDate(new Date()), 60 * 1000);
                     }, msToNextMinute);
                 }
+
                 scheduleMinuteTick();
             });
         </script>
         <p data-aos="fade-down"
             data-aos-easing="linear"
             data-aos-duration="800">
-            <span id="greeting-message"></span>, <?php echo ucwords($_SESSION['username']); ?>! Astăzi este <span id="currentdate"></span>.
+            <span id="greeting-message"></span>, <?php echo ucwords($_SESSION['username']); ?>!
         </p>
         <!-- Căutare avansată -->
         <button id="footerLookupLink"
@@ -1202,12 +1293,14 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                         <th>Client</th>
                         <th>Info Comandă</th>
                         <th>Din data</th>
-                        <th>Data livrare</th>
+                        <th>Dată livrare</th>
+                        <th>Operator</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php
+                    $status = '<i class="fa-solid fa-person-digging"></i>';
                     if ($orders_result->num_rows > 0) {
                         while ($row = $orders_result->fetch_assoc()) {
                             $order_id = str_pad($row["order_id"], 3, '0', STR_PAD_LEFT);
@@ -1224,7 +1317,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                 $status = '<i class="fas fa-star"></i>';
                                 $row_classes[] = 'order-current-user';
                             } elseif ($status != "completed" && $status != "delivered") {
-                                $status = $row["assigned_user"];
+                                $status = '<i class="fa-solid fa-person-digging"></i>';
                                 $row_classes[] = 'order-assigned';
                             } elseif ($status == 'completed') {
                                 $status = '<i class="fas fa-flag-checkered"></i>';
@@ -1244,6 +1337,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                             echo "<td>" . $row["order_details"] . "</td>";
                             echo "<td>" . $order_date . "</td>";
                             echo "<td>" . $due_date . "</td>";
+                            echo "<td>" . htmlspecialchars($row["assigned_user"]) . "</td>";
                             echo "<td>" . $status . "</td>";
                             echo "</tr>";
                         }
