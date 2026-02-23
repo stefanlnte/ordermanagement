@@ -1554,9 +1554,7 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
                         <option value="">— Selectează —</option>
                         <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este terminată. Vă așteptăm la Color Print pentru ridicarea comenzii.">Comandă terminată</option>
 
-                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este pregătită pentru ridicare. Vă așteptăm la Color Print.">Reminder: Comandă gata</option>
-
-                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este gata și vă așteaptă la noi. Când aveți un moment, vă rugăm să ne spuneți când vă este convenabil să o ridicați.">Reminder: Comandă neridicată</option>
+                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este pregătită pentru ridicare. Vă așteptăm la Color Print.">Reminder: Comandă pregătită pentru ridicare</option>
 
                         <option value="Bună ziua {{client}}, comanda dumneavoastră #{{order}} este pregătită pentru ridicare la Color Print. Vă rugăm să o ridicați cât mai curând. Vă mulțumim.">Reminder: Comandă neridicată 2</option>
 
@@ -1608,10 +1606,11 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
                         id
                     })
                     .done(resp => {
+                        $('#attachment-' + id).remove(); // remove instantly
                         Toast.fire({
                             icon: 'success',
                             title: 'Fișierul a fost șters.'
-                        }).then(() => location.reload());
+                        });
                     })
                     .fail(xhr => {
                         Toast.fire({
