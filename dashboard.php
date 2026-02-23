@@ -1554,9 +1554,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     $modal.hide();
                 }
             });
-
             /* -----------------------------------------
-               SEND NOTE
+               SEND NOTE + SWEETALERT
             ----------------------------------------- */
             $send.on('click', function() {
                 const content = $text.val().trim();
@@ -1577,8 +1576,24 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                         Swal.fire('Eroare', res.error, 'error');
                         return;
                     }
+
+                    // Golește textarea
                     $text.val('');
+
+                    // Reîncarcă lista
                     loadNotes();
+
+                    // 🔔 AICI apare SweetAlert-ul tău
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Notiță trimisă!',
+                        text: 'Mesajul a fost trimis colegului tău.',
+                        timer: 1800,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            document.querySelector('.swal2-container').style.zIndex = '99999';
+                        }
+                    });
                 });
             });
 
