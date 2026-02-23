@@ -365,9 +365,11 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize Select2 on select elements
-            $('#status_filter, #assigned_filter, #category_filter, #assigned_to, #category_id').select2({
-                dropdownAutoWidth: true,
-                width: 'auto'
+            $(document).ready(function() {
+                $('#status_filter, #assigned_filter, #category_filter, #assigned_to, #category_id').select2({
+                    dropdownAutoWidth: true,
+                    width: 'auto'
+                });
             });
 
             $('#client_filter').select2({
@@ -1408,28 +1410,51 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
     </div>
 
-    <!-- Floating Notes Button -->
-    <div id="notesFab" title="Notes">
-        <i class="fa-solid fa-note-sticky"></i>
+    <!-- Floating notes button -->
+    <button id="notesFab" class="notes-fab">
+        <i class="fa fa-users"></i>
+    </button>
+
+    <!-- Notes Modal -->
+    <div id="notesModal">
+        <div class="notes-modal-content">
+
+            <div class="notes-header">
+                <h4><i class="fa-solid fa-note-sticky"></i> Notițe colegi</h4>
+                <button class="notes-close-btn" id="notesClose">&times;</button>
+            </div>
+
+            <div class="notes-body">
+
+                <label for="noteReceiver">Trimite către:</label>
+                <select id="noteReceiver" style="width: 200px;">
+                    <option value="">Alege colegul</option>
+                    <?php
+                    $uid = $_SESSION['user_id'];
+                    $users = $conn->query("SELECT user_id, username FROM users WHERE user_id != $uid ORDER BY username");
+                    while ($u = $users->fetch_assoc()) {
+                        echo "<option value='{$u['user_id']}'>{$u['username']}</option>";
+                    }
+                    ?>
+                </select>
+
+                <div class="notes-list">
+                    <ul id="notesList"></ul>
+                </div>
+
+                <div class="notes-input">
+                    <textarea id="noteText" placeholder="Scrie o notiță pentru colegul tău..."></textarea>
+                    <button id="sendNoteBtn">Trimite</button>
+                </div>
+
+            </div>
+        </div>
     </div>
+
+
     <!-- Floating Whatsapp Button -->
     <div id="whatsappWidget" class="floating-widget" title="Trimite mesaj pe WhatsApp">
         <i class="fa-brands fa-whatsapp"></i>
-    </div>
-
-    <div id="notesModal" class="modal">
-        <div class="modal-backdrop"></div>
-        <div class="modal-content">
-            <header>
-                <h4>Notițe</h4>
-                <div class="close-btn"><i class="fa-solid fa-circle-xmark"></i></div>
-            </header>
-            <ul id="notesList"></ul>
-            <div class="new-note">
-                <textarea id="noteInput" placeholder="Scrie un mesaj…"></textarea>
-                <button id="addNoteBtn">Adaugă</button>
-            </div>
-        </div>
     </div>
 
     <div id="whatsappModal" class="modal">
@@ -1471,71 +1496,179 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     </div>
 
     <script>
-        $(function() {
-            const api = 'notes_api.php';
+        window.addEventListener('load', function() {
+
+            const apiUrl = 'notes_api.php';
+
+            const $fab = $('#notesFab');
             const $modal = $('#notesModal');
-            const $backdrop = $modal.find('.modal-backdrop');
-            const $notesList = $('#notesList');
-            const $input = $('#noteInput');
+            const $close = $('#notesClose');
+            const $list = $('#notesList');
+            const $text = $('#noteText');
+            const $receiver = $('#noteReceiver');
+            const $send = $('#sendNoteBtn');
 
-            // Open modal & load notes
-            $('#notesFab').click(function() {
-                loadNotes();
-                $modal.show();
-            });
+            let unreadNotificationShown = false;
 
-            // Close modal
-            $backdrop.add($modal.find('.close-btn')).click(function() {
-                $modal.hide();
-            });
-
-            // Fetch & render
-            function loadNotes() {
-                $.getJSON(api, {
-                        action: 'fetch'
-                    })
-                    .done(notes => {
-                        $notesList.empty();
-                        if (!notes.length) {
-                            $notesList.append('<li>Nici o notiță.</li>');
-                        } else {
-                            notes.forEach(n => {
-                                $notesList.append(`
-              <li data-id="${n.note_id}">
-                <span>${n.content}</span>
-                <i class="fa-solid fa-trash delete-note"></i>
-              </li>`);
-                            });
-                        }
-                    });
+            /* -----------------------------------------
+               SHOW SWEETALERT NOTIFICATION FOR UNREAD
+            ----------------------------------------- */
+            function showUnreadNotification(count) {
+                Swal.fire({
+                    title: 'Mesaje necitite',
+                    html: `<b>${count}</b> notițe noi de la colegi`,
+                    icon: 'info',
+                    showConfirmButton: true,
+                    confirmButtonText: 'OK',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    backdrop: true
+                });
             }
 
-            // Add note
-            $('#addNoteBtn').click(function() {
-                let text = $input.val().trim();
-                if (!text) return;
-                $.post(api, {
-                        action: 'add',
-                        content: text
-                    })
-                    .done(() => {
-                        $input.val('');
-                        loadNotes();
-                    });
+            /* -----------------------------------------
+               OPEN MODAL
+            ----------------------------------------- */
+            $fab.on('click', function() {
+                $modal.show();
+                loadNotes();
+
+                // Mark all as read
+                $.post(apiUrl, {
+                    action: 'mark_read'
+                });
+
+                // Remove unread alert + close notification
+                $fab.removeClass('unread-alert');
+                unreadNotificationShown = false;
+                Swal.close();
             });
 
-            // Delete note (event delegation)
-            $notesList.on('click', '.delete-note', function() {
-                let $li = $(this).closest('li');
-                let id = $li.data('id');
-                $.post(api, {
-                        action: 'delete',
-                        note_id: id
-                    })
-                    .done(resp => {
-                        if (resp.deleted) $li.slideUp(200, () => $li.remove());
-                    });
+            /* -----------------------------------------
+               CLOSE MODAL
+            ----------------------------------------- */
+            $close.on('click', () => $modal.hide());
+
+            $(window).on('click', function(e) {
+                if (e.target === $modal[0]) {
+                    $modal.hide();
+                }
             });
+
+            /* -----------------------------------------
+               SEND NOTE
+            ----------------------------------------- */
+            $send.on('click', function() {
+                const content = $text.val().trim();
+                const receiverId = $receiver.val();
+
+                if (!receiverId) {
+                    Swal.fire('Atenție', 'Alege colegul căruia vrei să îi trimiți notița.', 'warning');
+                    return;
+                }
+                if (!content) return;
+
+                $.post(apiUrl, {
+                    action: 'add',
+                    content: content,
+                    receiver_id: receiverId
+                }).done(function(res) {
+                    if (res.error) {
+                        Swal.fire('Eroare', res.error, 'error');
+                        return;
+                    }
+                    $text.val('');
+                    loadNotes();
+                });
+            });
+
+            /* -----------------------------------------
+               LOAD NOTES
+            ----------------------------------------- */
+            function loadNotes() {
+                $.getJSON(apiUrl, {
+                    action: 'fetch'
+                }).done(function(notes) {
+
+                    $list.empty();
+
+                    if (!Array.isArray(notes) || notes.length === 0) {
+                        $list.append('<li>Nu ai notițe.</li>');
+                        return;
+                    }
+
+                    notes.forEach(function(n) {
+                        const li = $('<li></li>');
+                        if (parseInt(n.is_read) === 0) li.addClass('unread');
+
+                        const time = n.created_at || '';
+                        const sender = n.sender_name || 'Necunoscut';
+
+                        li.html(`
+                    <div class="note-text">
+                        <strong>${sender}</strong>
+                        <span class="note-time">${time}</span><br>
+                        ${$('<div>').text(n.content).html()}
+                    </div>
+                    <span class="delete-note" data-id="${n.note_id}">&times;</span>
+                `);
+
+                        $list.append(li);
+                    });
+                });
+            }
+
+            /* -----------------------------------------
+               DELETE NOTE (instant + fade-out)
+            ----------------------------------------- */
+            $(document).on('click', '.delete-note', function() {
+                const id = $(this).data('id');
+                const li = $(this).closest('li');
+
+                // Fade-out animation
+                li.addClass('note-fade-out');
+
+                // Remove from DOM after animation
+                setTimeout(() => li.remove(), 350);
+
+                // Delete from DB
+                $.post(apiUrl, {
+                    action: 'delete',
+                    note_id: id
+                });
+            });
+
+            /* -----------------------------------------
+               CHECK UNREAD
+            ----------------------------------------- */
+            function checkUnread() {
+                $.getJSON(apiUrl, {
+                    action: 'unread_count'
+                }).done(function(res) {
+                    const unread = parseInt(res.unread || 0);
+
+                    if (unread > 0) {
+
+                        // FAB flashing
+                        $fab.addClass('unread-alert');
+
+                        // Show notification only once
+                        if (!unreadNotificationShown) {
+                            showUnreadNotification(unread);
+                            unreadNotificationShown = true;
+                        }
+
+                    } else {
+                        // No unread → stop flashing + reset
+                        $fab.removeClass('unread-alert');
+                        unreadNotificationShown = false;
+                    }
+                });
+            }
+
+            setInterval(checkUnread, 2000);
+            checkUnread();
+
         });
     </script>
 

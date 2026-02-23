@@ -503,7 +503,9 @@ textarea {
   border-radius: 5px;
 }
 
-/* Floating Action Button */
+/* ================================
+   FLOATING ACTION BUTTON (unchanged)
+   ================================ */
 #notesFab {
   position: fixed;
   top: 35%;
@@ -511,10 +513,10 @@ textarea {
   transform: translateY(-50%);
   width: 56px;
   height: 56px;
-  background: #ffeb3b; /* bright yellow */
+  background: #ffeb3b;
   border-radius: 50%;
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
-  color: #212121; /* dark icon for contrast */
+  color: #212121;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -530,50 +532,82 @@ textarea {
   transform: translateY(-50%) scale(1.05);
 }
 
-/* 4. Darken the backdrop and keep it behind the modal */
-.modal-backdrop.show {
-  opacity: 0.6 !important; /* stronger dimming */
-  z-index: 1040 !important;
+#notesFab.has-unread {
+  animation: notesPulse 1.2s infinite;
 }
 
-/* Always keep notes modal above everything else */
+@keyframes notesPulse {
+  0% {
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.15);
+  }
+  100% {
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+/* ================================
+   BACKDROP
+   ================================ */
 #notesModal {
   position: fixed;
   inset: 0;
-  z-index: 9999; /* higher than any header/footer */
-  display: none; /* hidden by default */
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-  animation: fadeIn 0.25s ease-out;
+  background: rgba(0, 0, 0, 0.45);
+  display: none; /* JS îl face block */
+  z-index: 9999;
 }
 
-/* Modal content above backdrop */
-#notesModal .modal-content {
+/* ================================
+   MODAL CARD — CENTRAT CU ABSOLUTE
+   ================================ */
+.notes-modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
   background: #fff;
-  width: 500px;
-  max-width: 90%;
-  border-radius: 10px;
-  overflow: hidden; /* ensures header is flush like WhatsApp */
+  width: 520px;
+  max-width: 92%;
+  max-height: 88vh;
+
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.25);
   animation: fadeIn 0.25s ease-out;
-  padding: 0; /* header + body handle spacing */
 }
 
-/* Header styled like WhatsApp, but yellow */
-#notesModal header {
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* ================================
+   HEADER
+   ================================ */
+.notes-header {
   background: #ffeb3b;
-  padding: 16px;
+  padding: 16px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #ddd;
-  border-radius: 0; /* remove inner rounding */
 }
 
-/* Title */
-#notesModal header h4 {
+.notes-header h4 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 600;
   color: #212121;
   display: flex;
@@ -581,9 +615,8 @@ textarea {
   gap: 8px;
 }
 
-/* Close button styled like WhatsApp, but theme-neutral */
-#notesModal .close-btn {
-  background: #e53935; /* red square like WhatsApp */
+.notes-close-btn {
+  background: #e53935;
   border: none;
   color: white;
   font-size: 1.4rem;
@@ -598,89 +631,147 @@ textarea {
   transition: 0.2s ease;
 }
 
-#notesModal .close-btn:hover {
+.notes-close-btn:hover {
   background: #b71c1c;
   transform: scale(1.1);
 }
 
-/* Body spacing to match WhatsApp modal */
-#notesModal .modal-body {
-  padding: 30px 35px;
-}
-/* === Notes List === */
-#notesModal ul {
-  list-style: none;
-  margin: 0;
-  padding: 16px;
-  flex: 1;
-  overflow-y: auto;
+/* ================================
+   BODY
+   ================================ */
+.notes-body {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: 100%;
 }
 
-#notesModal ul li {
+#noteReceiver {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* ================================
+   NOTES LIST
+   ================================ */
+.notes-list {
+  flex: 1;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: #fafafa;
+  overflow-y: auto;
+  padding: 14px;
+}
+
+#notesList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#notesList li {
   background: #f5f5f5;
   border-radius: 6px;
   padding: 12px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  margin-bottom: 12px;
   font-size: 0.95rem;
   color: #333;
+  border-left: 4px solid #ffeb3b;
 }
 
-#notesModal ul li .delete-note {
-  color: #e53935;
-  cursor: pointer;
-  font-size: 1.1rem;
-  transition: color 0.2s ease;
-}
-#notesModal ul li .delete-note:hover {
-  color: #b71c1c;
+#notesList li.unread {
+  background: #fffde7;
+  border-left-color: #ff9800;
 }
 
-/* === New Note Input === */
-#notesModal .new-note {
+/* ================================
+   INPUT ROW
+   ================================ */
+.notes-input {
   display: flex;
-  padding: 16px;
+  gap: 12px;
+  padding-top: 12px;
   border-top: 1px solid #ddd;
-  background: #fafafa;
-  justify-content: center;
-  align-items: center;
 }
 
-#notesModal textarea {
-  min-height: 100px; /* taller */
-  min-width: 75%; /* full width of its container */
-  box-sizing: border-box; /* ensures padding/border don’t push it beyond container */
-  resize: both; /* lets you drag to make it even bigger if you want */
+#noteText {
+  flex: 1;
+  min-height: 100px;
+  resize: vertical;
   font-size: 14px;
-  line-height: 1.4;
-  padding: 8px;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
 }
 
-#notesModal textarea:focus {
+#noteText:focus {
   border-color: #ffeb3b;
   outline: none;
 }
 
-/* === Add Button === */
-#notesModal #addNoteBtn {
-  background-color: #ffeb3b;
+#sendNoteBtn {
+  background: #ffeb3b;
   border: none;
-  padding: 16px;
+  padding: 14px 18px;
   border-radius: 6px;
   cursor: pointer;
   color: #212121;
   font-weight: 600;
-  transition: 200ms;
-}
-#notesModal #addNoteBtn:hover {
-  background-color: greenyellow;
-  transition: 200ms;
+  transition: 0.2s ease;
+  white-space: nowrap;
 }
 
-#notesList span {
-  white-space: pre-wrap; /* preserves \n and wraps long lines */
+#sendNoteBtn:hover {
+  background: #f4ff81;
+}
+
+.delete-note {
+  color: #e53935;
+  cursor: pointer;
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-left: 10px;
+  transition: 0.2s ease;
+}
+
+.delete-note:hover {
+  color: #b71c1c;
+  transform: scale(1.2);
+}
+
+#notesFab.unread-alert {
+  animation: flashRed 1s infinite;
+}
+
+@keyframes flashRed {
+  0% {
+    background: #ffeb3b;
+  }
+  50% {
+    background: #ff3b3b;
+  }
+  100% {
+    background: #ffeb3b;
+  }
+}
+
+.note-fade-out {
+  animation: fadeOutNote 0.35s ease forwards;
+}
+
+@keyframes fadeOutNote {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
 }
 
 /* Floating WhatsApp Icon */
