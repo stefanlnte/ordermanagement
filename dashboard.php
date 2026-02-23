@@ -1443,7 +1443,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </div>
 
                 <div class="notes-input">
-                    <textarea id="noteText" placeholder="Scrie o notiță pentru colegul tău..."></textarea>
+                    <textarea id="noteText" placeholder="Scrie o notiță pentru colegul tău..." rows="6" cols="60"></textarea>
                     <button id="sendNoteBtn">Trimite</button>
                 </div>
 

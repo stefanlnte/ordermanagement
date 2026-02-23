@@ -692,29 +692,26 @@ textarea {
    INPUT ROW
    ================================ */
 .notes-input {
-  display: flex;
-  gap: 12px;
+  width: 100%;
+  display: block; /* stack elements vertically */
   padding-top: 12px;
   border-top: 1px solid #ddd;
+  box-sizing: border-box;
 }
 
 #noteText {
-  flex: 1;
-  min-height: 100px;
-  resize: vertical;
-  font-size: 14px;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-
-#noteText:focus {
-  border-color: #ffeb3b;
-  outline: none;
+  width: 75%; /* 3/4 width */
+  display: block;
+  margin-bottom: 12px; /* spacing before button */
 }
 
 #sendNoteBtn {
-  background: #ffeb3b;
+  width: 25%; /* 1/4 width */
+  display: block;
+}
+
+#sendNoteBtn {
+  background: lightgreen;
   border: none;
   padding: 14px 18px;
   border-radius: 6px;
@@ -726,7 +723,7 @@ textarea {
 }
 
 #sendNoteBtn:hover {
-  background: #f4ff81;
+  background: yellow;
 }
 
 .delete-note {
