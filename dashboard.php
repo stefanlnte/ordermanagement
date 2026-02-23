@@ -1431,7 +1431,13 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <option value="">Alege colegul</option>
                     <?php
                     $uid = $_SESSION['user_id'];
-                    $users = $conn->query("SELECT user_id, username FROM users WHERE user_id != $uid ORDER BY username");
+
+                    $users = $conn->query("
+    SELECT user_id, username 
+    FROM users 
+    WHERE user_id NOT IN ($uid, 3, 4)
+    ORDER BY username
+");
                     while ($u = $users->fetch_assoc()) {
                         echo "<option value='{$u['user_id']}'>{$u['username']}</option>";
                     }
