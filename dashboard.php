@@ -372,6 +372,15 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 });
             });
 
+            $(function() {
+                $('#noteReceiver').select2({
+                    dropdownParent: $('#notesModal'),
+                    width: '200px',
+                    placeholder: "Alege colegul",
+                    allowClear: true
+                });
+            });
+
             $('#client_filter').select2({
                 dropdownAutoWidth: true,
                 width: 'auto',
