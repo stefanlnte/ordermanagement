@@ -1635,15 +1635,18 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                         const sender = n.sender_name || 'Necunoscut';
 
                         li.html(`
-                    <div class="note-text">
-                        <strong>${sender}</strong>
-                        <span class="note-time">${time}</span><br>
-                        ${$('<div>').text(n.content).html()}
-                    </div>
-                    <span class="delete-note" data-id="${n.note_id}">&times;</span>
-                `);
-
+    <div class="note-text">
+        <strong>${sender}</strong>
+        <span class="note-time">${time}</span><br>
+        ${$('<div>').text(n.content).html()}
+    </div>
+    <span class="delete-note" data-id="${n.note_id}">
+        <i class="fa-solid fa-trash"></i>
+    </span>
+`);
                         $list.append(li);
+
+
                     });
                 });
             }
