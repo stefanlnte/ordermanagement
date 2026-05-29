@@ -200,7 +200,7 @@ while ($row = $result->fetch_assoc()) {
 
         <!-- Revenue Race Chart -->
         <div class="chart-box">
-            <h2>🏁 Cursa banilor – Venituri zilnice pe utilizator în ultimele 2 săptămâni</h2>
+            <h2>🏁 Cursa banilor – Venituri zilnice pe utilizator în ultimele 30 de zile</h2>
             <div id="revenueRace"></div>
         </div>
 
@@ -233,7 +233,7 @@ while ($row = $result->fetch_assoc()) {
         const revenueColors = revenueSeries.map(s => userColors[s.name] || "gray");
 
         const cutoff = new Date();
-        cutoff.setDate(cutoff.getDate() - 14);
+        cutoff.setDate(cutoff.getDate() - 30);
 
         revenueSeries.forEach(series => {
             series.data = series.data.filter(p => new Date(p.x) >= cutoff);
