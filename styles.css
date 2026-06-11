@@ -27,7 +27,7 @@
   padding: 15px;
   order: 1;
   position: relative; /* Required for pseudo-element */
-  margin: 15px;
+  margin-left: 15px;
   margin-top: 30px;
   color: white;
   box-shadow: 2px 3px 6px rgba(255, 255, 0, 0.5);
@@ -39,6 +39,7 @@
   flex: 1;
   order: 2;
   margin-right: 15px;
+  margin-left: 15px;
 }
 
 button {
