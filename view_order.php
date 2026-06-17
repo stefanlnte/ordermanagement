@@ -1310,8 +1310,7 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
 
                     if ($users_result->num_rows > 0) {
                         while ($user = $users_result->fetch_assoc()) {
-                            $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
-                            echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
+                            echo "<option value='" . $user['user_id'] . "'>" . $user['username'] . "</option>";
                         }
                     }
                     ?>
@@ -1558,13 +1557,21 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
 
                         <option value="Bună ziua {{client}}, comanda dumneavoastră #{{order}} este pregătită pentru ridicare la Color Print. Vă rugăm să o ridicați cât mai curând. Vă mulțumim.">Reminder: Comandă neridicată 2</option>
 
+                        <option value="Bună ziua, înainte să începem comanda dvs. #{{order}}, vă rugăm să analizați cu atenție simularea grafică.
+
+După confirmarea acestora prin transmiterea bunului de tipar (BT), vom considera că toate informațiile (dimensiuni, grafici, texte, culori, poziționări) au fost verificate și aprobate de Dumneavoastră.
+
+După primirea bunului de tipar, firma noastră este absolvită de orice responsabilitate privind eventuale erori sau neconcordanțe care nu au fost semnalate anterior.
+
+Orice greșeală omisă sau nerevizuită de client înainte de aprobare intră exclusiv în sarcina acestuia.
+
+Vă mulțumim pentru colaborare și încredere!">Confirmare bun de tipar</option>
+
                         <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este în lucru. Vă anunțăm imediat ce este gata.">Comandă în lucru</option>
 
                         <option value="Bună ziua {{client}}, comanda dvs. #{{order}} necesită puțin timp suplimentar. Revenim cu un mesaj imediat ce este gata.">Comandă întârziată</option>
 
                         <option value="Bună ziua {{client}}, o parte din comanda dvs. #{{order}} este gata. Vă anunțăm imediat ce finalizăm și restul.">Comandă finalizată parțial</option>
-
-                        <option value="Bună ziua {{client}}, înainte să începem comanda dvs. #{{order}}, vă rugăm să confirmați bunul de tipar. Ne puteți spune dacă totul este în regulă?">Confirmare bun de tipar</option>
                     </select>
                 </div>
 
