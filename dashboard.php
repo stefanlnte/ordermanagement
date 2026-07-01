@@ -186,6 +186,23 @@ $total_stmt->close();
 // Calculăm numărul total de pagini
 $total_pages = ceil($total_orders / $limit);
 
+// --- STATISTICI RAPIDE PENTRU CARDS ---
+
+// 1. Număr comenzi cu Termen Depășit (active, neliwrate și cu due_date în trecut)
+$stats_overdue_sql = "SELECT COUNT(*) as total FROM orders WHERE status NOT IN ('delivered', 'cancelled') AND due_date < CURDATE()";
+$stats_overdue_res = $conn->query($stats_overdue_sql);
+$stats_overdue = $stats_overdue_res ? $stats_overdue_res->fetch_assoc()['total'] : 0;
+
+// 2. Număr comenzi În Lucru / Atribuite (active, dar care nu sunt marcate ca finalizate sau livrate)
+$stats_active_sql = "SELECT COUNT(*) as total FROM orders WHERE status NOT IN ('completed', 'delivered', 'cancelled')";
+$stats_active_res = $conn->query($stats_active_sql);
+$stats_active = $stats_active_res ? $stats_active_res->fetch_assoc()['total'] : 0;
+
+// 3. Număr comenzi Finalizate (status 'completed')
+$stats_completed_sql = "SELECT COUNT(*) as total FROM orders WHERE status = 'completed'";
+$stats_completed_res = $conn->query($stats_completed_sql);
+$stats_completed = $stats_completed_res ? $stats_completed_res->fetch_assoc()['total'] : 0;
+
 // Handle form submission for adding an order
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
     $client_id = $_POST['client_id'];
@@ -1102,6 +1119,36 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             data="https://color-print.ro/magazincp/comenzi.svg"
             style="width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; z-index: 2; object-fit: contain;">
         </object>
+    </div>
+
+    <!-- Banner Statistici Rapide -->
+    <div class="stats-banner" data-aos="fade-down" data-aos-duration="800">
+        <!-- Card Termen Depășit -->
+        <div class="stat-card card-overdue">
+            <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="stat-info">
+                <h3><?= $stats_overdue; ?></h3>
+                <p>Termen Depășit</p>
+            </div>
+        </div>
+
+        <!-- Card În Lucru -->
+        <div class="stat-card card-active">
+            <div class="stat-icon"><i class="fa-solid fa-person-digging"></i></div>
+            <div class="stat-info">
+                <h3><?= $stats_active; ?></h3>
+                <p>În lucru / Atribuite</p>
+            </div>
+        </div>
+
+        <!-- Card Finalizate -->
+        <div class="stat-card card-completed">
+            <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="stat-info">
+                <h3><?= $stats_completed; ?></h3>
+                <p>Finalizate</p>
+            </div>
+        </div>
     </div>
 
 

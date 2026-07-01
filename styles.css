@@ -1323,3 +1323,125 @@ textarea {
     transform: translateY(0);
   }
 }
+
+/* Containerul principal - Spațiere aerisită */
+.stats-banner {
+  display: flex;
+  gap: 25px;
+  margin: 30px 20px;
+  justify-content: space-between;
+}
+
+/* 🎨 Noul Fundal Specific și Unitar pentru Toate Cardurile (Dark Elegant) */
+.stat-card {
+  flex: 1;
+  background: linear-gradient(135deg, #000000 0%, #3c3c3c 50%, #6c6c6c 100%);
+  border-radius: 14px; /* Margini fin rotunjite */
+  padding: 22px 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); /* Umbră mai pronunțată pentru contrast */
+  border: 1px solid rgba(255, 255, 255, 0.05); /* Margine fină, aproape invizibilă */
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Efect de plutire la hover */
+.stat-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Aliniere text interior */
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Numărul mare - Contrast puternic pe fundalul închis */
+.stat-info h3 {
+  margin: 0;
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: #ffffff; /* Alb curat pentru lizibilitate maximă */
+  line-height: 1.1;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Textul descriptiv secundar */
+.stat-info p {
+  margin: 0;
+  color: #aaaaaa; /* Gri deschis pentru text secundar */
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* Cercul din dreapta pentru iconițe */
+.stat-icon {
+  font-size: 1.6rem;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+/* --- Detaliile de Culoare și Efectele Glow pe Fundalul Specific --- */
+
+/* 🔴 Card Termen Depășit */
+.card-overdue {
+  border-left: 4px solid #ff4444; /* Linie verticală fină în stânga pentru structură */
+}
+.card-overdue .stat-icon {
+  background: rgba(255, 68, 68, 0.15);
+  color: #ff4444;
+}
+.card-overdue:hover {
+  box-shadow: 0 15px 30px rgba(255, 68, 68, 0.25); /* Glow roșu pe fundalul închis */
+}
+
+/* 🟡 Card În Lucru */
+.card-active {
+  border-left: 4px solid #ffcc00;
+}
+.card-active .stat-icon {
+  background: rgba(255, 204, 0, 0.15);
+  color: #ffcc00;
+}
+.card-active:hover {
+  box-shadow: 0 15px 30px rgba(255, 204, 0, 0.25); /* Glow galben */
+}
+
+/* 🟢 Card Finalizate */
+.card-completed {
+  border-left: 4px solid #00c851;
+}
+.card-completed .stat-icon {
+  background: rgba(0, 200, 81, 0.15);
+  color: #00c851;
+}
+.card-completed:hover {
+  box-shadow: 0 15px 30px rgba(0, 200, 81, 0.25); /* Glow verde */
+}
+
+/* Responsivitate pentru ecrane mici */
+@media (max-width: 768px) {
+  .stats-banner {
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px 15px;
+  }
+  .stat-card {
+    padding: 18px 22px;
+  }
+  .stat-info h3 {
+    font-size: 2.2rem;
+  }
+}
