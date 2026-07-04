@@ -74,7 +74,6 @@ $pinned_result = $conn->query($pinned_sql);
 // Preluăm valorile filtrelor din query string (GET), cu fallback la valori implicite
 $status_filter = $_GET['status_filter'] ?? '';       // Filtru pentru statusul comenzii
 $assigned_filter = $_GET['assigned_filter'] ?? '';   // Filtru pentru utilizatorul asignat
-$category_filter = $_GET['category_filter'] ?? '';   // Filtru pentru categorie
 $sort_order = $_GET['sort_order'] ?? 'ASC';          // Ordinea de sortare (ASC/DESC)
 $client_filter = $_GET['client_filter'] ?? '';       // Filtru pentru client
 $page = $_GET['page'] ?? 1;                          // Pagina curentă pentru paginare
@@ -82,10 +81,10 @@ $limit = 18;                                         // Număr de comenzi pe pag
 $offset = ($page - 1) * $limit;                      // Offset-ul pentru paginare
 
 // Construim query-ul pentru selectarea comenzilor cu filtre și sortare
-$order_sql = "SELECT o.*, c.client_name, u.username as assigned_user, cat.category_name, o.delivery_date FROM orders o 
+$order_sql = "SELECT o.*, c.client_name, u.username as assigned_user, o.delivery_date 
+              FROM orders o 
               JOIN clients c ON o.client_id = c.client_id 
               LEFT JOIN users u ON o.assigned_to = u.user_id 
-              LEFT JOIN categories cat ON o.category_id = cat.category_id 
               WHERE 1=1"; // WHERE 1=1 pentru a putea adăuga condiții dinamice
 
 // Inițializăm variabile pentru parametrii și tipurile lor (pentru prepared statements)
@@ -109,11 +108,6 @@ if ($assigned_filter) {
     $order_sql .= " AND o.assigned_to = ?";
     $params[] = $assigned_filter;
     $types .= 'i'; // integer
-}
-if ($category_filter) {
-    $order_sql .= " AND o.category_id = ?";
-    $params[] = $category_filter;
-    $types .= 'i';
 }
 if ($client_filter) {
     $order_sql .= " AND o.client_id = ?";
@@ -141,12 +135,7 @@ $stmt->execute();
 $orders_result = $stmt->get_result();
 
 // Construim query-ul pentru numărul total de comenzi (pentru paginare)
-$total_orders_sql = "SELECT COUNT(*) as total 
-FROM orders o
-JOIN clients c ON o.client_id = c.client_id
-LEFT JOIN users u ON o.assigned_to = u.user_id
-LEFT JOIN categories cat ON o.category_id = cat.category_id
-WHERE 1=1";
+$total_orders_sql = "SELECT COUNT(*) as total FROM orders o WHERE 1=1";
 
 if ($status_filter !== 'delivered' && $status_filter !== 'cancelled') {
     $total_orders_sql .= " AND o.status NOT IN ('delivered', 'cancelled')";
@@ -159,11 +148,6 @@ if ($status_filter) {
 if ($assigned_filter) {
     $total_orders_sql .= " AND o.assigned_to = ?";
     $total_params[] = $assigned_filter;
-    $total_types .= 'i';
-}
-if ($category_filter) {
-    $total_orders_sql .= " AND o.category_id = ?";
-    $total_params[] = $category_filter;
     $total_types .= 'i';
 }
 if ($client_filter) {
@@ -214,7 +198,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
     $order_details = $_POST['order_details'];
     $due_date = $_POST['due_date'];
     $due_time = $_POST['due_time'];
-    $category_id = $_POST['category_id'];
     $avans = $_POST['avans'];
     $total = $_POST['total'];
     $assigned_to = $_POST['assigned_to'];
@@ -229,7 +212,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
         $order_details = $_POST['order_details'];
         $due_date = $_POST['due_date'];
         $due_time = $_POST['due_time'];
-        $category_id = $_POST['category_id'];
         $avans = (float)($_POST['avans'] ?? 0);
         $total = (float)($_POST['total'] ?? 0);
         $assigned_to = $_POST['assigned_to'];
@@ -272,10 +254,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
 
         // Update your order SQL query
         $order_sql = "INSERT INTO orders 
-              (client_id, order_details, due_date, due_time, category_id, avans, total, assigned_to, created_by) 
+              (client_id, order_details, due_date, due_time, avans, total, assigned_to, created_by) 
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($order_sql);
-        $stmt->bind_param("issssddii", $client_id, $order_details, $due_date, $due_time, $category_id, $avans, $total, $assigned_to, $created_by);
+        $stmt->bind_param("issssddii", $client_id, $order_details, $due_date, $due_time, $avans, $total, $assigned_to, $created_by);
         if ($stmt->execute()) {
             $last_order_id = $stmt->insert_id; // Get the last inserted order ID
             echo "Comanda a fost adăugată cu succes! 🚀 🚀 🚀 ";
@@ -288,18 +270,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
         }
 
         $stmt->close();
-    }
-}
-
-// Fetch categories
-$categories_sql = "SELECT * FROM categories";
-$categories_result = $conn->query($categories_sql);
-
-// Store categories in an array for JavaScript
-$categories = [];
-if ($categories_result->num_rows > 0) {
-    while ($row = $categories_result->fetch_assoc()) {
-        $categories[] = $row;
     }
 }
 
@@ -388,7 +358,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize Select2 on select elements
             $(document).ready(function() {
-                $('#status_filter, #assigned_filter, #category_filter, #assigned_to, #category_id').select2({
+                $('#status_filter, #assigned_filter, #assigned_to').select2({
                     dropdownAutoWidth: true,
                     width: 'auto'
                 });
@@ -1234,17 +1204,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <select id="datePickerSelect" name="due_date"></select>
                 </div>
 
-                <div class="form-group" style="display: none;">
-                    <label for="category_id">Categorie:</label>
-                    <select id="category_id" name="category_id">
-                        <?php
-                        foreach ($categories as $category) {
-                            echo "<option value='" . $category["category_id"] . "'>" . $category["category_name"] . "</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-
                 <div class="form-group">
                     <label for="assigned_to">Atribuie comanda lui:</label>
                     <select id="assigned_to" name="assigned_to">
@@ -1444,17 +1403,16 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 $page = isset($page) ? (int)$page : 1;
                 $status_filter = isset($status_filter) ? urlencode($status_filter) : '';
                 $assigned_filter = isset($assigned_filter) ? urlencode($assigned_filter) : '';
-                $category_filter = isset($category_filter) ? urlencode($category_filter) : '';
                 $sort_order = isset($sort_order) ? urlencode($sort_order) : '';
 
                 // First page link
                 if ($total_pages > 5 && $page > 1) {
-                    echo "<a href='dashboard.php?page=1&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Prima</a>";
+                    echo "<a href='dashboard.php?page=1&status_filter=$status_filter&assigned_filter=$assigned_filter&sort_order=$sort_order'>Prima</a>";
                 }
 
                 // Previous page link
                 if ($total_pages > 5 && $page > 1) {
-                    echo "<a href='dashboard.php?page=" . ($page - 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înapoi</a>";
+                    echo "<a href='dashboard.php?page=" . ($page - 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&sort_order=$sort_order'>Înapoi</a>";
                 }
 
                 // Define the number of pages to show before and after the current page
@@ -1481,17 +1439,17 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 // Display page numbers within the window
                 for ($i = $start; $i <= $end; $i++) {
                     $active = ($i == $page) ? 'active' : '';
-                    echo "<a href='dashboard.php?page=$i&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order' class='$active'>$i</a>";
+                    echo "<a href='dashboard.php?page=$i&status_filter=$status_filter&assigned_filter=$assigned_filter&sort_order=$sort_order' class='$active'>$i</a>";
                 }
 
                 // Next page link
                 if ($total_pages > 5 && $page < $total_pages) {
-                    echo "<a href='dashboard.php?page=" . ($page + 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Înainte</a>";
+                    echo "<a href='dashboard.php?page=" . ($page + 1) . "&status_filter=$status_filter&assigned_filter=$assigned_filter&sort_order=$sort_order'>Înainte</a>";
                 }
 
                 // Last page link
                 if ($total_pages > 5 && $page < $total_pages) {
-                    echo "<a href='dashboard.php?page=$total_pages&status_filter=$status_filter&assigned_filter=$assigned_filter&category_filter=$category_filter&sort_order=$sort_order'>Ultima</a>";
+                    echo "<a href='dashboard.php?page=$total_pages&status_filter=$status_filter&assigned_filter=$assigned_filter&sort_order=$sort_order'>Ultima</a>";
                 }
                 ?>
             </div>
