@@ -188,8 +188,11 @@ $total_pages = ceil($total_orders / $limit);
 
 // --- STATISTICI RAPIDE PENTRU CARDS ---
 
-// 1. Număr comenzi cu Termen Depășit (active, neliwrate și cu due_date în trecut)
-$stats_overdue_sql = "SELECT COUNT(*) as total FROM orders WHERE status NOT IN ('delivered', 'cancelled') AND due_date < CURDATE()";
+// 1. Număr comenzi cu Termen Depășit (Strict cele cu status 'assigned' care au depășit data curentă)
+$stats_overdue_sql = "SELECT COUNT(*) as total 
+                      FROM orders 
+                      WHERE status = 'assigned' 
+                      AND due_date < CURDATE() ";
 $stats_overdue_res = $conn->query($stats_overdue_sql);
 $stats_overdue = $stats_overdue_res ? $stats_overdue_res->fetch_assoc()['total'] : 0;
 
@@ -198,8 +201,10 @@ $stats_active_sql = "SELECT COUNT(*) as total FROM orders WHERE status NOT IN ('
 $stats_active_res = $conn->query($stats_active_sql);
 $stats_active = $stats_active_res ? $stats_active_res->fetch_assoc()['total'] : 0;
 
-// 3. Număr comenzi Finalizate (status 'completed')
-$stats_completed_sql = "SELECT COUNT(*) as total FROM orders WHERE status = 'completed'";
+// 3. Număr comenzi Finalizate (Include toate comenzile gata, chiar dacă au termenul depășit în trecut)
+$stats_completed_sql = "SELECT COUNT(*) as total 
+                        FROM orders 
+                        WHERE status = 'completed'";
 $stats_completed_res = $conn->query($stats_completed_sql);
 $stats_completed = $stats_completed_res ? $stats_completed_res->fetch_assoc()['total'] : 0;
 
