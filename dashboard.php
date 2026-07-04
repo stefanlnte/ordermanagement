@@ -1368,49 +1368,71 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </thead>
                 <tbody>
                     <?php
-                    $status = '<i class="fa-solid fa-person-digging"></i>';
                     if ($orders_result->num_rows > 0) {
                         while ($row = $orders_result->fetch_assoc()) {
                             $order_id = str_pad($row["order_id"], 3, '0', STR_PAD_LEFT);
                             $order_date = formatDateWithoutYearWithDay($row["order_date"]) . ' ' . date('H:i', strtotime($row["order_time"]));
-                            //formatRemainingDays is called with delivery_date
-                            $due_date = formatRemainingDays($row["due_date"], $row["status"], $row["delivery_date"] ?? null);
-                            $status = $row["status"] ?? 'neatribuită';
-                            $row_classes = [];
 
-                            if ($status == 'assigned' && $status == 'completed') {
-                                $status = $row["assigned_user"];
+                            // formatRemainingDays is called with delivery_date
+                            $due_date = formatRemainingDays($row["due_date"], $row["status"], $row["delivery_date"] ?? null);
+                            $status_db = $row["status"] ?? 'neatribuită';
+                            $row_classes = [];
+                            $row_style = ""; // Variabilă nouă pentru stilul inline direct din PHP
+
+                            // 1. Calculăm dacă termenul este depășit (doar dacă a trecut complet ziua respectivă)
+                            $is_overdue = false;
+                            if (!empty($row['due_date'])) {
+                                // Luăm doar data din baza de date și îi adăugăm manual sfârșitul zilei (23:59:59)
+                                $clean_date = date('Y-m-d', strtotime($row['due_date']));
+                                $deadline_timestamp = strtotime($clean_date . ' 23:59:59');
+
+                                // Dacă momentul actual (time()) a depășit ora 23:59:59 a acelei zile, devine roșie
+                                // Și verificăm să NU fie finalizată sau livrată
+                                if (time() > $deadline_timestamp && $status_db !== 'completed' && $status_db !== 'delivered') {
+                                    $is_overdue = true;
+                                }
+                            }
+
+                            // 2. Logica pentru iconițe și clase de status
+                            if ($status_db == 'assigned' && $status_db == 'completed') {
+                                $status_icon = htmlspecialchars($row["assigned_user"]);
                                 $row_classes[] = 'order-completed';
-                            } elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status != 'completed' && $status != 'delivered') {
-                                $status = '<i class="fas fa-star"></i>';
+                            } elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status_db != 'completed' && $status_db != 'delivered') {
+                                $status_icon = '<i class="fas fa-star"></i>';
                                 $row_classes[] = 'order-current-user';
-                            } elseif ($status != "completed" && $status != "delivered") {
-                                $status = '<i class="fa-solid fa-person-digging"></i>';
+                            } elseif ($status_db != "completed" && $status_db != "delivered") {
+                                $status_icon = '<i class="fa-solid fa-person-digging"></i>';
                                 $row_classes[] = 'order-assigned';
-                            } elseif ($status == 'completed') {
-                                $status = '<i class="fas fa-flag-checkered"></i>';
+                            } elseif ($status_db == 'completed') {
+                                $status_icon = '<i class="fas fa-flag-checkered"></i>';
                                 $row_classes[] = 'order-completed';
                             } else {
-                                $status = 'livrată';
+                                $status_icon = 'livrată';
                                 $row_classes[] = 'order-delivered';
+                            }
+
+                            // 3. Mutarea logicii CSS direct în PHP (Stil inline)
+                            if ($is_overdue) {
+                                $row_style = "style='background-color: firebrick !important; color: whitesmoke !important;'";
                             }
 
                             $row_class = implode(' ', $row_classes);
 
-                            echo "<tr class='order-row $row_class'
-      data-order-id='{$row["order_id"]}'
-      onclick=\"window.location.href='view_order.php?order_id={$row["order_id"]}&return=" . urlencode($_SERVER['REQUEST_URI']) . "'\">";
+                            // Randarea rândului cu stilul aplicat direct din PHP
+                            echo "<tr class='order-row $row_class' $row_style
+                  data-order-id='{$row["order_id"]}'
+                  onclick=\"window.location.href='view_order.php?order_id={$row["order_id"]}&return=" . urlencode($_SERVER['REQUEST_URI']) . "'\">";
                             echo "<td>" . $order_id . "</td>";
-                            echo "<td>" . $row["client_name"] . "</td>";
-                            echo "<td>" . $row["order_details"] . "</td>";
+                            echo "<td>" . htmlspecialchars($row["client_name"]) . "</td>";
+                            echo "<td>" . htmlspecialchars($row["order_details"]) . "</td>";
                             echo "<td>" . $order_date . "</td>";
                             echo "<td>" . $due_date . "</td>";
                             echo "<td>" . htmlspecialchars($row["assigned_user"]) . "</td>";
-                            echo "<td>" . $status . "</td>";
+                            echo "<td>" . $status_icon . "</td>";
                             echo "</tr>";
                         }
                     } else {
-                        echo "<tr><td colspan='6'>Nu există comenzi.</td></tr>";
+                        echo "<tr><td colspan='7'>Nu există comenzi.</td></tr>";
                     }
                     ?>
                 </tbody>
@@ -1953,22 +1975,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             $('#client_id').on('select2:select select2:unselect change', syncClientRequiredState);
         });
     </script>
-
-    <!-- Style overdue orders -->
-    <script>
-        $(document).ready(function() {
-            $("table tbody tr").each(function() {
-                const text = $(this).text();
-                if (text.includes("Termen depășit")) {
-                    $(this).css({
-                        "background-color": "firebrick",
-                        "color": "whitesmoke"
-                    });
-                }
-            });
-        });
-    </script>
-
 
     <!-- Lookup Modal -->
     <div id="lookupModal" class="modal">
