@@ -197,7 +197,7 @@ $stats_overdue_res = $conn->query($stats_overdue_sql);
 $stats_overdue = $stats_overdue_res ? $stats_overdue_res->fetch_assoc()['total'] : 0;
 
 // 2. Număr comenzi În Lucru / Atribuite (active, dar care nu sunt marcate ca finalizate sau livrate)
-$stats_active_sql = "SELECT COUNT(*) as total FROM orders WHERE status NOT IN ('completed', 'delivered', 'cancelled')";
+$stats_active_sql = "SELECT COUNT(*) as total FROM orders WHERE status = 'assigned'";
 $stats_active_res = $conn->query($stats_active_sql);
 $stats_active = $stats_active_res ? $stats_active_res->fetch_assoc()['total'] : 0;
 
