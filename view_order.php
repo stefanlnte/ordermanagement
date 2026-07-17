@@ -455,8 +455,7 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
     </tr>
     `);
                 });
-
-                const avans = parseFloat("<?= $order['avans'] ?>") || 0;
+                const avans = parseFloat($('#avans_text').text()) || 0;
                 $('#totalPrice').text((total - avans).toFixed(2) + ' lei');
             });
         }
@@ -1286,6 +1285,55 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
             <i class="fa-solid fa-chevron-left"></i> Înapoi la panou comenzi
         </button>
     </header>
+    <!-- Visual Progress Stepper -->
+    <div class="status-stepper no-print" style="display: flex; justify-content: space-between; align-items: center; max-width: 600px; margin: 20px auto; padding: 10px 0; position: relative;">
+        <div class="step-line" style="position: absolute; top: 25px; left: 5%; right: 5%; height: 4px; background: #ddd; z-index: 1;"></div>
+
+        <!-- Step 1: Created -->
+        <div class="step" style="z-index: 2; text-align: center; width: 20%;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: #2ecc71; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; font-size: 14px; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">✓</div>
+            <span style="font-size: 11px; font-weight: bold; color: #333;">Creată</span>
+        </div>
+
+        <!-- Step 2: In Progress -->
+        <?php
+        $inProgress = ($order['status'] !== 'cancelled'); // Assumed active if not cancelled
+        $bgColor = $inProgress ? '#f1c40f' : '#ddd';
+        $icon = $inProgress ? '●' : '2';
+        ?>
+        <div class="step" style="z-index: 2; text-align: center; width: 20%;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: <?= $bgColor ?>; color: <?= $inProgress ? '#000' : '#888' ?>; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; font-size: 14px; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <?= $inProgress ? '<i class="fa-solid fa-digging"></i>' : '2' ?>
+            </div>
+            <span style="font-size: 11px; font-weight: bold; color: #333;">În lucru</span>
+        </div>
+
+        <!-- Step 3: Completed -->
+        <?php
+        $isCompleted = ($order['status'] === 'completed' || $order['status'] === 'delivered');
+        $bgColor = $isCompleted ? '#f1c40f' : '#ddd';
+        $icon = $isCompleted ? '✓' : '3';
+        ?>
+        <div class="step" style="z-index: 2; text-align: center; width: 20%;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: <?= $isCompleted ? '#2ecc71' : '#ddd' ?>; color: <?= $isCompleted ? '#fff' : '#888' ?>; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; font-size: 14px; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <?= $isCompleted ? '<i class="fa-solid fa-flag"></i>' : '3' ?>
+            </div>
+            <span style="font-size: 11px; font-weight: bold; color: #333;">Terminată</span>
+        </div>
+
+        <!-- Step 4: Delivered -->
+        <?php
+        $isDelivered = ($order['status'] === 'delivered');
+        // Gradient din 3 culori: Galben (brand) ➔ Verde ➔ Albastru
+        $bgColor = $isDelivered ? 'linear-gradient(135deg, #FFEA00, #2ecc71, #00bfff)' : '#ddd';
+        $iconColor = $isDelivered ? '#fff' : '#888';
+        $icon = $isDelivered ? '<i class="fa-solid fa-gift"></i>' : '4';
+        ?>
+        <div class="step" style="z-index: 2; text-align: center; width: 20%;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: <?= $bgColor ?>; color: <?= $iconColor ?>; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; font-size: 14px; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><?= $icon ?></div>
+            <span style="font-size: 11px; font-weight: bold; color: #333;">Livrată</span>
+        </div>
+    </div>
     <div class="order-options">
         <h1 style="font-size: larger;">Opțiuni suplimentare</h1>
         <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled')  ?>
