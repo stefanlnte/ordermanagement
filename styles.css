@@ -1431,6 +1431,105 @@ textarea {
   box-shadow: 0 15px 30px rgba(0, 200, 81, 0.25); /* Glow verde */
 }
 
+/* ================================
+   OFF-CANVAS ORDER SLIDER PANEL
+   ================================ */
+/* ================================
+   SLOW AOS-STYLE SLIDER PANEL
+   ================================ */
+#orderSliderPanel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 85%;
+  max-width: 950px;
+  height: 100vh;
+  background: #fefefe;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3);
+  z-index: 10000;
+  /* Slower 1.4s duration with a smooth ease-in-out curve for both directions */
+  transition: right 1.4s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+#orderSliderPanel.open {
+  right: 0;
+}
+
+.order-slider-header {
+  background: #3c3c3c;
+  color: #fff;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #444;
+}
+
+.order-slider-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-slider-close {
+  background: #e53935;
+  border: none;
+  color: white;
+  font-size: 1.4rem;
+  font-weight: bold;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+}
+
+.order-slider-close:hover {
+  background: #b71c1c;
+  transform: scale(1.1);
+}
+
+.order-slider-body {
+  flex: 1;
+  overflow-y: auto;
+  background: #f5f5f5;
+}
+
+.order-slider-body iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+#orderSliderBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: none;
+  opacity: 0;
+  /* Matches the panel's 1.4s duration */
+  transition: opacity 1.4s ease-in-out;
+}
+
+#orderSliderBackdrop.open {
+  display: block;
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  #orderSliderPanel {
+    width: 100%;
+  }
+}
 /* Responsivitate pentru ecrane mici */
 @media (max-width: 768px) {
   .stats-banner {

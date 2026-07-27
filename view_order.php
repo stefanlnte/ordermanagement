@@ -1301,10 +1301,6 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
         <?php endif; ?>
 
         <button id="cancelButton" class="no-print" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>><i class="fa-solid fa-ban"></i> Anulează comanda</button>
-        <br>
-        <button class="no-print" onclick="window.location.href='<?= htmlspecialchars($returnUrl) ?>'">
-            <i class="fa-solid fa-chevron-left"></i> Înapoi la panou comenzi
-        </button>
     </header>
     <!-- Visual Progress Stepper -->
     <div class="status-stepper no-print" style="display: flex; justify-content: space-between; align-items: center; max-width: 600px; margin: 20px auto; padding: 10px 0; position: relative;">

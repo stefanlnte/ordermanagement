@@ -720,6 +720,73 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sliderPanel = document.getElementById('orderSliderPanel');
+            const sliderBackdrop = document.getElementById('orderSliderBackdrop');
+            const sliderIframe = document.getElementById('orderSliderIframe');
+            const closeSliderBtn = document.getElementById('closeOrderSlider');
+
+            function openOrderSlider(orderId) {
+                sliderBackdrop.style.display = 'block';
+                sliderIframe.src = 'view_order.php?order_id=' + orderId + '&embedded=1';
+
+                setTimeout(() => {
+                    sliderPanel.classList.add('open');
+                    sliderBackdrop.classList.add('open');
+                }, 10);
+
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeOrderSlider() {
+                sliderPanel.classList.remove('open');
+                sliderBackdrop.classList.remove('open');
+                document.body.style.overflow = '';
+
+                // Wait for the full 1400ms (1.4s) transition to finish before cleanup
+                setTimeout(() => {
+                    sliderIframe.src = '';
+                    sliderBackdrop.style.display = 'none';
+                }, 1400);
+            }
+
+            closeSliderBtn.addEventListener('click', closeOrderSlider);
+            sliderBackdrop.addEventListener('click', closeOrderSlider);
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && sliderPanel.classList.contains('open')) {
+                    closeOrderSlider();
+                }
+            });
+
+            document.querySelectorAll('.order-row').forEach(row => {
+                row.removeAttribute('onclick');
+                row.style.cursor = 'pointer';
+
+                row.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const orderId = this.getAttribute('data-order-id');
+                    if (orderId) {
+                        openOrderSlider(orderId);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.pinned-section a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const href = this.getAttribute('href');
+                    const urlParams = new URLSearchParams(href.split('?')[1]);
+                    const orderId = urlParams.get('order_id');
+                    if (orderId) {
+                        openOrderSlider(orderId);
+                    }
+                });
+            });
+        });
+    </script>
+
     <!-- Custom CSS for Select2 golden theme -->
     <style>
         /* Yellow theme for Select2 */
@@ -2000,6 +2067,18 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <a href="archive.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-box-archive"></i> Arhivă</a>
         <a href="unpaid_orders.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-ban"></i> Comenzi nefacturate</a>
     </footer>
+
+    <!-- Off-Canvas Order Slider Panel & Backdrop -->
+    <div id="orderSliderBackdrop"></div>
+    <div id="orderSliderPanel">
+        <div class="order-slider-header">
+            <h3><i class="fa-solid fa-file-invoice"></i> Detalii Comandă</h3>
+            <button class="order-slider-close" id="closeOrderSlider">&times;</button>
+        </div>
+        <div class="order-slider-body">
+            <iframe id="orderSliderIframe" src=""></iframe>
+        </div>
+    </div>
 
 </body>
 
