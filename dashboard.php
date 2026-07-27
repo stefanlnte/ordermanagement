@@ -744,10 +744,13 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 sliderBackdrop.classList.remove('open');
                 document.body.style.overflow = '';
 
-                // Wait for the full 1400ms (1.4s) transition to finish before cleanup
+                // Wait for the full 1400ms transition to finish before cleanup and reload
                 setTimeout(() => {
                     sliderIframe.src = '';
                     sliderBackdrop.style.display = 'none';
+
+                    // Refresh the dashboard table/page
+                    location.reload();
                 }, 1400);
             }
 

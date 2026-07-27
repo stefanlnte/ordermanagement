@@ -327,7 +327,10 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
                         timer: 2000,
                         timerProgressBar: true
                     }).then(() => {
-                        console.log('SMS SENT');
+                        // Refresh parent dashboard if embedded in off-canvas
+                        if (window.parent && window.parent !== window) {
+                            window.parent.location.reload();
+                        }
                     });
                 }
             };
@@ -368,7 +371,9 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
                         showConfirmButton: false,
                         timer: 2000
                     }).then(() => {
-                        console.log('Comanda Livrată');
+                        if (window.parent && window.parent !== window) {
+                            window.parent.location.reload();
+                        }
                     });
                 } else if (xhr.readyState == 4) {
                     // Error
@@ -416,7 +421,13 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
                             position: 'center',
                             showConfirmButton: false,
                             timer: 2000
-                        }).then(() => window.location.reload());
+                        }).then(() => {
+                            if (window.parent && window.parent !== window) {
+                                window.parent.location.reload();
+                            } else {
+                                window.location.reload();
+                            }
+                        });
                     } else if (xhr.readyState == 4) {
                         Swal.fire({
                             icon: 'error',
