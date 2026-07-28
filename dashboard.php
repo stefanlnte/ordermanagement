@@ -727,6 +727,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             const sliderIframe = document.getElementById('orderSliderIframe');
             const closeSliderBtn = document.getElementById('closeOrderSlider');
 
+            // --- 1. SLIDER LOGIC ---
             function openOrderSlider(orderId) {
                 sliderBackdrop.style.display = 'block';
                 sliderIframe.src = 'view_order.php?order_id=' + orderId + '&embedded=1';
@@ -750,7 +751,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 setTimeout(() => {
                     sliderIframe.src = '';
                     sliderBackdrop.style.display = 'none';
-                    location.reload();
+
+                    // Trigger the quiet refresh instead of a full page reload
+                    quietRefresh();
                 }, 1400);
             }
 
@@ -763,30 +766,78 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 }
             });
 
-            document.querySelectorAll('.order-row').forEach(row => {
-                row.removeAttribute('onclick');
-                row.style.cursor = 'pointer';
+            // --- 2. EVENT BINDING ---
+            // Grouped into a function so it can be re-run after fetching new HTML
+            function bindOrderClickEvents() {
+                document.querySelectorAll('.order-row').forEach(row => {
+                    row.removeAttribute('onclick');
+                    row.style.cursor = 'pointer';
 
-                row.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const orderId = this.getAttribute('data-order-id');
-                    if (orderId) {
-                        openOrderSlider(orderId);
-                    }
+                    row.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const orderId = this.getAttribute('data-order-id');
+                        if (orderId) openOrderSlider(orderId);
+                    });
                 });
-            });
 
-            document.querySelectorAll('.pinned-section a').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const href = this.getAttribute('href');
-                    const urlParams = new URLSearchParams(href.split('?')[1]);
-                    const orderId = urlParams.get('order_id');
-                    if (orderId) {
-                        openOrderSlider(orderId);
-                    }
+                document.querySelectorAll('.pinned-section a').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const href = this.getAttribute('href');
+                        const urlParams = new URLSearchParams(href.split('?')[1]);
+                        const orderId = urlParams.get('order_id');
+                        if (orderId) openOrderSlider(orderId);
+                    });
                 });
-            });
+            }
+
+            // Bind events initially on page load
+            bindOrderClickEvents();
+
+            // --- 3. QUIET REFRESH (AJAX) ---
+            function quietRefresh() {
+                // Fetch current URL to preserve active GET filters and pagination
+                fetch(window.location.href)
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+
+                        // Define which sections of the page need live updating
+                        const sectionsToUpdate = [
+                            '.stats-banner',
+                            '.pinned-section',
+                            '.main-content tbody',
+                            '.pagination'
+                        ];
+
+                        sectionsToUpdate.forEach(selector => {
+                            const currentSection = document.querySelector(selector);
+                            const updatedSection = doc.querySelector(selector);
+                            if (currentSection && updatedSection) {
+                                currentSection.innerHTML = updatedSection.innerHTML;
+                            }
+                        });
+
+                        // Re-bind clicks and re-initialize tooltips for the new DOM elements
+                        bindOrderClickEvents();
+                        if (typeof window.initTippy === 'function') {
+                            window.initTippy();
+                        }
+
+                        // --- NEW: Reset the order form ---
+                        const orderForm = document.getElementById('orderForm'); //[cite: 1]
+                        if (orderForm) {
+                            orderForm.reset(); // Clears standard text/number inputs
+
+                            // Clear Select2 visually and trigger change to reset required UI states
+                            if (typeof jQuery !== 'undefined' && $('#client_id').length) {
+                                $('#client_id').val(null).trigger('change'); //[cite: 1]
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Eroare la quiet refresh:', error));
+            }
         });
     </script>
 
@@ -1962,35 +2013,38 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <script>
         document.addEventListener("DOMContentLoaded", function() {
 
-            tippy('.order-row', {
-                allowHTML: true,
-                interactive: true,
-                theme: 'order-preview',
-                placement: 'top',
-                maxWidth: 350,
-                delay: [200, 0],
-                animation: 'shift-away',
-                offset: [0, 10],
+            // Wrap Tippy init in a global function
+            window.initTippy = function() {
+                tippy('.order-row', {
+                    allowHTML: true,
+                    interactive: true,
+                    theme: 'order-preview',
+                    placement: 'top',
+                    maxWidth: 350,
+                    delay: [200, 0],
+                    animation: 'shift-away',
+                    offset: [0, 10],
 
-                onShow(instance) {
-                    const reference = instance.reference;
-                    const id = reference.getAttribute('data-order-id');
+                    onShow(instance) {
+                        const reference = instance.reference;
+                        const id = reference.getAttribute('data-order-id');
 
-                    // Show loading text immediately
-                    instance.setContent("Loading...");
+                        instance.setContent("Loading...");
 
-                    // Fetch preview
-                    fetch('order_preview.php?id=' + id)
-                        .then(res => res.text())
-                        .then(html => {
-                            instance.setContent(html);
-                        })
-                        .catch(() => {
-                            instance.setContent("Eroare la încărcare");
-                        });
-                }
-            });
+                        fetch('order_preview.php?id=' + id)
+                            .then(res => res.text())
+                            .then(html => {
+                                instance.setContent(html);
+                            })
+                            .catch(() => {
+                                instance.setContent("Eroare la încărcare");
+                            });
+                    }
+                });
+            };
 
+            // Initialize on first load
+            window.initTippy();
         });
     </script>
 

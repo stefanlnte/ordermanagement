@@ -157,6 +157,25 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
         const currentOrderId = <?= (int)$_GET['order_id'] ?>;
     </script>
 
+    <?php if (isset($_GET['embedded']) && $_GET['embedded'] == '1'): ?>
+        <style>
+            /* Ascunde scrollbar-ul când pagina este încărcată în slider */
+            html,
+            body {
+                -ms-overflow-style: none;
+                /* IE and Edge */
+                scrollbar-width: none;
+                /* Firefox */
+            }
+
+            html::-webkit-scrollbar,
+            body::-webkit-scrollbar {
+                display: none;
+                /* Chrome, Safari and Opera */
+            }
+        </style>
+    <?php endif; ?>
+
     <script>
         const assignedTo = <?= json_encode($order['assigned_user']) ?>;
         const clientName = <?= json_encode($client_name) ?>;
@@ -1962,13 +1981,7 @@ Vă mulțumim pentru colaborare și încredere!">Confirmare bun de tipar</option
         });
     </script>
 
-    <br><br>
-    <footer class="no-print">
-        <p style="font-size: larger;">© Color Print</p>
-        <a href="dashboard.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-house"></i> Dashboard</a>
-        <a href="archive.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-box-archive"></i> Arhivă</a>
-        <a href="unpaid_orders.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-ban"></i> Comenzi nefacturate</a>
-    </footer>
+    <br>
 
 </body>
 
