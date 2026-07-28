@@ -739,17 +739,17 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 document.body.style.overflow = 'hidden';
             }
 
+            // Expose globally so other scripts can access it
+            window.openOrderSlider = openOrderSlider;
+
             function closeOrderSlider() {
                 sliderPanel.classList.remove('open');
                 sliderBackdrop.classList.remove('open');
                 document.body.style.overflow = '';
 
-                // Wait for the full 1400ms transition to finish before cleanup and reload
                 setTimeout(() => {
                     sliderIframe.src = '';
                     sliderBackdrop.style.display = 'none';
-
-                    // Refresh the dashboard table/page
                     location.reload();
                 }, 1400);
             }
@@ -942,7 +942,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('orderForm').addEventListener('submit', function(event) {
-                event.preventDefault(); // Prevent the default form submission
+                event.preventDefault(); // Prevent default form submission
 
                 fetch('dashboard.php', {
                         method: 'POST',
@@ -964,15 +964,20 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Comanda a fost adăugată!',
-                                    text: 'Se deschide pagina comenzii...',
+                                    text: 'Se deschide panoul comenzii...',
                                     showConfirmButton: false,
-                                    timer: 1500,
+                                    timer: 1000,
                                     timerProgressBar: true,
                                     position: 'center'
                                 }).then(() => {
-                                    const returnUrl = document.querySelector('input[name="return"]').value;
-                                    window.location.href = 'view_order.php?order_id=' + orderId +
-                                        (returnUrl ? '&return=' + encodeURIComponent(returnUrl) : '');
+                                    if (typeof window.openOrderSlider === 'function') {
+                                        window.openOrderSlider(orderId);
+                                    } else {
+                                        // Fallback if slider function is unavailable
+                                        const returnUrl = document.querySelector('input[name="return"]').value;
+                                        window.location.href = 'view_order.php?order_id=' + orderId +
+                                            (returnUrl ? '&return=' + encodeURIComponent(returnUrl) : '');
+                                    }
                                 });
                             }
                         } else {
@@ -1001,6 +1006,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             // Init AOS
             AOS.init({
                 duration: 800, // Adjust animation duration here
+                once: true,
                 mirror: false // Start animation on scroll up as well
             });
         });
