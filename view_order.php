@@ -157,24 +157,23 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
         const currentOrderId = <?= (int)$_GET['order_id'] ?>;
     </script>
 
-    <?php if (isset($_GET['embedded']) && $_GET['embedded'] == '1'): ?>
-        <style>
-            /* Ascunde scrollbar-ul când pagina este încărcată în slider */
-            html,
-            body {
-                -ms-overflow-style: none;
-                /* IE and Edge */
-                scrollbar-width: none;
-                /* Firefox */
-            }
 
-            html::-webkit-scrollbar,
-            body::-webkit-scrollbar {
-                display: none;
-                /* Chrome, Safari and Opera */
-            }
-        </style>
-    <?php endif; ?>
+    <style>
+        /* Ascunde scrollbar-ul*/
+        html,
+        body {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari and Opera */
+        }
+    </style>
 
     <script>
         const assignedTo = <?= json_encode($order['assigned_user']) ?>;

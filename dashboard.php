@@ -841,6 +841,29 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
+    <style>
+        /* Ascunde scrollbar-ul */
+        html,
+        body,
+        #orderSliderPanel,
+        .order-slider-body,
+        #orderSliderIframe {
+            -ms-overflow-style: none !important;
+            /* IE and Edge */
+            scrollbar-width: none !important;
+            /* Firefox */
+        }
+
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar,
+        #orderSliderPanel::-webkit-scrollbar,
+        .order-slider-body::-webkit-scrollbar,
+        #orderSliderIframe::-webkit-scrollbar {
+            display: none !important;
+            /* Chrome, Safari and Opera */
+        }
+    </style>
+
     <!-- Custom CSS for Select2 golden theme -->
     <style>
         /* Yellow theme for Select2 */
