@@ -761,8 +761,32 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             sliderBackdrop.addEventListener('click', closeOrderSlider);
 
             document.addEventListener('keydown', function(e) {
+                // 1. Existing ESC key logic
                 if (e.key === 'Escape' && sliderPanel.classList.contains('open')) {
                     closeOrderSlider();
+                }
+
+                // 2. Intercept Ctrl+P (or Cmd+P on Mac) when the slider is open
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+                    if (sliderPanel.classList.contains('open')) {
+                        e.preventDefault(); // Stop browser from printing the main dashboard page
+
+                        try {
+                            const iframeWindow = sliderIframe.contentWindow;
+                            const iframeDoc = iframeWindow.document;
+
+                            // Adjust the CSS selector below (#printBtn or .print-button) to match your button in view_order.php
+                            const printButton = iframeDoc.querySelector('#printBtn') || iframeDoc.querySelector('.print-button');
+
+                            if (printButton) {
+                                printButton.click(); // Trigger the exact button click logic
+                            } else {
+                                iframeWindow.print(); // Fallback to direct iframe window print
+                            }
+                        } catch (err) {
+                            console.error("Could not trigger iframe print:", err);
+                        }
+                    }
                 }
             });
 

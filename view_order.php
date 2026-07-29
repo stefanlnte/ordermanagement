@@ -619,6 +619,20 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
                 table.classList.remove('no-print');
             }
         });
+
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+                e.preventDefault(); // Prevent printing the parent window frame incorrectly
+
+                // Replace 'printOrder' or your button click with whatever function handles printing in view_order.php
+                const printBtn = document.querySelector('#printBtn') || document.querySelector('.print-button');
+                if (printBtn) {
+                    printBtn.click();
+                } else {
+                    window.print();
+                }
+            }
+        });
     </script>
 
 
