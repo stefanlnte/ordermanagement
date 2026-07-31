@@ -1008,10 +1008,16 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             /* Chrome, Safari and Opera */
         }
 
-        ::view-transition-group(*) {
+        /* Replace ::view-transition-group(*) with this: */
+        ::view-transition-group(:not(root)) {
             animation-duration: 420ms;
             animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
-            /* slight spring overshoot */
+        }
+
+        /* Keep the root transition instantaneous/smooth without elastic bounce */
+        ::view-transition-group(root) {
+            animation-duration: 250ms;
+            animation-timing-function: ease-out;
         }
 
         /* row motion */
