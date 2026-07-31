@@ -1165,6 +1165,10 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         #whatsappWidget {
             view-transition-name: whatsapp-widget;
         }
+
+        #header {
+            view-transition-name: main-header;
+        }
     </style>
 
     <!-- Custom CSS for Select2 golden theme -->
