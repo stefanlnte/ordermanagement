@@ -1150,6 +1150,15 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 transition: none;
             }
         }
+
+        /* Prevent floating widgets from flashing during View Transitions */
+        #notesFab {
+            view-transition-name: notes-widget;
+        }
+
+        #whatsappWidget {
+            view-transition-name: whatsapp-widget;
+        }
     </style>
 
     <!-- Custom CSS for Select2 golden theme -->
