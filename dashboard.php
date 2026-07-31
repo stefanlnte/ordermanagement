@@ -484,10 +484,10 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             function toggleClientFieldsVisibility() {
                 var clientId = $('#client_id').val();
                 if (clientId) {
-                    $('#new_client_fields').hide();
+                    $('#new_client_fields').addClass('collapsed');
                     $('#edit_client_button').show();
                 } else {
-                    $('#new_client_fields').show();
+                    $('#new_client_fields').removeClass('collapsed');
                     $('#edit_client_button').hide();
                 }
             }
@@ -1119,25 +1119,35 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             }
         }
 
-        .stat-card.stat-up,
-        .stat-card.stat-down {
-            animation: stat-pulse 500ms ease-out;
+        /* Animated expand/collapse for the "new client" fields.
+           Uses the grid-rows trick instead of display:none so the
+           height itself can transition (display can't be animated). */
+        #new_client_fields.collapsible {
+            display: grid;
+            grid-template-rows: 1fr;
+            opacity: 1;
+            transition:
+                grid-template-rows 600ms cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 260ms ease,
+                margin 600ms cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @keyframes stat-pulse {
-            0% {
-                transform: scale(1);
-                box-shadow: 0 0 0 rgba(0, 0, 0, 0);
-            }
+        #new_client_fields.collapsible.collapsed {
+            grid-template-rows: 0fr;
+            opacity: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+            pointer-events: none;
+        }
 
-            30% {
-                transform: scale(1.05);
-                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-            }
+        #new_client_fields .collapsible-inner {
+            overflow: hidden;
+            min-height: 0;
+        }
 
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+        @media (prefers-reduced-motion: reduce) {
+            #new_client_fields.collapsible {
+                transition: none;
             }
         }
     </style>
@@ -1624,22 +1634,24 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                     </div>
                 </div>
-                <div id="new_client_fields" class="form-group">
-                    <div class="flex-container">
-                        <div class="form-group">
-                            <label for="client_name"><strong>Nume Client:</strong></label>
-                            <input required placeholder="Prenume și Nume" type="text" id="client_name" name="client_name">
+                <div id="new_client_fields" class="form-group collapsible">
+                    <div class="collapsible-inner">
+                        <div class="flex-container">
+                            <div class="form-group">
+                                <label for="client_name"><strong>Nume Client:</strong></label>
+                                <input required placeholder="Prenume și Nume" type="text" id="client_name" name="client_name">
+                            </div>
+                            <div class="form-group">
+                                <label for="client_phone"><strong>Telefon Client:</strong></label>
+                                <input required placeholder="07XXXXXXXX" type="text" id="client_phone" name="client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
+                            </div>
+                            <div class="form-group">
+                                <label for="client_email">Email Client:</label>
+                                <input placeholder="colorprint_roman@yahoo.com" type="email" id="client_email" name="client_email">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="client_phone"><strong>Telefon Client:</strong></label>
-                            <input required placeholder="07XXXXXXXX" type="text" id="client_phone" name="client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
-                        </div>
-                        <div class="form-group">
-                            <label for="client_email">Email Client:</label>
-                            <input placeholder="colorprint_roman@yahoo.com" type="email" id="client_email" name="client_email">
-                        </div>
+                        <button type="button" id="save_edit_button" style="display:none;">Salvează Modificările</button>
                     </div>
-                    <button type="button" id="save_edit_button" style="display:none;">Salvează Modificările</button>
                 </div>
 
                 <div class="form-group">
@@ -2390,12 +2402,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             if (hasClient) {
                 // A client is selected: remove required so browser won't block submit
                 $('#client_name, #client_phone').prop('required', false);
-                // Optional: hide new-client fields for clarity
-                $('#new_client_fields').hide();
+                // Hide new-client fields for clarity (animated via CSS class)
+                $('#new_client_fields').addClass('collapsed');
             } else {
                 // No client selected: enforce required again
                 $('#client_name, #client_phone').prop('required', true);
-                $('#new_client_fields').show();
+                $('#new_client_fields').removeClass('collapsed');
             }
         }
 
