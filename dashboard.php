@@ -819,48 +819,169 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             bindOrderClickEvents();
 
             // --- 3. QUIET REFRESH (AJAX) ---
+            let refreshInProgress = false;
+
             function quietRefresh() {
-                // Fetch current URL to preserve active GET filters and pagination
+                if (refreshInProgress) return; // don't stack transitions on rapid open/close
+                refreshInProgress = true;
+
                 fetch(window.location.href)
                     .then(response => response.text())
                     .then(html => {
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
 
-                        // Define which sections of the page need live updating
-                        const sectionsToUpdate = [
-                            '.stats-banner',
-                            '.pinned-section',
-                            '.main-content tbody',
-                            '.pagination'
-                        ];
+                        // Runs FIRST, unconditionally — nothing below can ever block this again
+                        resetOrderForm();
 
-                        sectionsToUpdate.forEach(selector => {
-                            const currentSection = document.querySelector(selector);
-                            const updatedSection = doc.querySelector(selector);
-                            if (currentSection && updatedSection) {
-                                currentSection.innerHTML = updatedSection.innerHTML;
-                            }
-                        });
+                        const sectionsToUpdate = ['.pinned-section', '.main-content tbody', '.pagination'];
 
-                        // Re-bind clicks and re-initialize tooltips for the new DOM elements
-                        bindOrderClickEvents();
-                        if (typeof window.initTippy === 'function') {
-                            window.initTippy();
+                        let rowDirections = new Map();
+                        try {
+                            rowDirections = computeRowDirections(
+                                document.querySelector('.main-content tbody'),
+                                doc.querySelector('.main-content tbody')
+                            );
+                        } catch (err) {
+                            console.error('Row direction calc failed:', err);
                         }
 
-                        // --- NEW: Reset the order form ---
-                        const orderForm = document.getElementById('orderForm'); //[cite: 1]
-                        if (orderForm) {
-                            orderForm.reset(); // Clears standard text/number inputs
+                        try {
+                            animateStatCards(document.querySelector('.stats-banner'), doc.querySelector('.stats-banner'));
+                        } catch (err) {
+                            console.error('Stat animation failed:', err);
+                        }
 
-                            // Clear Select2 visually and trigger change to reset required UI states
-                            if (typeof jQuery !== 'undefined' && $('#client_id').length) {
-                                $('#client_id').val(null).trigger('change'); //[cite: 1]
+                        const applyUpdate = () => {
+                            sectionsToUpdate.forEach(selector => {
+                                const currentSection = document.querySelector(selector);
+                                const updatedSection = doc.querySelector(selector);
+                                if (currentSection && updatedSection) {
+                                    currentSection.innerHTML = updatedSection.innerHTML;
+                                }
+                            });
+
+                            tagElementsForTransition();
+                            bindOrderClickEvents();
+                            if (typeof window.initTippy === 'function') window.initTippy();
+                        };
+
+                        try {
+                            if (document.startViewTransition) {
+                                tagElementsForTransition();
+                                const transition = document.startViewTransition(applyUpdate);
+                                transition.finished
+                                    .catch(() => {}) // an interrupted transition isn't an error worth surfacing
+                                    .finally(() => {
+                                        clearTransitionNames();
+                                        refreshInProgress = false;
+                                    });
+                            } else {
+                                applyUpdate();
+                                refreshInProgress = false;
                             }
+                        } catch (err) {
+                            console.error('View transition failed, applying update directly:', err);
+                            applyUpdate();
+                            refreshInProgress = false;
                         }
                     })
-                    .catch(error => console.error('Eroare la quiet refresh:', error));
+                    .catch(error => {
+                        console.error('Eroare la quiet refresh:', error);
+                        refreshInProgress = false;
+                    });
+            }
+
+            function resetOrderForm() {
+                const orderForm = document.getElementById('orderForm');
+                if (orderForm) {
+                    orderForm.reset();
+                    if (typeof jQuery !== 'undefined' && $('#client_id').length) {
+                        $('#client_id').val(null).trigger('change');
+                    }
+                }
+            }
+
+            function tagElementsForTransition() {
+                document.querySelectorAll('.main-content tbody tr.order-row[data-order-id]').forEach(row => {
+                    row.style.viewTransitionName = `order-row-${row.dataset.orderId}`;
+                });
+            }
+
+            function clearTransitionNames() {
+                document.querySelectorAll('[style*="view-transition-name"]').forEach(el => {
+                    el.style.viewTransitionName = '';
+                });
+            }
+
+            function computeRowDirections(currentSection, updatedSection) {
+                const directions = new Map();
+                if (!currentSection || !updatedSection) return directions;
+
+                const oldIds = Array.from(currentSection.querySelectorAll('tr.order-row[data-order-id]')).map(r => r.dataset.orderId);
+                const newIds = Array.from(updatedSection.querySelectorAll('tr.order-row[data-order-id]')).map(r => r.dataset.orderId);
+
+                oldIds.forEach((id, oldIndex) => {
+                    const newIndex = newIds.indexOf(id);
+                    if (newIndex === -1) return;
+                    if (newIndex < oldIndex) directions.set(id, 'up');
+                    else if (newIndex > oldIndex) directions.set(id, 'down');
+                });
+
+                return directions;
+            }
+
+            // --- Stat cards: odometer-style digit roll ---
+
+            function animateStatCards(currentSection, updatedSection) {
+                if (!currentSection || !updatedSection) return;
+                const keys = ['card-overdue', 'card-active', 'card-completed'];
+
+                keys.forEach(key => {
+                    const numberEl = currentSection.querySelector(`.${key} h3`);
+                    const newNumberEl = updatedSection.querySelector(`.${key} h3`);
+                    if (!numberEl || !newNumberEl) return;
+
+                    const oldValue = parseInt(numberEl.dataset.value ?? numberEl.textContent, 10) || 0;
+                    const newValue = parseInt(newNumberEl.textContent, 10) || 0;
+                    numberEl.dataset.value = newValue; // canonical value, independent of DOM structure
+
+                    if (oldValue === newValue) return; // untouched — no animation
+
+                    const cardEl = numberEl.closest('.stat-card');
+                    const direction = newValue > oldValue ? 'up' : 'down';
+
+                    cardEl.classList.add(`stat-${direction}`);
+                    setTimeout(() => cardEl.classList.remove('stat-up', 'stat-down'), 700);
+                    rollOdometer(numberEl, oldValue, newValue, direction);
+                });
+            }
+
+            function rollOdometer(container, oldValue, newValue, direction) {
+                const maxLen = Math.max(String(oldValue).length, String(newValue).length);
+                const oldDigits = String(oldValue).padStart(maxLen, '0').split('');
+                const newDigits = String(newValue).padStart(maxLen, '0').split('');
+
+                container.innerHTML = '';
+
+                newDigits.forEach((newDigit, i) => {
+                    const oldDigit = oldDigits[i];
+                    const slot = document.createElement('span');
+                    slot.className = 'digit-slot';
+
+                    if (oldDigit === newDigit) {
+                        slot.innerHTML = `<span class="digit-inner">${newDigit}</span>`;
+                    } else {
+                        slot.innerHTML = `
+                <span class="digit-inner digit-out digit-${direction}">${oldDigit}</span>
+                <span class="digit-inner digit-in digit-${direction}">${newDigit}</span>
+            `;
+                        setTimeout(() => {
+                            slot.innerHTML = `<span class="digit-inner">${newDigit}</span>`; // settle for clean future reads
+                        }, 420);
+                    }
+                    container.appendChild(slot);
+                });
             }
         });
     </script>
@@ -885,6 +1006,139 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         #orderSliderIframe::-webkit-scrollbar {
             display: none !important;
             /* Chrome, Safari and Opera */
+        }
+
+        ::view-transition-group(*) {
+            animation-duration: 420ms;
+            animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+            /* slight spring overshoot */
+        }
+
+        /* row motion */
+        .order-row.row-moved-up {
+            --tint: rgba(64, 145, 235, 0.28);
+        }
+
+        .order-row.row-moved-down {
+            --tint: rgba(235, 155, 64, 0.28);
+        }
+
+        .order-row.row-moved-up,
+        .order-row.row-moved-down {
+            animation: row-sweep 700ms ease-out;
+        }
+
+        @keyframes row-sweep {
+            0% {
+                background: linear-gradient(90deg, var(--tint), transparent);
+                background-size: 200% 100%;
+                background-position: 100% 0;
+            }
+
+            60% {
+                background-position: 0% 0;
+            }
+
+            100% {
+                background-position: -100% 0;
+                background: linear-gradient(90deg, transparent, transparent);
+            }
+        }
+
+        /* stat card odometer */
+        .stat-card h3 {
+            display: inline-flex;
+        }
+
+        .digit-slot {
+            position: relative;
+            display: inline-block;
+            width: 0.62em;
+            height: 1.1em;
+            overflow: hidden;
+            vertical-align: bottom;
+        }
+
+        .digit-inner {
+            position: absolute;
+            inset: 0;
+            text-align: center;
+        }
+
+        .digit-out.digit-up {
+            animation: roll-out-up 400ms cubic-bezier(.3, 0, .2, 1) forwards;
+        }
+
+        .digit-in.digit-up {
+            animation: roll-in-up 400ms cubic-bezier(.3, 0, .2, 1) forwards;
+        }
+
+        .digit-out.digit-down {
+            animation: roll-out-down 400ms cubic-bezier(.3, 0, .2, 1) forwards;
+        }
+
+        .digit-in.digit-down {
+            animation: roll-in-down 400ms cubic-bezier(.3, 0, .2, 1) forwards;
+        }
+
+        @keyframes roll-out-up {
+            to {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes roll-in-up {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes roll-out-down {
+            to {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes roll-in-down {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .stat-card.stat-up,
+        .stat-card.stat-down {
+            animation: stat-pulse 500ms ease-out;
+        }
+
+        @keyframes stat-pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+            }
+
+            30% {
+                transform: scale(1.05);
+                box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+            }
         }
     </style>
 
