@@ -1447,8 +1447,7 @@ textarea {
   background: #fefefe;
   box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3);
   z-index: 10000;
-  /* Slower 1.4s duration with a smooth ease-in-out curve for both directions */
-  transition: right 1.4s ease-in-out;
+  transition: right 750ms ease-in-out;
   display: flex;
   flex-direction: column;
 }
@@ -1516,8 +1515,7 @@ textarea {
   z-index: 9999;
   display: none;
   opacity: 0;
-  /* Matches the panel's 1.4s duration */
-  transition: opacity 1.4s ease-in-out;
+  transition: opacity 750ms ease-in-out;
 }
 
 #orderSliderBackdrop.open {
