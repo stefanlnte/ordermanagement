@@ -819,20 +819,28 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             bindOrderClickEvents();
 
             // --- 3. QUIET REFRESH (AJAX) ---
+            // Shared by two callers: the slider-close refresh below (same URL, and it
+            // SHOULD reset the "add order" sidebar form), and the filters/sort/pagination
+            // script further down the page (a NEW url from the address bar's point of
+            // view, and it should NOT reset the sidebar form — someone could be mid-way
+            // through drafting a new order while just browsing/filtering the table).
             let refreshInProgress = false;
 
-            function quietRefresh() {
-                if (refreshInProgress) return; // don't stack transitions on rapid open/close
+            function quietRefresh(targetUrl, {
+                resetForm = true
+            } = {}) {
+                if (refreshInProgress) return Promise.resolve();
                 refreshInProgress = true;
+                const url = targetUrl || window.location.href;
 
-                fetch(window.location.href)
+                return fetch(url)
                     .then(response => response.text())
                     .then(html => {
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
 
                         // Runs FIRST, unconditionally — nothing below can ever block this again
-                        resetOrderForm();
+                        if (resetForm) resetOrderForm();
 
                         const sectionsToUpdate = ['.pinned-section', '.main-content tbody', '.pagination'];
 
@@ -861,9 +869,23 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                 }
                             });
 
+                            // Sweep-highlight rows that changed rank (e.g. after a sort
+                            // change) using the .row-moved-up/-down CSS that already existed
+                            // but was never actually applied to any element.
+                            rowDirections.forEach((direction, orderId) => {
+                                const row = document.querySelector(`.main-content tbody tr[data-order-id="${orderId}"]`);
+                                if (row) {
+                                    row.classList.add(direction === 'up' ? 'row-moved-up' : 'row-moved-down');
+                                    setTimeout(() => row.classList.remove('row-moved-up', 'row-moved-down'), 750);
+                                }
+                            });
+
                             tagElementsForTransition();
                             bindOrderClickEvents();
                             if (typeof window.initTippy === 'function') window.initTippy();
+                            // Pagination links live inside the section we just replaced, so
+                            // any listeners on the old <a> tags are gone — rebind if present.
+                            if (typeof window.bindPaginationClickEvents === 'function') window.bindPaginationClickEvents();
                         };
 
                         try {
@@ -885,12 +907,32 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                             applyUpdate();
                             refreshInProgress = false;
                         }
+
+                        // Keep the address bar (and reload/back-button behavior) in sync
+                        // with whatever is now on screen.
+                        if (url !== window.location.href) {
+                            history.pushState({
+                                quietNav: true
+                            }, '', url);
+                        }
                     })
                     .catch(error => {
                         console.error('Eroare la quiet refresh:', error);
                         refreshInProgress = false;
                     });
             }
+
+            // Expose globally so the filters/sort/pagination script (further down the
+            // page) can trigger the same refresh instead of a full navigation.
+            window.quietRefresh = quietRefresh;
+
+            // Back/forward after a quiet filter/sort/page change should re-render too —
+            // pushState alone only updates the address bar, not the page content.
+            window.addEventListener('popstate', function() {
+                quietRefresh(window.location.href, {
+                    resetForm: false
+                });
+            });
 
             function resetOrderForm() {
                 const orderForm = document.getElementById('orderForm');
@@ -1049,6 +1091,13 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 background-position: -100% 0;
                 background: linear-gradient(90deg, transparent, transparent);
             }
+        }
+
+        /* Filters toolbar: subtle cue while a quiet (AJAX) refresh is in flight */
+        .filters.is-loading {
+            opacity: 0.6;
+            pointer-events: none;
+            transition: opacity 150ms ease;
         }
 
         /* stat card odometer */
@@ -1811,7 +1860,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                             <div class="filter-group">
                                 <button type="submit">Aplică filtre</button>
-                                <button type="button" onclick="window.location.href='dashboard.php'">Resetează filtre</button>
+                                <button type="button" id="resetFiltersBtn">Resetează filtre</button>
                             </div>
                         </form>
                     </div>
@@ -2388,7 +2437,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             setTimeout(() => {
                 const arrows = document.querySelectorAll(".sort-arrows .arrow");
                 const hiddenInput = document.getElementById("sort_order");
+                const filtersWrapper = document.querySelector(".filters");
                 const filterForm = document.querySelector(".filters form");
+                const resetBtn = document.getElementById("resetFiltersBtn");
 
                 // Highlight active arrow on load
                 arrows.forEach(a => {
@@ -2397,6 +2448,40 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     }
                 });
 
+                // Reads the filter form's current state into a dashboard.php URL.
+                // overrides lets a caller add/replace/remove a param (e.g. page).
+                function buildFilterUrl(overrides = {}) {
+                    const formData = new FormData(filterForm);
+                    const params = new URLSearchParams();
+
+                    for (const [key, value] of formData.entries()) {
+                        if (value !== '') params.append(key, value);
+                    }
+
+                    Object.entries(overrides).forEach(([key, value]) => {
+                        if (value === null || value === '') {
+                            params.delete(key);
+                        } else {
+                            params.set(key, value);
+                        }
+                    });
+
+                    const query = params.toString();
+                    return 'dashboard.php' + (query ? '?' + query : '');
+                }
+
+                // Runs the quiet refresh against a given URL, with a small loading
+                // cue on the toolbar itself since a network round-trip — even a fast
+                // one — isn't literally instant.
+                function goQuietly(url) {
+                    if (filtersWrapper) filtersWrapper.classList.add('is-loading');
+                    window.quietRefresh(url, {
+                        resetForm: false
+                    }).finally(() => {
+                        if (filtersWrapper) filtersWrapper.classList.remove('is-loading');
+                    });
+                }
+
                 arrows.forEach(arrow => {
                     arrow.addEventListener("click", function() {
                         hiddenInput.value = this.dataset.value;
@@ -2404,9 +2489,48 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                         arrows.forEach(a => a.classList.remove("active"));
                         this.classList.add("active");
 
-                        filterForm.submit();
+                        goQuietly(buildFilterUrl());
                     });
                 });
+
+                // "Aplică filtre" — stays type="submit" so a real GET submission is
+                // still the fallback if JS fails to load for any reason.
+                filterForm.addEventListener("submit", function(e) {
+                    e.preventDefault();
+                    goQuietly(buildFilterUrl());
+                });
+
+                // "Resetează filtre" — clear the visible controls, then navigate quietly
+                if (resetBtn) {
+                    resetBtn.addEventListener("click", function(e) {
+                        e.preventDefault();
+
+                        $('#status_filter, #assigned_filter').val('').trigger('change');
+                        $('#client_filter').val(null).trigger('change');
+
+                        hiddenInput.value = 'ASC';
+                        arrows.forEach(a => a.classList.remove("active"));
+                        arrows.forEach(a => {
+                            if (a.dataset.value === 'ASC') a.classList.add("active");
+                        });
+
+                        goQuietly('dashboard.php');
+                    });
+                }
+
+                // Pagination links live inside the AJAX-swapped .pagination block, so
+                // they're recreated on every refresh — rebind after each one via the
+                // hook quietRefresh() calls (window.bindPaginationClickEvents).
+                function bindPaginationClickEvents() {
+                    document.querySelectorAll('.pagination a').forEach(link => {
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            goQuietly(this.getAttribute('href'));
+                        });
+                    });
+                }
+                window.bindPaginationClickEvents = bindPaginationClickEvents;
+                bindPaginationClickEvents();
 
             }, 200); // ← gives Select2 time to initialize
         });
