@@ -2483,11 +2483,26 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 // cue on the toolbar itself since a network round-trip — even a fast
                 // one — isn't literally instant.
                 function goQuietly(url) {
+
                     if (filtersWrapper) filtersWrapper.classList.add('is-loading');
+
                     window.quietRefresh(url, {
                         resetForm: false
                     }).finally(() => {
                         if (filtersWrapper) filtersWrapper.classList.remove('is-loading');
+
+                        // 4. Afișăm succesul când a terminat, apoi îl închidem
+                        Swal.fire({
+                            toast: 'true',
+                            icon: 'success',
+                            title: 'Filtru actualizat',
+                            position: 'center',
+                            width: 'auto',
+                            showConfirmButton: false,
+                            timer: 750,
+                            backdrop: false
+                        });
+
                     });
                 }
 
