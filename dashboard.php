@@ -1914,10 +1914,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                             }
 
                             // 2. Logica pentru iconițe și clase de status
-                            if ($status_db == 'assigned' && $status_db == 'completed') {
-                                $status_icon = htmlspecialchars($row["assigned_user"]);
-                                $row_classes[] = 'order-completed';
-                            } elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status_db != 'completed' && $status_db != 'delivered') {
+                            if ($row["assigned_to"] == $_SESSION['user_id'] && $status_db != 'completed' && $status_db != 'delivered') {
                                 $status_icon = '<i class="fas fa-star"></i>';
                                 $row_classes[] = 'order-current-user';
                             } elseif ($status_db != "completed" && $status_db != "delivered") {
