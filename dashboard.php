@@ -1071,25 +1071,37 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             --tint: rgba(235, 155, 64, 0.28);
         }
 
-        .order-row.row-moved-up,
-        .order-row.row-moved-down {
-            animation: row-sweep 700ms ease-out;
+        /* 3. Build the sweep as an overlay element */
+        /* Target the cells (td) inside the animated rows */
+        .order-row.row-moved-up td::after,
+        .order-row.row-moved-down td::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            /* Make the overlay cover the full cell */
+            width: 100%;
+            height: 100%;
+
+            background: linear-gradient(90deg, transparent, var(--tint), transparent);
+            pointer-events: none;
+
+            transform: translateX(-100%);
+            animation: gpu-row-sweep 1200ms ease-in forwards;
         }
 
-        @keyframes row-sweep {
+        /* 4. Animate ONLY GPU-friendly properties (transform and opacity) */
+        @keyframes gpu-row-sweep {
             0% {
-                background: linear-gradient(90deg, var(--tint), transparent);
-                background-size: 200% 100%;
-                background-position: 100% 0;
-            }
-
-            60% {
-                background-position: 0% 0;
+                transform: translateX(-100%);
+                opacity: 0;
             }
 
             100% {
-                background-position: -100% 0;
-                background: linear-gradient(90deg, transparent, transparent);
+                /* Sweep finishes completely off-screen to the right */
+                transform: translateX(100%);
+                opacity: 0;
             }
         }
 
