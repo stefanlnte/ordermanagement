@@ -1870,8 +1870,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                 </div>
                             </div>
 
-                            <div class="filter-group">
-                                <button type="submit">Aplică filtre</button>
+                            <div>
+                                <button type="submit" style="display: none">Aplică filtre</button>
                                 <button type="button" id="resetFiltersBtn">Resetează filtre</button>
                             </div>
                         </form>
@@ -2521,6 +2521,11 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 // still the fallback if JS fails to load for any reason.
                 filterForm.addEventListener("submit", function(e) {
                     e.preventDefault();
+                    goQuietly(buildFilterUrl());
+                });
+
+                // Apply filters automatically on Select2 user selections or clears
+                $('#status_filter, #assigned_filter, #client_filter').on('select2:select select2:clear', function() {
                     goQuietly(buildFilterUrl());
                 });
 
