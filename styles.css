@@ -87,7 +87,7 @@ thead th {
 }
 
 tbody tr:hover {
-  background-color: rgba(0, 0, 0, 0.06);
+  background-color: rgba(0, 0, 0, 0.15) !important;
   transition: background-color 0.2s ease;
 }
 
