@@ -66,81 +66,227 @@ button:hover {
   transform: translateY(-2px);
 }
 
-/* Modern table container */
-/* Table container for responsiveness and style */
-.table-wrapper {
-  overflow-x: auto;
-  backdrop-filter: blur(6px);
-  border-radius: 10px;
-  box-shadow: 0 4px 12px black; /* soft golden shadow */
-  padding: 10px;
-}
-
 /* Base table styling */
+/* --- 1. Update the Table Base (Transparent Background) --- */
 table {
+  border-collapse: separate !important;
+  border-spacing: 0 12px !important;
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-family: 'Poppins', sans-serif;
-  font-size: 0.95rem;
-  color: #000000;
+  background: transparent !important; /* Forces the table to have no background */
 }
 
-/* Header: clean, flat background */
-th {
-  background: rgb(230, 230, 230);
-  color: #212121;
-  font-weight: 600;
+/* --- 2. The New Table Head (<thead>) Styling --- */
+thead th {
+  background: transparent !important;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em; /* Wide spacing for a premium feel */
+  padding: 0 20px 10px 20px; /* Aligns perfectly with the 20px padding of the TD cells */
+  border: none !important; /* Removes any default bottom borders */
   text-align: left;
-  padding: 12px 15px;
-  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
 }
 
-/* Body cells */
-td {
-  padding: 10px 15px;
-  border: none;
+tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+  transition: background-color 0.2s ease;
 }
 
-/* Keep your existing row color coding */
-tbody tr.order-current-user {
-  background-color: salmon;
+/* =================================================================
+   HEAVY ROW — DARK GRADIENT & YELLOW ACCENT THEME
+   ================================================================ */
+.heavy-row {
+  cursor: pointer;
+  background-color: #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  transition:
+    box-shadow 0.25s ease,
+    background-color 0.3s ease;
 }
 
-tbody tr.status-cancelled {
-  background-color: tomato;
+.heavy-row td {
+  padding: 16px 20px;
+  vertical-align: middle;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  color: #2d3748;
 }
 
-tbody tr.order-completed {
-  background-color: palegreen;
+/* First Column: Rounded corners and accent color bar */
+.heavy-row td:first-child {
+  border-left: 6px solid transparent;
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
 }
 
-tbody tr.order-assigned {
-  background-color: wheat;
+/* Last Column: Rounded corners on the right */
+.heavy-row td:last-child {
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
 
-tbody tr.order-delivered {
-  background-color: linen;
+/* --- Status-Derived Soft Gradients --- */
+
+/* Yellow (În lucru) */
+.heavy-row.theme-yellow {
+  background: linear-gradient(
+    135deg,
+    rgba(245, 222, 179, 0.6) 0%,
+    rgba(245, 222, 179, 0.15) 100%
+  );
+}
+.theme-yellow td:first-child {
+  border-left-color: #ffde00;
+}
+
+/* Cyan (Atribuită) */
+.heavy-row.theme-cyan {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 175, 239, 0.6) 0%,
+    rgba(0, 119, 200, 0.15) 100%
+  );
+}
+.theme-cyan td:first-child {
+  border-left-color: #00aeef;
+}
+
+/* Magenta (Întârziată / Urgent) */
+.heavy-row.theme-magenta {
+  background: linear-gradient(
+    135deg,
+    rgba(236, 0, 28, 0.6) 0%,
+    rgba(193, 0, 16, 0.15) 100%
+  );
+}
+.theme-magenta td:first-child {
+  border-left-color: red;
+}
+
+/* Green (Finalizată) */
+.heavy-row.theme-green {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 195, 113, 0.6) 0%,
+    rgba(0, 150, 80, 0.15) 100%
+  );
+}
+.theme-green td:first-child {
+  border-left-color: #00c371;
+}
+
+/* Key / Neutral (Livrată) */
+.heavy-row.theme-key {
+  background: linear-gradient(
+    135deg,
+    rgba(160, 174, 192, 0.6) 0%,
+    rgba(113, 128, 150, 0.15) 100%
+  );
+}
+.theme-key td:first-child {
+  border-left-color: #a0aec0;
+}
+.theme-key td {
+  opacity: 0.8;
+}
+
+/* --- 4. Typography & Badges --- */
+.client-text {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.details-text {
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+.date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f7fafc;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+/* Base status pill */
+.heavy-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* --- 5. CMYK & Print Themes (The Heavy Color Injection) --- */
+
+/* Yellow (În lucru) - Vibrant and glowing */
+.theme-yellow td:first-child {
+  border-left-color: #ffde00; /* True Print Yellow */
+}
+.theme-yellow .heavy-pill {
+  background: linear-gradient(135deg, #ffde00, #ffb300);
+  color: #5c4000;
+}
+
+/* Cyan (Atribuită) */
+.theme-cyan td:first-child {
+  border-left-color: #00aeef; /* True Print Cyan */
+}
+.theme-cyan .heavy-pill {
+  background: linear-gradient(135deg, #00aeef, #0077c8);
+  color: #ffffff;
+}
+
+/* Magenta (Întârziată / Urgent) */
+.theme-magenta td:first-child {
+  border-left-color: red; /* True Print Magenta */
+}
+.theme-magenta .heavy-pill {
+  background: linear-gradient(135deg, red, #c1005a);
+  color: #ffffff;
+  animation: pulse-border 2s infinite;
+}
+.text-magenta {
+  color: rgb(159, 50, 50);
+}
+
+/* Green (Finalizată) - Rich confirmation color */
+.theme-green td:first-child {
+  border-left-color: #00c371;
+}
+.theme-green .heavy-pill {
+  background: linear-gradient(135deg, #00c371, #009650);
+  color: #ffffff;
+}
+
+/* Key/Black (Livrată) - Neutralized */
+.theme-key td:first-child {
+  border-left-color: #a0aec0;
+}
+.theme-key .heavy-pill {
+  background: #edf2f7;
+  color: #718096;
+  box-shadow: none;
+}
+.theme-key td {
+  opacity: 0.75; /* Fades the delivered rows slightly */
 }
 
 /* Hover effect that works with color coding */
 tbody tr:hover {
   filter: brightness(0.9); /* 1 = normal, <1 = darker */
   transition: all 0.2s ease;
-}
-
-/* Rounded corners for first & last cells */
-table tr:first-child th:first-child {
-  border-top-left-radius: 10px;
-}
-table tr:first-child th:last-child {
-  border-top-right-radius: 10px;
-}
-table tr:last-child td:first-child {
-  border-bottom-left-radius: 10px;
-}
-table tr:last-child td:last-child {
-  border-bottom-right-radius: 10px;
 }
 
 /* table effect */
@@ -236,18 +382,6 @@ div.pagination :hover {
 .filter-group label {
   margin-right: 5px;
 }
-.order-assigned {
-  background-color: #fffacd; /* Light yellow */
-}
-.order-completed {
-  background-color: #aff1af; /* Light green */
-}
-.order-current-user {
-  background-color: #fceceee8; /* Light pink */
-}
-.order-delivered {
-  background-color: #ffffffe8;
-}
 
 .filters .form-group {
   flex: 1;
@@ -271,7 +405,7 @@ div.pagination :hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* Individual filter group styling */
+/* Individual filter group styling — echoes .date-badge's soft chip look */
 .filter-group {
   display: flex;
   align-items: center;
