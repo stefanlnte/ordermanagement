@@ -2411,12 +2411,15 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     delay: [200, 0],
                     animation: 'shift-away',
                     offset: [0, 10],
+                    boundary: 'window', // Keeps the tooltip strictly within the viewport
+                    appendTo: document.body,
 
                     onShow(instance) {
                         const reference = instance.reference;
                         const id = reference.getAttribute('data-order-id');
 
-                        instance.setContent("Loading...");
+                        // Fixed min-height container prevents vertical jumping on load
+                        instance.setContent('<div style="min-height: 50px; display: flex; align-items: center; justify-content: center;">Loading...</div>');
 
                         fetch('order_preview.php?id=' + id)
                             .then(res => res.text())
