@@ -131,8 +131,8 @@ tbody tr:hover {
 .heavy-row.theme-yellow {
   background: linear-gradient(
     135deg,
-    rgba(245, 222, 179, 0.6) 0%,
-    rgba(245, 222, 179, 0.15) 100%
+    rgba(245, 222, 179, 0.8) 0%,
+    rgba(245, 222, 179, 0.25) 100%
   );
 }
 .theme-yellow td:first-child {
