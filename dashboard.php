@@ -624,10 +624,21 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             }).on('select2:select', function(e) {
                 var orderId = e.params.data.id;
                 if (orderId) {
-                    // 👇 grab the hidden return input value
-                    var returnUrl = document.querySelector('#lookupForm input[name="return"]').value;
-                    window.location.href = 'view_order.php?order_id=' + orderId +
-                        (returnUrl ? '&return=' + encodeURIComponent(returnUrl) : '');
+                    // 1. Open order in side panel slider
+                    if (typeof window.openOrderSlider === 'function') {
+                        window.openOrderSlider(orderId);
+                    } else {
+                        // Fallback navigation if slider isn't available
+                        var returnUrl = document.querySelector('#lookupForm input[name="return"]').value;
+                        window.location.href = 'view_order.php?order_id=' + orderId +
+                            (returnUrl ? '&return=' + encodeURIComponent(returnUrl) : '');
+                    }
+
+                    // 2. Close the lookup modal
+                    modal.style.display = 'none';
+
+                    // 3. Clear the search input for next time
+                    $(this).val(null).trigger('change');
                 }
             });
 
