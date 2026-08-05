@@ -547,6 +547,24 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 }
             });
         });
+
+        // Delay Select2 close to allow exit animation to play
+        $(document).on('select2:closing', function(e) {
+            var $dropdown = $('.select2-dropdown');
+
+            if (!$dropdown.hasClass('is-closing')) {
+                e.preventDefault(); // Prevent immediate removal
+                $dropdown.addClass('is-closing');
+
+                setTimeout(function() {
+                    var $target = $(e.target);
+                    $target.select2('close'); // Complete close action
+                }, 750); // 750ms matches the exit animation duration
+            } else {
+                // Reset class once fully closed for future opens
+                $dropdown.removeClass('is-closing');
+            }
+        });
     </script>
 
 
@@ -1261,6 +1279,42 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         .select2-container--default .select2-results__options {
             max-width: 100% !important;
             /* Ensure options are wide enough */
+        }
+
+        /* Animate Select2 dropdown opening */
+        /* Animate Select2 dropdown opening */
+        .select2-container--open .select2-dropdown {
+            animation: select2DropdownOpen 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transform-origin: top center;
+        }
+
+        /* Animate Select2 dropdown closing */
+        .select2-dropdown.is-closing {
+            animation: select2DropdownClose 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        }
+
+        @keyframes select2DropdownOpen {
+            0% {
+                opacity: 0;
+                transform: translateY(-8px) scaleY(0.96);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0) scaleY(1);
+            }
+        }
+
+        @keyframes select2DropdownClose {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scaleY(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-8px) scaleY(0.96);
+            }
         }
     </style>
 
