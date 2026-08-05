@@ -999,7 +999,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             pointer-events: none;
 
             transform: translateX(-100%);
-            animation: gpu-row-sweep 1200ms ease-in forwards;
+            animation: gpu-row-sweep 300ms ease-in forwards;
         }
 
         /* 4. Animate ONLY GPU-friendly properties (transform and opacity) */
