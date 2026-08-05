@@ -382,7 +382,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <script src="https://unpkg.com/@popperjs/core@2"></script>
     <script src="https://unpkg.com/tippy.js@6"></script>
     <!-- Include Select2 JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js"></script>
     <!-- Initialize Select2 lybrary -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -549,135 +549,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
-    <!-- Search Modal -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('lookupModal');
-            const footerLink = document.getElementById('footerLookupLink');
-
-            footerLink.addEventListener('click', function(e) {
-                e.preventDefault(); // nu naviga nicăieri
-                modal.style.display = 'block';
-                setTimeout(function() {
-                    $('#order_lookup').select2('open');
-                }, 100);
-            });
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Open with button
-            const modal = document.getElementById('lookupModal');
-            const openBtn = document.getElementById('openLookupBtn');
-            const closeX = document.querySelector('.lookup-close'); // matches first working file
-            const orderLookup = $('#order_lookup');
-
-            // Initialize Select2 ONCE
-            function highlightTerm(text, term) {
-                if (!text) return '';
-                if (!term) return text;
-                const regex = new RegExp('(' + term + ')', 'gi');
-                return text.replace(regex, '<span class="highlight">$1</span>');
-            }
-
-            $('#order_lookup').select2({
-                placeholder: 'Detalii comandă...',
-                minimumInputLength: 1,
-                allowClear: true,
-                ajax: {
-                    url: 'search_orders.php',
-                    dataType: 'json',
-                    delay: 250,
-                    data: function(params) {
-                        return {
-                            search_orders: 1,
-                            q: params.term
-                        };
-                    },
-                    processResults: function(data) {
-                        return {
-                            results: data
-                        };
-                    },
-                    cache: true
-                },
-                templateResult: function(order) {
-                    if (!order.id) return order.text;
-                    const term = $('#order_lookup').data('select2').dropdown.$search.val();
-                    return $(`
-            <div>
-                <div><strong>#${order.id}</strong> – ${highlightTerm(order.client_name, term)}</div>
-                <div style="font-size:12px;color:#555;">
-                    ${highlightTerm(order.order_details, term)}
-                </div>
-                <div style="font-size:11px;color:#999;">
-                    ${highlightTerm(order.detalii_suplimentare, term)}
-                </div>
-            </div>
-        `);
-                },
-                templateSelection: function(order) {
-                    return order.client_name ? `#${order.id} – ${order.client_name}` : order.text;
-                },
-                escapeMarkup: function(markup) {
-                    return markup;
-                } // allow HTML for highlighting
-            }).on('select2:select', function(e) {
-                var orderId = e.params.data.id;
-                if (orderId) {
-                    // 1. Open order in side panel slider
-                    if (typeof window.openOrderSlider === 'function') {
-                        window.openOrderSlider(orderId);
-                    } else {
-                        // Fallback navigation if slider isn't available
-                        var returnUrl = document.querySelector('#lookupForm input[name="return"]').value;
-                        window.location.href = 'view_order.php?order_id=' + orderId +
-                            (returnUrl ? '&return=' + encodeURIComponent(returnUrl) : '');
-                    }
-
-                    // 2. Close the lookup modal
-                    modal.style.display = 'none';
-
-                    // 3. Clear the search input for next time
-                    $(this).val(null).trigger('change');
-                }
-            });
-
-            function openModalAndFocus() {
-                modal.style.display = 'block';
-                // Open the select2 dropdown shortly after showing modal
-                setTimeout(function() {
-                    orderLookup.select2('open');
-                }, 100);
-            }
-
-            // Button opens modal
-            if (openBtn) {
-                openBtn.addEventListener('click', openModalAndFocus);
-            }
-
-            // X closes modal
-            if (closeX) {
-                closeX.addEventListener('click', function() {
-                    modal.style.display = 'none';
-                });
-            }
-
-            // Click outside closes modal
-            window.addEventListener('click', function(event) {
-                if (event.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
-
-            // Ctrl+f (or Cmd+f) opens modal + focuses search
-            document.addEventListener('keydown', function(e) {
-                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
-                    e.preventDefault();
-                    openModalAndFocus();
-                }
-            });
-        });
-    </script>
 
     <!-- Date picker -->
     <script>
@@ -1354,12 +1225,16 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             margin-right: 5px;
         }
 
-        /* Remove scrollbar */
+        /* Remove scrollbar (except header order search dropdown) */
         .select2-container--default .select2-results {
             overflow-y: hidden !important;
             /* Remove vertical scrollbar */
             max-width: 100% !important;
             /* Ensure dropdown is wide enough */
+        }
+
+        .select2-dropdown.header-order-search .select2-results {
+            overflow-y: auto !important;
         }
 
         .select2-container--default .select2-results__options {
@@ -1477,174 +1352,122 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
 <body>
     <header id="header">
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const dateEl = document.getElementById('currentdate');
-                const greetEl = document.getElementById('greeting-message');
-
-                // Afișare dată în română
-                const now = new Date();
-                const options = {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                };
-                if (dateEl) dateEl.textContent = now.toLocaleDateString('ro-RO', options);
-
-                // Mesaje amuzante pentru COPY CENTER (08:00–18:00)
-                const messagesByHour = {
-                    8: [
-                        "Bună dimineața! hai că putem 💪",
-                        "Bună dimineața — hai la cafea ☕️😄",
-                        "Începem ziua cu energie bună 😎",
-                        "Cafeaua de la ora 8 — ritualul care pune ziua în mișcare. ☕",
-                        "Deschidem ziua cu energie ⚡",
-                        "Start de zi cu vibe pozitiv 👍",
-                        "Toner plin, chef maxim! 🔥📄"
-                    ],
-                    9: [
-                        "Hai că prindem ritmul… încet, dar îl prindem 🖨️",
-                        "Comenzile curg, noi le prindem 😎",
-                        "Ora 9 și suntem pe val 🌊",
-                        "Verifică comenile - spor ☕️🚀",
-                        "Productivitate powered by cafea — să nu ne mințim 😅☕",
-                        "Comenzile vin, noi suntem pregătiți 😎",
-                        "Azi suntem pe flow 🏄‍♂️",
-                        "Hai că suntem productivi azi 🖨️"
-                    ],
-                    10: [
-                        "Începem să funcționăm ca oameni normali 👽",
-                        "Cafeaua își face efectul ☕🔥",
-                        "Lucrăm cu spor și chef 😎",
-                        "Energie la maxim, încă o cafea ☕️",
-                        "Totul merge ca uns 😁",
-                        "Lucrăm cu spor și chef 😎 — probabil un bug în sistem, dar nu-l raportăm 🤖",
-                        "Totul merge excelent 😁 — suspect de bine, sincer 🤨"
-                    ],
-                    11: [
-                        "Aproape prânz — rezistăm eroic 💪",
-                        "Aproape prânz — urlă foamea 🍽️",
-                        "Pescuim comenzi 😂",
-                        "Aproape pauză, visează la prânz 🍕🤤",
-                        "Hai că suntem pe val — să nu vină tsunamiul 😂",
-                        "Încă puțin și pauză — stomacul deja protestează 🍽️😅",
-                    ],
-                    12: [
-                        "Hai cu pauza! 🍽️",
-                        "Poftă bună! 🍽️😋",
-                        "Ne alimentăm pentru restul zilei 😋",
-                        "Ne încărcăm bateriile 🪫🔋",
-                        "Prânz strategic 😎",
-                        "Relaxare scurtă 🧘‍♀️"
-                    ],
-                    13: [
-                        "Revenim în forță 💪",
-                        "Înapoi la treabă! 🍽️💪",
-                        "Revenim în acțiune 🎬",
-                        "După masă — ne mișcăm, dar nu brusc 😂"
-                    ],
-                    14: [
-                        "Continuăm în forță 💪",
-                        "Hai că merge treaba 🖨️",
-                        "Fresh… adică am băut cafea. Multă. 😄☕",
-                        "Cofeina încă luptă pentru noi ☕"
-                    ],
-                    15: [
-                        "Ora 15 — cafeaua numărul trei ☕😂",
-                        "Ora 15 — încă suntem în formă 💪",
-                        "Ora 15 — încă suntem în picioare 😎",
-                        "Continuăm cu spor — cât mai avem 😁",
-                        "Cafeaua încă luptă pentru noi 😂☕",
-                        "Hai că mai avem puțin 😄",
-                        "Încă o cafea și gata 😎☕"
-                    ],
-                    16: [
-                        "Final de zi în apropiere 🔎",
-                        "E ora 16 — Ma che tare! 😎",
-                        "Hai că nu mai e mult 💪",
-                        "Încă puțin... click‑click și gata! 🖱️✨",
-                        "Finalul zilei se apropie încet 😁",
-                        "Hai că nu mai e mult 😁✨"
-                    ],
-                    17: [
-                        "Încă puțin și gata pe azi ✅",
-                        "Tragem linie și finalizăm ce-a mai rămas 🖨️",
-                        "Încheiem ziua cu vibe bun 😎",
-                        "Ora 17 și deja se simte aerul de libertate 🗽",
-                        "Se vede lumina de la capătul tunelului 🚨",
-                        "Finalizăm tot ce putem 🖨️",
-                        "Încă puțin și suntem liberi 🗽",
-                        "Happy Hour, pune muzică de final 🎶🏁"
-                    ],
-                    18: [
-                        "Program încheiat! 😄🎉",
-                        "Închidem! Strângeți comenzile, aplauze 👏🔔",
-                        "Gata pe azi 😎",
-                        "Program încheiat! Aplauze 👏🎉",
-                        "Sfârșit de program 🎉",
-                        "Ne vedem mâine 🌙",
-                        "Program încheiat! Am supraviețuit 😄🎉",
-                        "Sfârșit de program — felicitări! 😁👏"
-                    ]
-                };
-
-                // Funcția care afișează mesajul în funcție de oră
-                function setGreetingForDate(d) {
-                    const h = d.getHours();
-                    let msg = "Magazin închis 🌙";
-
-                    if (messagesByHour[h] && messagesByHour[h].length > 0) {
-                        const lista = messagesByHour[h];
-                        const randomIndex = Math.floor(Math.random() * lista.length);
-                        msg = lista[randomIndex];
-                    }
-
-                    if (greetEl) greetEl.textContent = msg;
-                }
-
-                // Inițializare
-                setGreetingForDate(new Date());
-
-                // Actualizare la fiecare minut
-                function scheduleMinuteTick() {
-                    const now = new Date();
-                    const msToNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
-                    setTimeout(function() {
-                        setGreetingForDate(new Date());
-                        setInterval(() => setGreetingForDate(new Date()), 60 * 1000);
-                    }, msToNextMinute);
-                }
-
-                scheduleMinuteTick();
-            });
-        </script>
-        <p data-aos="fade-down"
-            data-aos-easing="linear"
-            data-aos-duration="800">
-            <span id="greeting-message"></span>, <?php echo ucwords($_SESSION['username']); ?>!
-        </p>
-        <!-- Căutare avansată -->
-        <button id="footerLookupLink"
-            data-aos="fade-down"
-            data-aos-easing="linear"
-            data-aos-duration="800">
-            <i class="fa-solid fa-magnifying-glass"></i> Căutare avansată (CTRL+F)
-        </button>
-        <!-- Statistici -->
-        <button onclick="window.location.href='statistics.php?return=' + encodeURIComponent(window.location.href)"
-            data-aos="fade-down"
-            data-aos-easing="linear"
-            data-aos-duration="800">
-            <i class="fa-solid fa-chart-line"></i> Statistici
-        </button>
-        <!-- Deconectare -->
-        <button data-aos="fade-down"
-            data-aos-easing="linear"
-            data-aos-duration="800" onclick="window.location.href='logout.php'">
-            <i class="fa-solid fa-right-from-bracket"></i> Deconectare
-        </button>
+        <div class="header-inner">
+            <div class="header-search">
+                <form id="lookupForm">
+                    <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
+                    <div class="header-search-wrap">
+                        <i class="fa-solid fa-magnifying-glass header-search-icon" aria-hidden="true"></i>
+                        <select id="order_lookup" style="width:100%;"></select>
+                    </div>
+                </form>
+            </div>
+            <div class="header-actions">
+                <button onclick="window.location.href='statistics.php?return=' + encodeURIComponent(window.location.href)"
+                    data-aos="fade-down"
+                    data-aos-easing="linear"
+                    data-aos-duration="800">
+                    <i class="fa-solid fa-chart-line"></i> Statistici
+                </button>
+                <button data-aos="fade-down"
+                    data-aos-easing="linear"
+                    data-aos-duration="800" onclick="window.location.href='logout.php'">
+                    <i class="fa-solid fa-right-from-bracket"></i> Deconectare
+                </button>
+            </div>
+        </div>
     </header>
+
+    <script>
+        $(function() {
+            var orderLookup = $('#order_lookup');
+            if (!orderLookup.length) return;
+
+            function highlightTerm(text, term) {
+                if (!text) return '';
+                if (!term) return text;
+                var escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                var regex = new RegExp('(' + escaped + ')', 'gi');
+                return text.replace(regex, '<span class="highlight">$1</span>');
+            }
+
+            function getSearchTerm() {
+                var s2 = orderLookup.data('select2');
+                if (s2 && s2.dropdown && s2.dropdown.$search) {
+                    return s2.dropdown.$search.val() || '';
+                }
+                return '';
+            }
+
+            orderLookup.select2({
+                placeholder: 'Căutare comandă (nr. comenzii, client, telefon, detalii comandă)...',
+                minimumInputLength: 1,
+                allowClear: true,
+                dropdownParent: $('body'),
+                dropdownCssClass: 'header-order-search',
+                width: '100%',
+                ajax: {
+                    url: 'search_orders.php',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            search_orders: 1,
+                            q: params.term
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                },
+                templateResult: function(order) {
+                    if (!order.id) return order.text;
+                    var term = getSearchTerm();
+                    var phoneLine = order.client_phone ?
+                        '<div style="font-size:12px;color:#666;"><i class="fa-solid fa-phone" style="font-size:10px;"></i> ' + highlightTerm(order.client_phone, term) + '</div>' :
+                        '';
+                    return $(
+                        '<div>' +
+                        '<div><strong>#' + order.id + '</strong> – ' + highlightTerm(order.client_name, term) + '</div>' +
+                        phoneLine +
+                        '<div style="font-size:12px;color:#555;">' + highlightTerm(order.order_details, term) + '</div>' +
+                        '<div style="font-size:11px;color:#999;">' + highlightTerm(order.detalii_suplimentare, term) + '</div>' +
+                        '</div>'
+                    );
+                },
+                templateSelection: function(order) {
+                    return order.client_name ? '#' + order.id + ' – ' + order.client_name : order.text;
+                },
+                escapeMarkup: function(markup) {
+                    return markup;
+                }
+            }).on('select2:select', function(e) {
+                var orderId = e.params.data.id;
+                if (!orderId) return;
+
+                if (typeof window.openOrderSlider === 'function') {
+                    window.openOrderSlider(orderId);
+                } else {
+                    var returnInput = document.querySelector('#lookupForm input[name="return"]');
+                    var returnUrl = returnInput ? returnInput.value : '';
+                    window.location.href = 'view_order.php?order_id=' + orderId +
+                        (returnUrl ? '&return=' + encodeURIComponent(returnUrl) : '');
+                }
+
+                orderLookup.val(null).trigger('change');
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+                    e.preventDefault();
+                    orderLookup.select2('open');
+                }
+            });
+        });
+    </script>
 
     <div class="image-container" style="width: 100%; height: 300px; position: relative; overflow: hidden;">
         <video autoplay muted loop playsinline
@@ -2609,25 +2432,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             $('#client_id').on('select2:select select2:unselect change', syncClientRequiredState);
         });
     </script>
-
-    <!-- Lookup Modal -->
-    <div id="lookupModal" class="modal">
-        <div class="modal-content">
-            <span class="lookup-close">&times;</span>
-            <h2>Căutare avansată</h2>
-            <p style="margin:10px 0; font-size:14px; color:#555;">
-                În câmpul de căutare avansată poți introduce <strong>numărul comenzii</strong>,
-                <strong>detalii despre comandă (comandă inițială, detalii suplimentare)</strong>
-                sau <strong>numele clientului</strong>. Acestă ferestră se poate deschide și apăsând CTRL+F.
-            </p>
-            <form id="lookupForm">
-                <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
-                <div class="form-group">
-                    <select id="order_lookup" style="width:100%;"></select>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <footer>
         <a href="dashboard.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-house"></i> Pagina principală</a>

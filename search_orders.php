@@ -10,19 +10,20 @@ if (isset($_GET['search_orders'])) {
         exit();
     }
 
-    $sql = "SELECT o.order_id, o.order_details, o.detalii_suplimentare, c.client_name
+    $sql = "SELECT o.order_id, o.order_details, o.detalii_suplimentare, c.client_name, c.client_phone
             FROM orders o
             JOIN clients c ON o.client_id = c.client_id
             WHERE o.order_id LIKE ? 
                OR o.order_details LIKE ? 
                OR o.detalii_suplimentare LIKE ?
                OR c.client_name LIKE ?
+               OR c.client_phone LIKE ?
             ORDER BY o.order_id DESC
             LIMIT 10000";
 
     $like = "%" . $q . "%";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssss", $like, $like, $like, $like);
+    $stmt->bind_param("sssss", $like, $like, $like, $like, $like);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -31,6 +32,7 @@ if (isset($_GET['search_orders'])) {
         $orders[] = [
             "id" => $row['order_id'],
             "client_name" => $row['client_name'],
+            "client_phone" => $row['client_phone'],
             "order_details" => $row['order_details'],
             "detalii_suplimentare" => $row['detalii_suplimentare'],
             "text" => "#" . $row['order_id'] . " - " . $row['client_name']

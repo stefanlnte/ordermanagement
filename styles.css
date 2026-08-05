@@ -342,34 +342,61 @@ div.pagination :hover {
   margin-bottom: 10px;
 }
 
-/* Lookup modal content */
-#lookupModal .modal-content {
-  background-color: #fff;
-  margin: 10% auto; /* center vertically */
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-  max-width: 600px;
-  min-height: 450px; /* 👈 more height by default */
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  position: relative; /* needed for close button positioning */
+/* Header inline order search */
+#header .header-search .select2-container {
+  width: 100% !important;
 }
 
-/* Close button (X) */
-#lookupModal .lookup-close {
+#header .header-search .select2-container--default .select2-selection--single {
+  height: 38px;
+  border-color: rgba(255, 255, 0, 0.35);
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+#header .header-search .select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 36px;
+  padding-left: 36px;
+  color: #333;
+}
+
+#header .header-search .select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 36px;
+}
+
+#header .header-search-wrap {
+  position: relative;
+}
+
+#header .header-search-wrap .header-search-icon {
   position: absolute;
-  top: 12px;
-  right: 16px; /* 👈 right side */
-  font-size: 28px;
-  font-weight: bold;
-  color: #555;
-  cursor: pointer; /* 👈 pointer on hover */
-  transition: color 0.2s ease;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 2;
 }
 
-#lookupModal .lookup-close:hover {
-  color: #000; /* darker on hover */
+.select2-dropdown.header-order-search {
+  border-color: #a9a9a9;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  z-index: 10001 !important;
+}
+
+.select2-dropdown.header-order-search .select2-results > .select2-results__options {
+  max-height: min(70vh, 520px) !important;
+  overflow-y: auto !important;
+}
+
+.select2-dropdown.header-order-search .select2-results__option {
+  white-space: normal;
+  line-height: 1.35;
+}
+
+.select2-dropdown.header-order-search .highlight {
+  background-color: #ffff99;
+  font-weight: 600;
 }
 
 .filters form {
