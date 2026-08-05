@@ -1356,7 +1356,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             <div class="header-search">
                 <form id="lookupForm">
                     <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
-                    <div class="header-search-wrap">
+                    <div class="header-search-wrap" data-aos="fade-down"
+                        data-aos-easing="linear"
+                        data-aos-duration="800">
                         <i class="fa-solid fa-magnifying-glass header-search-icon" aria-hidden="true"></i>
                         <select id="order_lookup" style="width:100%;"></select>
                     </div>
