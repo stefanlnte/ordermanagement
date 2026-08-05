@@ -937,9 +937,17 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             function resetOrderForm() {
                 const orderForm = document.getElementById('orderForm');
                 if (orderForm) {
+                    // 1. Reset standard form fields (restores native <select> elements to their defaults)
                     orderForm.reset();
-                    if (typeof jQuery !== 'undefined' && $('#client_id').length) {
-                        $('#client_id').val(null).trigger('change');
+
+                    if (typeof jQuery !== 'undefined') {
+                        // 2. Clear the AJAX client search completely
+                        if ($('#client_id').length) {
+                            $('#client_id').val(null).trigger('change');
+                        }
+
+                        // 3. Sync the Select2 UI for Date and Operator to reflect the native form reset
+                        $('#datePickerSelect, #assigned_to').trigger('change');
                     }
                 }
             }
