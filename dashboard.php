@@ -608,9 +608,13 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             const sliderBackdrop = document.getElementById('orderSliderBackdrop');
             const sliderIframe = document.getElementById('orderSliderIframe');
             const closeSliderBtn = document.getElementById('closeOrderSlider');
+            const sliderTitle = sliderPanel.querySelector('.order-slider-header h3');
 
-            // --- 1. SLIDER LOGIC ---
+            // --- 1. SLIDER LOGIC FOR ORDERS ---
             function openOrderSlider(orderId) {
+                if (sliderTitle) {
+                    sliderTitle.innerHTML = '<i class="fa-solid fa-file-invoice"></i> Detalii Comandă';
+                }
                 sliderBackdrop.style.display = 'block';
                 sliderIframe.src = 'view_order.php?order_id=' + orderId + '&embedded=1';
 
@@ -622,8 +626,25 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 document.body.style.overflow = 'hidden';
             }
 
-            // Expose globally so other scripts can access it
+            // --- NEW: SLIDER LOGIC FOR STATISTICS ---
+            function openStatsSlider() {
+                if (sliderTitle) {
+                    sliderTitle.innerHTML = '<i class="fa-solid fa-chart-line"></i> Statistici Comenzi';
+                }
+                sliderBackdrop.style.display = 'block';
+                sliderIframe.src = 'statistics.php?embedded=1';
+
+                setTimeout(() => {
+                    sliderPanel.classList.add('open');
+                    sliderBackdrop.classList.add('open');
+                }, 10);
+
+                document.body.style.overflow = 'hidden';
+            }
+
+            // Expose globally so other scripts / inline HTML can access them
             window.openOrderSlider = openOrderSlider;
+            window.openStatsSlider = openStatsSlider;
 
             function closeOrderSlider() {
                 sliderPanel.classList.remove('open');
@@ -1365,7 +1386,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </form>
             </div>
             <div class="header-actions">
-                <button onclick="window.location.href='statistics.php?return=' + encodeURIComponent(window.location.href)"
+                <button onclick="openStatsSlider()"
                     data-aos="fade-down"
                     data-aos-easing="linear"
                     data-aos-duration="800">

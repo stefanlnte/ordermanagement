@@ -96,16 +96,17 @@ while ($row = $result->fetch_assoc()) {
             font-family: "Segoe UI", Arial, sans-serif;
             background: #f9f9f9;
             margin: 0;
-            padding: 0;
+            padding: 30px 20px;
+            box-sizing: border-box;
         }
 
         .stats-container {
             max-width: 1000px;
-            margin: 40px auto;
+            margin: 20px auto;
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            padding: 30px;
+            padding: 40px 45px;
         }
 
         h1 {
@@ -187,17 +188,10 @@ while ($row = $result->fetch_assoc()) {
             };
         }
     </script>
-    <header class="no-print" id="header">
-        <button class="no-print" onclick="window.history.back()">
-            <i class="fa-solid fa-chevron-left"></i> Înapoi la panou comenzi
-        </button>
-    </header>
 </head>
 
 <body>
     <div class="stats-container">
-        <h1>📊 Statistici Comenzi</h1>
-
         <!-- Revenue Race Chart -->
         <div class="chart-box">
             <h2>🏁 Cursa banilor – Venituri zilnice pe utilizator în ultimele 30 de zile</h2>
