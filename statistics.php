@@ -102,7 +102,7 @@ while ($row = $result->fetch_assoc()) {
 
         .stats-container {
             max-width: 1000px;
-            margin: 20px auto;
+            margin: 20px;
             background: #fff;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);

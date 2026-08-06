@@ -1738,138 +1738,141 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             </div>
         </div>
         <div class="main-content" data-aos="slide-up">
-            <table>
-                <thead>
-                    <div class="filters" style="margin-bottom: 20px;">
-                        <form method="GET" action="dashboard.php">
-                            <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
+            <div class="filters" style="margin-bottom: 20px;">
+                <form method="GET" action="dashboard.php">
+                    <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
 
-                            <div class="filter-group">
-                                <label>Status:</label>
-                                <select id="status_filter" name="status_filter">
-                                    <option value="">Active</option>
-                                    <option value="assigned" <?php if ($status_filter == 'assigned') echo 'selected'; ?>>Atribuit</option>
-                                    <option value="completed" <?php if ($status_filter == 'completed') echo 'selected'; ?>>Terminat</option>
-                                    <option value="delivered" <?php if ($status_filter == 'delivered') echo 'selected'; ?>>Livrat</option>
-                                    <option value="cancelled" <?php if ($status_filter == 'cancelled') echo 'selected'; ?>>Anulat</option>
-                                </select>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Operator:</label>
-                                <select id="assigned_filter" name="assigned_filter">
-                                    <option value="">Toți</option>
-                                    <?php
-                                    // Exclude Nicolas and Adrian
-                                    $users_sql = "SELECT user_id, username FROM users WHERE user_id NOT IN (3, 4)";
-                                    $users_result = $conn->query($users_sql);
-                                    if ($users_result->num_rows > 0) {
-                                        while ($user = $users_result->fetch_assoc()) {
-                                            $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
-                                            echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
-                                        }
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Client:</label>
-                                <select id="client_filter" name="client_filter" style="width: 200px;">
-                                    <option value="">Toți</option>
-                                </select>
-                            </div>
-
-                            <div class="filter-group">
-                                <label>Sortare</label>
-                                <div class="sort-arrows">
-                                    <i class="fa-solid fa-arrow-up arrow" data-value="ASC"></i>
-                                    <i class="fa-solid fa-arrow-down arrow" data-value="DESC"></i>
-                                    <input type="hidden" id="sort_order" name="sort_order" value="<?php echo $sort_order; ?>">
-                                </div>
-                            </div>
-
-                            <div>
-                                <button type="submit" style="display: none">Aplică filtre</button>
-                                <button type="button" id="resetFiltersBtn">Resetează filtre</button>
-                            </div>
-                        </form>
+                    <div class="filter-group">
+                        <label>Status:</label>
+                        <select id="status_filter" name="status_filter">
+                            <option value="">Active</option>
+                            <option value="assigned" <?php if ($status_filter == 'assigned') echo 'selected'; ?>>Atribuit</option>
+                            <option value="completed" <?php if ($status_filter == 'completed') echo 'selected'; ?>>Terminat</option>
+                            <option value="delivered" <?php if ($status_filter == 'delivered') echo 'selected'; ?>>Livrat</option>
+                            <option value="cancelled" <?php if ($status_filter == 'cancelled') echo 'selected'; ?>>Anulat</option>
+                        </select>
                     </div>
-                    <tr style="display: none">
-                        <th>Nr. Comanda</th>
-                        <th>Client</th>
-                        <th>Info Comandă</th>
-                        <th>Din data</th>
-                        <th>Dată livrare</th>
-                        <th>Operator</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody class="styled-table-body">
-                    <?php
-                    if ($orders_result->num_rows > 0) {
-                        while ($row = $orders_result->fetch_assoc()) {
-                            $order_id = str_pad($row["order_id"], 3, '0', STR_PAD_LEFT);
-                            $order_date = formatDateWithoutYearWithDay($row["order_date"]) . ' ' . date('H:i', strtotime($row["order_time"]));
-                            $due_date = formatRemainingDays($row["due_date"], $row["status"], $row["delivery_date"] ?? null);
-                            $status_db = $row["status"] ?? 'neatribuită';
 
-                            // 1. Calculăm dacă termenul este depășit
-                            $is_overdue = false;
-                            if (!empty($row['due_date'])) {
-                                $clean_date = date('Y-m-d', strtotime($row['due_date']));
-                                $deadline_timestamp = strtotime($clean_date . ' 23:59:59');
-
-                                if (time() > $deadline_timestamp && $status_db !== 'completed' && $status_db !== 'delivered') {
-                                    $is_overdue = true;
+                    <div class="filter-group">
+                        <label>Operator:</label>
+                        <select id="assigned_filter" name="assigned_filter">
+                            <option value="">Toți</option>
+                            <?php
+                            // Exclude Nicolas and Adrian
+                            $users_sql = "SELECT user_id, username FROM users WHERE user_id NOT IN (3, 4)";
+                            $users_result = $conn->query($users_sql);
+                            if ($users_result->num_rows > 0) {
+                                while ($user = $users_result->fetch_assoc()) {
+                                    $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
+                                    echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
                                 }
                             }
+                            ?>
+                        </select>
+                    </div>
 
-                            // 2. Heavy Theme Logic (CMYK Print Inspired)
-                            $theme_class = 'theme-default';
-                            $status_content = '';
+                    <div class="filter-group">
+                        <label>Client:</label>
+                        <select id="client_filter" name="client_filter" style="width: 200px;">
+                            <option value="">Toți</option>
+                        </select>
+                    </div>
 
-                            if ($is_overdue) {
-                                $theme_class = 'theme-magenta'; // Urgent/Overdue
-                                $icon = ($row["assigned_to"] == $_SESSION['user_id']) ? '<i class="fas fa-star"></i>' : '<i class="fa-solid fa-person-digging"></i>';
-                                $status_content = $icon . ' Întârziată';
-                            } elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status_db != 'completed' && $status_db != 'delivered') {
-                                $status_content = '<i class="fas fa-star"></i> În lucru';
-                                $theme_class = 'theme-yellow'; // Current User
-                            } elseif ($status_db != "completed" && $status_db != "delivered") {
-                                $status_content = '<i class="fa-solid fa-person-digging"></i> Atribuită';
-                                $theme_class = 'theme-cyan'; // Assigned
-                            } elseif ($status_db == 'completed') {
-                                $status_content = '<i class="fas fa-flag-checkered"></i> Finalizată';
-                                $theme_class = 'theme-green'; // Completed
-                            } else {
-                                $status_content = 'Livrată';
-                                $theme_class = 'theme-key'; // Delivered (Grey/Black)
+                    <div class="filter-group">
+                        <label>Sortare</label>
+                        <div class="sort-arrows">
+                            <i class="fa-solid fa-arrow-up arrow" data-value="ASC"></i>
+                            <i class="fa-solid fa-arrow-down arrow" data-value="DESC"></i>
+                            <input type="hidden" id="sort_order" name="sort_order" value="<?php echo $sort_order; ?>">
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="submit" style="display: none">Aplică filtre</button>
+                        <button type="button" id="resetFiltersBtn">Resetează filtre</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr style="display: none">
+                            <th>Nr. Comanda</th>
+                            <th>Client</th>
+                            <th>Info Comandă</th>
+                            <th>Din data</th>
+                            <th>Dată livrare</th>
+                            <th>Operator</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="styled-table-body">
+                        <?php
+                        if ($orders_result->num_rows > 0) {
+                            while ($row = $orders_result->fetch_assoc()) {
+                                $order_id = str_pad($row["order_id"], 3, '0', STR_PAD_LEFT);
+                                $order_date = formatDateWithoutYearWithDay($row["order_date"]) . ' ' . date('H:i', strtotime($row["order_time"]));
+                                $due_date = formatRemainingDays($row["due_date"], $row["status"], $row["delivery_date"] ?? null);
+                                $status_db = $row["status"] ?? 'neatribuită';
+
+                                // 1. Calculăm dacă termenul este depășit
+                                $is_overdue = false;
+                                if (!empty($row['due_date'])) {
+                                    $clean_date = date('Y-m-d', strtotime($row['due_date']));
+                                    $deadline_timestamp = strtotime($clean_date . ' 23:59:59');
+
+                                    if (time() > $deadline_timestamp && $status_db !== 'completed' && $status_db !== 'delivered') {
+                                        $is_overdue = true;
+                                    }
+                                }
+
+                                // 2. Heavy Theme Logic (CMYK Print Inspired)
+                                $theme_class = 'theme-default';
+                                $status_content = '';
+
+                                if ($is_overdue) {
+                                    $theme_class = 'theme-magenta'; // Urgent/Overdue
+                                    $icon = ($row["assigned_to"] == $_SESSION['user_id']) ? '<i class="fas fa-star"></i>' : '<i class="fa-solid fa-person-digging"></i>';
+                                    $status_content = $icon . ' Întârziată';
+                                } elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status_db != 'completed' && $status_db != 'delivered') {
+                                    $status_content = '<i class="fas fa-star"></i> În lucru';
+                                    $theme_class = 'theme-yellow'; // Current User
+                                } elseif ($status_db != "completed" && $status_db != "delivered") {
+                                    $status_content = '<i class="fa-solid fa-person-digging"></i> Atribuită';
+                                    $theme_class = 'theme-cyan'; // Assigned
+                                } elseif ($status_db == 'completed') {
+                                    $status_content = '<i class="fas fa-flag-checkered"></i> Finalizată';
+                                    $theme_class = 'theme-green'; // Completed
+                                } else {
+                                    $status_content = 'Livrată';
+                                    $theme_class = 'theme-key'; // Delivered (Grey/Black)
+                                }
+
+                                $due_date_display = $is_overdue ? "<span class='text-magenta' style='font-weight: 800;'>$due_date</span>" : $due_date;
+
+                                // 3. Randarea rândului cu clasele noi
+                                echo "<tr class='order-row heavy-row $theme_class' data-order-id='{$row["order_id"]}' onclick=\"window.location.href='view_order.php?order_id={$row["order_id"]}&return=" . urlencode($_SERVER['REQUEST_URI']) . "'\">";
+
+                                echo "<td><strong>#$order_id</strong></td>";
+                                echo "<td><span class='client-text'>" . htmlspecialchars($row["client_name"]) . "</span></td>";
+                                echo "<td><span class='details-text'>" . htmlspecialchars($row["order_details"]) . "</span></td>";
+                                echo "<td><div class='date-badge'><i class='fa-regular fa-calendar'></i> $order_date</div></td>";
+                                echo "<td><div class='date-badge'><i class='fa-regular fa-clock'></i> $due_date_display</div></td>";
+                                echo "<td><strong>" . htmlspecialchars($row["assigned_user"]) . "</strong></td>";
+
+                                // Heavy styling pe pilula de status
+                                echo "<td><span class='heavy-pill'>" . $status_content . "</span></td>";
+
+                                echo "</tr>";
                             }
-
-                            $due_date_display = $is_overdue ? "<span class='text-magenta' style='font-weight: 800;'>$due_date</span>" : $due_date;
-
-                            // 3. Randarea rândului cu clasele noi
-                            echo "<tr class='order-row heavy-row $theme_class' data-order-id='{$row["order_id"]}' onclick=\"window.location.href='view_order.php?order_id={$row["order_id"]}&return=" . urlencode($_SERVER['REQUEST_URI']) . "'\">";
-
-                            echo "<td><strong>#$order_id</strong></td>";
-                            echo "<td><span class='client-text'>" . htmlspecialchars($row["client_name"]) . "</span></td>";
-                            echo "<td><span class='details-text'>" . htmlspecialchars($row["order_details"]) . "</span></td>";
-                            echo "<td><div class='date-badge'><i class='fa-regular fa-calendar'></i> $order_date</div></td>";
-                            echo "<td><div class='date-badge'><i class='fa-regular fa-clock'></i> $due_date_display</div></td>";
-                            echo "<td><strong>" . htmlspecialchars($row["assigned_user"]) . "</strong></td>";
-
-                            // Heavy styling pe pilula de status
-                            echo "<td><span class='heavy-pill'>" . $status_content . "</span></td>";
-
-                            echo "</tr>";
+                        } else {
+                            echo "<tr><td colspan='7' style='text-align: center; padding: 3rem; background: #fff; border-radius: 12px;'>Nu există comenzi.</td></tr>";
                         }
-                    } else {
-                        echo "<tr><td colspan='7' style='text-align: center; padding: 3rem; background: #fff; border-radius: 12px;'>Nu există comenzi.</td></tr>";
-                    }
-                    ?>
-                </tbody>
-            </table>
+                        ?>
+                    </tbody>
+                </table>
+            </div>
             <div class="pagination">
                 <?php
                 // Ensure all variables are set and have valid values
