@@ -113,7 +113,7 @@ tbody tr:hover {
 }
 
 .heavy-row td {
-  padding: 16px 20px;
+  padding: 12px 16px;
   vertical-align: middle;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
@@ -312,7 +312,7 @@ div.pagination :hover {
 }
 
 /* Responsive layout for mobile devices */
-@media (min-width: 1024px) {
+@media (min-width: 1500px) {
   .container {
     display: flex;
     flex-direction: row;

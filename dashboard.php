@@ -1854,15 +1854,15 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                 // 3. Randarea rândului cu clasele noi
                                 echo "<tr class='order-row heavy-row $theme_class' data-order-id='{$row["order_id"]}' onclick=\"window.location.href='view_order.php?order_id={$row["order_id"]}&return=" . urlencode($_SERVER['REQUEST_URI']) . "'\">";
 
-                                echo "<td><strong>#$order_id</strong></td>";
-                                echo "<td><span class='client-text'>" . htmlspecialchars($row["client_name"]) . "</span></td>";
-                                echo "<td><span class='details-text'>" . htmlspecialchars($row["order_details"]) . "</span></td>";
-                                echo "<td><div class='date-badge'><i class='fa-regular fa-calendar'></i> $order_date</div></td>";
-                                echo "<td><div class='date-badge'><i class='fa-regular fa-clock'></i> $due_date_display</div></td>";
-                                echo "<td><strong>" . htmlspecialchars($row["assigned_user"]) . "</strong></td>";
+                                echo "<td data-label='Nr. Comanda'><strong>#$order_id</strong></td>";
+                                echo "<td data-label='Client'><span class='client-text'>" . htmlspecialchars($row["client_name"]) . "</span></td>";
+                                echo "<td data-label='Info Comandă'><span class='details-text'>" . htmlspecialchars($row["order_details"]) . "</span></td>";
+                                echo "<td data-label='Din data'><div class='date-badge'><i class='fa-regular fa-calendar'></i> $order_date</div></td>";
+                                echo "<td data-label='Dată livrare'><div class='date-badge'><i class='fa-regular fa-clock'></i> $due_date_display</div></td>";
+                                echo "<td data-label='Operator'><strong>" . htmlspecialchars($row["assigned_user"]) . "</strong></td>";
 
                                 // Heavy styling pe pilula de status
-                                echo "<td><span class='heavy-pill'>" . $status_content . "</span></td>";
+                                echo "<td data-label='Status'><span class='heavy-pill'>" . $status_content . "</span></td>";
 
                                 echo "</tr>";
                             }
