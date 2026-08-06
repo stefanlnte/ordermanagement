@@ -541,19 +541,24 @@ div.pagination :hover {
 }
 
 /* Modernized filter group container */
+/* Outer wrapper styling */
 .filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
   margin-top: 20px;
   padding: 12px 16px;
+  background: whitesmoke;
+  backdrop-filter: blur(6px);
+  border-radius: 10px;
+  border: 1px solid grey; /* Fixed missing border-style */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Inner form controls the item layout */
+.filters form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px; /* Adjust gap to your preferred value */
   justify-content: center;
   align-items: center;
-  background: whitesmoke;
-  backdrop-filter: blur(6px); /* glassmorphism effect */
-  border-radius: 10px;
-  border: 1px black;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 /* Individual filter group styling — echoes .date-badge's soft chip look */
