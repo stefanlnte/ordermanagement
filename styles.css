@@ -326,6 +326,110 @@ div.pagination :hover {
   }
 }
 
+/* =================================================================
+   MOBILE RESPONSIVE FLEXBOX STACKING
+   ================================================================ */
+@media (max-width: 1050px) {
+  /* Restrict the main container */
+  .table-responsive {
+    overflow-x: visible !important;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Force table elements to block level and keep them contained */
+  .table-responsive table,
+  .table-responsive tbody,
+  .table-responsive tr,
+  .table-responsive td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box; /* Prevents padding from breaking 100% width */
+  }
+
+  /* Hide the standard table header */
+  .table-responsive thead {
+    display: none;
+  }
+
+  /* Transform the row into a flexbox column card */
+  .heavy-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-left: 6px solid transparent;
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow: hidden; /* Clips any stubborn edges that try to break the card radius */
+  }
+
+  /* Assign theme colors to the full card's left border */
+  .heavy-row.theme-yellow {
+    border-left-color: #ffde00;
+  }
+  .heavy-row.theme-cyan {
+    border-left-color: #00aeef;
+  }
+  .heavy-row.theme-magenta {
+    border-left-color: red;
+  }
+  .heavy-row.theme-green {
+    border-left-color: #00c371;
+  }
+  .heavy-row.theme-key {
+    border-left-color: #a0aec0;
+  }
+
+  /* Flexbox alignment for individual cells */
+  .heavy-row td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px 16px;
+    border: none !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+    gap: 15px;
+    box-sizing: border-box;
+  }
+
+  /* Force right-side content to wrap and stay inside */
+  .heavy-row td > * {
+    flex: 1; /* Tells the content to adapt to remaining space */
+    min-width: 0; /* CRUCIAL: Overrides Flexbox's refusal to shrink text */
+    max-width: 65%; /* Hard limit so it doesn't eat into the label */
+    text-align: right;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    box-sizing: border-box;
+  }
+
+  /* Clean up border radiuses and bottom borders */
+  .heavy-row td:first-child {
+    border-left: none !important;
+  }
+
+  .heavy-row td:last-child {
+    border-bottom: none !important;
+  }
+
+  /* Inject the data labels on the left side of the flexed cell */
+  .heavy-row td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #2d3748;
+    text-align: left;
+    flex-shrink: 0;
+    width: 35%; /* Dedicated label width */
+    box-sizing: border-box;
+  }
+}
+
 .pagination {
   display: flex;
   justify-content: center;
