@@ -889,72 +889,6 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
         }
     </style>
 
-    <!-- Table Styling (Screen & Print) -->
-    <style>
-        table {
-            width: 100%;
-            max-width: 80mm;
-            /* Standard 80mm receipt width */
-            border-collapse: collapse;
-            border-spacing: 2px !important;
-            color: #000;
-            margin: 10px 0;
-            table-layout: fixed;
-            font-size: 13px;
-        }
-
-        /* Header & Cell Padding */
-        #bonTable th,
-        #bonTable td {
-            padding: 5px 2px;
-            vertical-align: top;
-            color: #000;
-        }
-
-        /* Receipt Divider Lines */
-        #bonTable thead th {
-            border-top: 1px dashed #000;
-            border-bottom: 1px dashed #000;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 10px;
-            letter-spacing: 0.5px;
-        }
-
-        /* Column Widths & Alignments */
-        /* 1. Article Name (Wraps text gracefully) */
-        #bonTable th:nth-child(1),
-        #bonTable td:nth-child(1) {
-            width: 52%;
-            text-align: left;
-            white-space: normal;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-
-        /* 2. Quantity (Centered) */
-        #bonTable th:nth-child(2),
-        #bonTable td:nth-child(2) {
-            width: 18%;
-            text-align: center;
-            white-space: nowrap;
-        }
-
-        /* 3. Unit Price (Right Aligned) */
-        #bonTable th:nth-child(3),
-        #bonTable td:nth-child(3) {
-            width: 30%;
-            text-align: right;
-            white-space: nowrap;
-        }
-
-        /* 4. Delete Action Column (Screen view only) */
-        #bonTable th:nth-child(4),
-        #bonTable td:nth-child(4) {
-            width: 35px;
-            text-align: center;
-        }
-    </style>
     <!-- Custom CSS for Select2 golden theme -->
     <style>
         /* Yellow theme for Select2 */
@@ -1146,8 +1080,18 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
         }
     </style>
 
-    <!-- Stil pentru adauga aricol -->
     <style>
+        table {
+            width: 100%;
+            max-width: 80mm;
+            /* Standard 80mm receipt width */
+            border-collapse: collapse;
+            border-spacing: 2px !important;
+            color: #000;
+            margin: 10px 0;
+            table-layout: fixed;
+        }
+
         /* Make column widths predictable */
         #bonTable {
             border-collapse: collapse;
