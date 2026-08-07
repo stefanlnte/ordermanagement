@@ -1092,6 +1092,10 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
             table-layout: fixed;
         }
 
+        tbody tr:hover {
+            background-color: transparent !important;
+        }
+
         /* Make column widths predictable */
         #bonTable {
             border-collapse: collapse;
@@ -1269,6 +1273,10 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
                 overflow: hidden !important;
                 position: relative !important;
                 line-height: 1.2;
+                font-size: 12px;
+            }
+
+            table {
                 font-size: 12px;
             }
 
