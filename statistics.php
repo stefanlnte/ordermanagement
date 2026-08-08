@@ -231,13 +231,21 @@ function getColorArray(array $series, array $userColors): array
 
         html,
         body {
-            margin: 0;
-            padding: 0;
+            margin: 30px;
             font-family: 'Poppins', sans-serif;
-            padding: 24px 16px;
             background-color: white;
             color: #1a1a1a;
             z-index: 1;
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari and Opera */
         }
 
         .stats-container {

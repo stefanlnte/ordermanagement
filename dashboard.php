@@ -1595,7 +1595,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             // Arrays defined entirely in JS
             const specificGreetings = {
                 8: {
-                    word: 'Motoarele pornite, o zi plină',
+                    word: 'Motoarele pornite, pregătin cafeaua!',
                     icon: 'fa-bolt'
                 },
                 9: {
@@ -1603,7 +1603,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     icon: 'fa-print'
                 },
                 10: {
-                    word: 'Forță pe producție, spor la treabă',
+                    word: 'Spor la treabă',
                     icon: 'fa-fire'
                 },
                 11: {
@@ -1611,11 +1611,11 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     icon: 'fa-clock'
                 },
                 12: {
-                    word: 'Ora prânzului, un mic respiro',
+                    word: 'Poftă bună',
                     icon: 'fa-utensils'
                 },
                 13: {
-                    word: 'Încărcăm bateriile, continuăm',
+                    word: 'Continuăm cu drag și spor',
                     icon: 'fa-battery-full'
                 },
                 14: {
@@ -1631,7 +1631,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     icon: 'fa-palette'
                 },
                 17: {
-                    word: 'Spre seară, finalizăm detaliile',
+                    word: 'Spre seară, finalizăm comenzile',
                     icon: 'fa-check-double'
                 },
                 18: {
