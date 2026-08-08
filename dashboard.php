@@ -2642,7 +2642,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
-    <footer class="dashboard-footer" data-aos="fade-in">
+    <footer class="dashboard-footer">
         <!-- Left Side: Logo & System Status -->
         <div class="footer-brand">
             <a href="dashboard.php" class="footer-logo-wrapper">
@@ -2652,16 +2652,25 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     style="width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none;">
                 </object>
             </a>
-            <span class="system-status"><span class="pulse-dot"></span> Online</span>
+            <span class="operator-context">
+                <i class="fa-solid fa-circle-user operator-icon"></i>
+                <span class="operator-label">Operator:</span>
+                <span class="operator-name">
+                    <?php
+                    // Safely output the logged-in user's name, or default to 'Necunoscut' (Unknown)
+                    echo isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Necunoscut';
+                    ?>
+                </span>
+            </span>
         </div>
 
         <!-- Right Side: Action Links -->
         <div class="footer-links">
             <a href="archive.php" class="footer-link">
-                <i class="fa-solid fa-box-archive"></i> Arhivă
+                <i class="fa-solid fa-box-archive" style="color:yellow;"></i> Arhivă
             </a>
             <a href="unpaid_orders.php" class="footer-link">
-                <i class="fa-solid fa-ban"></i> Comenzi nefacturate
+                <i class=" fa-solid fa-ban" style="color:yellow;"></i> Comenzi nefacturate
             </a>
         </div>
     </footer>

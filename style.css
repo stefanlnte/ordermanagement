@@ -155,7 +155,7 @@ footer {
   color: white;
   margin-left: 15px;
   padding-left: 15px;
-  border-left: 1px solid #444;
+  border-left: 1px solid white;
 }
 
 .pulse-dot {
@@ -187,6 +187,45 @@ footer {
 .footer-link:hover {
   color: #ffffff;
   transform: translateY(-1px);
+}
+
+/* Operator Context Container */
+.operator-context {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: white;
+  margin-left: 15px;
+  padding-left: 15px;
+  border-left: 1px solid white;
+}
+
+/* Optional: Give the icon a subtle accent color */
+.operator-icon {
+  color: yellow;
+  font-size: 14px;
+}
+
+.operator-label {
+  font-weight: 400;
+}
+
+/* Emphasize the dynamic username */
+.operator-name {
+  color: yellow;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Ensure it stacks cleanly on mobile devices */
+@media (max-width: 600px) {
+  .operator-context {
+    border-left: none;
+    margin-left: 0;
+    padding-left: 0;
+    justify-content: center;
+  }
 }
 
 /* Responsiveness for mobile screens */
