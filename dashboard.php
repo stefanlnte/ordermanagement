@@ -1815,7 +1815,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                 <div class="form-group">
                     <label for="assigned_to">Atribuie comanda lui:</label>
-                    <select id="assigned_to" name="assigned_to">
+                    <select required id="assigned_to" name="assigned_to">
+                        <option value="" disabled hidden selected>Operator</option>
                         <?php
                         // Exclude Nicolas and Adrian
                         $users_sql = "SELECT user_id, username FROM users WHERE user_id NOT IN (3, 4)";
