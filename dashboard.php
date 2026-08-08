@@ -1824,8 +1824,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                         if ($users_result->num_rows > 0) {
                             while ($user = $users_result->fetch_assoc()) {
-                                $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
-                                echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
+                                echo "<option value='" . $user['user_id'] . "'>" . $user['username'] . "</option>";
                             }
                         }
                         ?>
