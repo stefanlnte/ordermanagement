@@ -1614,6 +1614,172 @@ textarea {
   }
 }
 
+/* ================================================================
+   Hero Greeting Overlay — personalized welcome, floating on the video
+   ================================================================ */
+.hero-greeting-overlay {
+  position: absolute;
+  left: 18px;
+  bottom: 16px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(300px, calc(100% - 36px));
+  padding: 8px 14px 8px 8px;
+  border-radius: 14px;
+  background: rgba(10, 10, 10, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  color: white;
+}
+
+.hero-greeting-copy {
+  min-width: 0;
+}
+
+.hero-greeting-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  background: rgba(255, 204, 0, 0.18);
+  color: #ffcc00;
+  box-shadow: 0 0 0 1px rgba(255, 204, 0, 0.3);
+  animation: hero-icon-pulse 3s ease-in-out infinite;
+}
+
+@keyframes hero-icon-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.hero-greeting-text {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.1px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hero-greeting-name {
+  color: #ffcc00;
+}
+
+.hero-wave {
+  display: inline-block;
+  transform-origin: 70% 70%;
+  animation: hero-wave 2.4s ease-in-out infinite;
+  animation-delay: 0.4s;
+}
+
+@keyframes hero-wave {
+  0% {
+    transform: rotate(0deg);
+  }
+  10% {
+    transform: rotate(16deg);
+  }
+  20% {
+    transform: rotate(-8deg);
+  }
+  30% {
+    transform: rotate(16deg);
+  }
+  40% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+  60%,
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.hero-greeting-sub {
+  margin: 2px 0 0;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: capitalize;
+}
+
+.hero-status-pill-overlay {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.hero-status-pill-overlay.status-overdue {
+  color: #ffb3b3;
+  background: rgba(255, 68, 68, 0.35);
+}
+
+.hero-status-pill-overlay.status-active {
+  color: #ffe680;
+  background: rgba(255, 204, 0, 0.3);
+}
+
+.hero-status-pill-overlay.status-clear {
+  color: #8ef0b8;
+  background: rgba(0, 200, 81, 0.3);
+}
+
+@media (max-width: 600px) {
+  .hero-status-pill-overlay {
+    display: none;
+  }
+  .hero-greeting-overlay {
+    max-width: calc(100% - 36px);
+  }
+}
+
+@media (max-width: 400px) {
+  .hero-greeting-overlay {
+    padding: 6px 10px 6px 6px;
+    gap: 8px;
+  }
+  .hero-greeting-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+  }
+  .hero-greeting-text {
+    font-size: 0.8rem;
+  }
+  .hero-greeting-sub {
+    font-size: 0.62rem;
+  }
+}
+
 /* Containerul principal - Spațiere aerisită */
 .stats-banner {
   display: flex;

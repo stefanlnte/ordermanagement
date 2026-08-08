@@ -1554,14 +1554,143 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
         <div class="image-overlay"></div>
 
-        <object data-aos="zoom-in"
-            data-aos-easing="linear"
-            data-aos-duration="800"
-            type="image/svg+xml"
-            data="https://color-print.ro/magazincp/comenzi.svg"
-            style="width: 50%; height: 50%; position: absolute; top: 25%; left: 25%; z-index: 2; object-fit: contain;">
-        </object>
+        <!-- Wrapper-ul care gestionează EXCLUSIV centrarea absolută -->
+        <div style="width: 50%; height: 50%; position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">
+
+            <!-- Logo-ul care gestionează EXCLUSIV animația AOS -->
+            <object data-aos="zoom-in"
+                data-aos-easing="linear"
+                data-aos-duration="800"
+                type="image/svg+xml"
+                data="https://color-print.ro/magazincp/comenzi.svg"
+                style="width: 100%; height: 100%; object-fit: contain; display: block;">
+            </object>
+
+        </div>
+
+        <!-- Container greeting -->
+        <div class="hero-greeting-overlay" style="transform: scale(1.25); transform-origin: bottom left; max-width: 75%; white-space: normal;" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800">
+            <!-- Icon va fi injectat de JS -->
+            <div class="hero-greeting-icon" id="heroGreetingIcon"></div>
+
+            <div class="hero-greeting-copy" style="min-width: 0;">
+                <p class="hero-greeting-text" style="word-wrap: break-word; line-height: 1.3;">
+                    <!-- Mesajul va fi injectat de JS -->
+                    <span id="heroGreetingWord"></span>,
+                    <!-- PHP doar pentru numele utilizatorului -->
+                    <span class="hero-greeting-name"><?= htmlspecialchars(ucfirst($_SESSION['username'])); ?></span>
+                    <span class="hero-wave">👋</span>
+                </p>
+                <p class="hero-greeting-sub">
+                    <span id="heroGreetingDate"></span> ·
+                    <span id="heroGreetingClock"></span>
+                </p>
+            </div>
+        </div>
     </div>
+    </div>
+
+    <script>
+        (function() {
+            // Arrays defined entirely in JS
+            const specificGreetings = {
+                8: {
+                    word: 'Motoarele pornite, o zi plină',
+                    icon: 'fa-bolt'
+                },
+                9: {
+                    word: 'Să curgă printurile',
+                    icon: 'fa-print'
+                },
+                10: {
+                    word: 'Forță pe producție, spor la treabă',
+                    icon: 'fa-fire'
+                },
+                11: {
+                    word: 'Aproape prânz, menținem ritmul',
+                    icon: 'fa-clock'
+                },
+                12: {
+                    word: 'Ora prânzului, un mic respiro',
+                    icon: 'fa-utensils'
+                },
+                13: {
+                    word: 'Încărcăm bateriile, continuăm',
+                    icon: 'fa-battery-full'
+                },
+                14: {
+                    word: 'Creativitate la maxim',
+                    icon: 'fa-lightbulb'
+                },
+                15: {
+                    word: 'Continuăm ziua în forță',
+                    icon: 'fa-briefcase'
+                },
+                16: {
+                    word: 'Printăm la superlativ',
+                    icon: 'fa-palette'
+                },
+                17: {
+                    word: 'Spre seară, finalizăm detaliile',
+                    icon: 'fa-check-double'
+                },
+                18: {
+                    word: 'Bună seara, tragem linie',
+                    icon: 'fa-clipboard-list'
+                }
+            };
+
+            const genericGreeting = {
+                word: 'Sistem Color Print online. Bine ai venit',
+                icon: 'fa-power-off'
+            };
+
+            var dayNames = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă'];
+            var monthNames = ['ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie', 'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie'];
+
+            function getHourlyGreeting(hour) {
+                return specificGreetings[hour] || genericGreeting;
+            }
+
+            function pad(n) {
+                return n.toString().padStart(2, '0');
+            }
+
+            function updateHeroGreeting() {
+                var now = new Date();
+
+                // Update Clock & Date
+                var clockEl = document.getElementById('heroGreetingClock');
+                var dateEl = document.getElementById('heroGreetingDate');
+                if (clockEl) {
+                    clockEl.textContent = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+                }
+                if (dateEl) {
+                    dateEl.textContent = dayNames[now.getDay()] + ', ' + now.getDate() + ' ' + monthNames[now.getMonth()];
+                }
+
+                // Update Greeting Word & Icon
+                var hour = now.getHours();
+                var greetingData = getHourlyGreeting(hour);
+                var wordEl = document.getElementById('heroGreetingWord');
+                var iconEl = document.getElementById('heroGreetingIcon');
+
+                if (wordEl && iconEl) {
+                    // Only update the DOM if the text actually changed to save browser rendering resources
+                    if (wordEl.textContent !== greetingData.word) {
+                        wordEl.textContent = greetingData.word;
+                        iconEl.innerHTML = '<i class="fa-solid ' + greetingData.icon + '"></i>';
+                    }
+                }
+            }
+
+            // Call immediately on load to populate the empty HTML elements
+            updateHeroGreeting();
+            // Then update every second for the clock
+            setInterval(updateHeroGreeting, 1000);
+        })();
+    </script>
+
 
     <!-- Banner Statistici Rapide -->
     <div class="stats-banner" data-aos="fade-down" data-aos-duration="800">
