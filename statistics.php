@@ -100,6 +100,21 @@ while ($row = $result->fetch_assoc()) {
             box-sizing: border-box;
         }
 
+        /* Ascunde scrollbar-ul*/
+        html,
+        body {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari and Opera */
+        }
+
         .stats-container {
             max-width: 1000px;
             margin: 20px;
