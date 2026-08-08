@@ -2642,10 +2642,28 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         });
     </script>
 
-    <footer>
-        <a href="dashboard.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-house"></i> Pagina principală</a>
-        <a href="archive.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-box-archive"></i> Arhivă</a>
-        <a href="unpaid_orders.php" style="text-decoration: none; color: white;"><i class="fa-solid fa-ban"></i> Comenzi nefacturate</a>
+    <footer class="dashboard-footer" data-aos="fade-in">
+        <!-- Left Side: Logo & System Status -->
+        <div class="footer-brand">
+            <a href="dashboard.php" class="footer-logo-wrapper">
+                <object
+                    type="image/svg+xml"
+                    data="https://color-print.ro/magazincp/comenzi.svg"
+                    style="width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none;">
+                </object>
+            </a>
+            <span class="system-status"><span class="pulse-dot"></span> Online</span>
+        </div>
+
+        <!-- Right Side: Action Links -->
+        <div class="footer-links">
+            <a href="archive.php" class="footer-link">
+                <i class="fa-solid fa-box-archive"></i> Arhivă
+            </a>
+            <a href="unpaid_orders.php" class="footer-link">
+                <i class="fa-solid fa-ban"></i> Comenzi nefacturate
+            </a>
+        </div>
     </footer>
 
     <!-- Off-Canvas Order Slider Panel & Backdrop -->
