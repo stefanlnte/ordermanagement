@@ -1603,8 +1603,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     icon: 'fa-print'
                 },
                 10: {
-                    word: 'Spor la treabă',
-                    icon: 'fa-fire'
+                    word: 'Începem ziua cu idei proaspete',
+                    icon: 'fa-lightbulb'
                 },
                 11: {
                     word: 'Aproape prânz, menținem ritmul',
@@ -1623,19 +1623,19 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     icon: 'fa-lightbulb'
                 },
                 15: {
-                    word: 'Continuăm ziua în forță',
-                    icon: 'fa-briefcase'
+                    word: 'Lucrăm la detalii, rezultatul contează',
+                    icon: 'fa-eye'
                 },
                 16: {
                     word: 'Printăm la superlativ',
                     icon: 'fa-palette'
                 },
                 17: {
-                    word: 'Spre seară, finalizăm comenzile',
+                    word: 'Finalizăm comenzile',
                     icon: 'fa-check-double'
                 },
                 18: {
-                    word: 'Bună seara, tragem linie',
+                    word: 'Tragem linie',
                     icon: 'fa-clipboard-list'
                 }
             };
