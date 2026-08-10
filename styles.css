@@ -870,12 +870,6 @@ textarea {
   color: rgba(255, 255, 255, 0.62);
 }
 
-#notesFab.has-unread {
-  animation:
-    hero-action-in 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards,
-    hero-notes-alert 1.25s ease-in-out infinite 0.8s;
-}
-
 @keyframes hero-action-in {
   from {
     opacity: 0;
