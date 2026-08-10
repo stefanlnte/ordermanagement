@@ -1587,6 +1587,29 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </p>
             </div>
         </div>
+
+        <!-- Hero quick actions: Notes + WhatsApp -->
+        <div class="hero-actions-overlay" aria-label="Acțiuni rapide">
+            <button id="notesFab" class="hero-action-btn hero-action-notes" type="button" title="Notițe colegi" aria-label="Deschide notițele colegilor">
+                <span class="hero-action-icon">
+                    <i class="fa fa-users"></i>
+                </span>
+                <span class="hero-action-copy">
+                    <strong>Notițe</strong>
+                    <small>Colegi</small>
+                </span>
+            </button>
+
+            <button id="whatsappWidget" class="hero-action-btn hero-action-whatsapp" type="button" title="Trimite mesaj pe WhatsApp" aria-label="Deschide WhatsApp Sender">
+                <span class="hero-action-icon">
+                    <i class="fa-brands fa-whatsapp"></i>
+                </span>
+                <span class="hero-action-copy">
+                    <strong>WhatsApp</strong>
+                    <small>Sender</small>
+                </span>
+            </button>
+        </div>
     </div>
     </div>
 
@@ -2063,11 +2086,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
     </div>
 
-    <!-- Floating notes button -->
-    <button id="notesFab" class="notes-fab">
-        <i class="fa fa-users"></i>
-    </button>
-
     <!-- Notes Modal -->
     <div id="notesModal">
         <div class="notes-modal-content">
@@ -2110,11 +2128,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
     </div>
 
-
-    <!-- Floating Whatsapp Button -->
-    <div id="whatsappWidget" class="floating-widget" title="Trimite mesaj pe WhatsApp">
-        <i class="fa-brands fa-whatsapp"></i>
-    </div>
 
     <div id="whatsappModal" class="modal">
         <div class="modal-content whatsapp-modal">

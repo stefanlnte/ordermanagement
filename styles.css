@@ -767,49 +767,211 @@ textarea {
   border-radius: 5px;
 }
 
-/* ================================
-   FLOATING ACTION BUTTON (unchanged)
-   ================================ */
-#notesFab {
-  position: fixed;
-  top: 35%;
-  right: 24px;
+/* ================================================================
+   HERO QUICK ACTIONS — Notes + WhatsApp
+   Replaces the old fixed floating buttons.
+   ================================================================ */
+.hero-actions-overlay {
+  position: absolute;
+  top: 50%;
+  right: 22px;
+  z-index: 3;
   transform: translateY(-50%);
-  width: 56px;
-  height: 56px;
-  background: #ffeb3b;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: min(190px, 30vw);
+}
+
+.hero-action-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  min-height: 58px;
+  margin: 0;
+  padding: 8px 12px 8px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  color: #fff;
+  background: rgba(10, 10, 10, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(18px);
+  animation: hero-action-in 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    border-color 0.22s ease,
+    background 0.22s ease;
+}
+
+.hero-action-btn:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.hero-action-btn:hover {
+  transform: translateX(-3px) scale(1.025);
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(10, 10, 10, 0.66);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.42);
+}
+
+.hero-action-btn:active {
+  transform: translateX(-1px) scale(0.985);
+}
+
+.hero-action-icon {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  border-width: 0;
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
-  color: #212121;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  z-index: 1000;
-  transition:
-    box-shadow 0.2s,
-    transform 0.2s;
+  font-size: 1.05rem;
+  color: #ffcc00;
+  background: rgba(255, 204, 0, 0.18);
+  box-shadow: 0 0 0 1px rgba(255, 204, 0, 0.3);
+  animation: hero-action-icon-pulse 3s ease-in-out infinite;
 }
 
-#notesFab:hover {
-  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.3);
-  transform: translateY(-50%) scale(1.05);
+.hero-action-whatsapp .hero-action-icon {
+  color: #7dffad;
+  background: rgba(37, 211, 102, 0.16);
+  box-shadow: 0 0 0 1px rgba(37, 211, 102, 0.28);
+}
+
+.hero-action-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.hero-action-copy strong {
+  font-size: 0.84rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: 0.1px;
+}
+
+.hero-action-copy small {
+  font-size: 0.66rem;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.62);
 }
 
 #notesFab.has-unread {
-  animation: notesPulse 1.2s infinite;
+  animation:
+    hero-action-in 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    hero-notes-alert 1.25s ease-in-out infinite 0.8s;
 }
 
-@keyframes notesPulse {
-  0% {
-    transform: translateY(-50%) scale(1);
+@keyframes hero-action-in {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes hero-action-icon-pulse {
+  0%,
+  100% {
+    transform: scale(1);
   }
   50% {
-    transform: translateY(-50%) scale(1.15);
+    transform: scale(1.07);
   }
+}
+
+@keyframes hero-notes-alert {
+  0%,
   100% {
-    transform: translateY(-50%) scale(1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  }
+  50% {
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.42),
+      0 0 0 3px rgba(255, 235, 59, 0.28);
+  }
+}
+
+@media (max-width: 700px) {
+  .hero-actions-overlay {
+    right: 12px;
+    width: min(160px, 38vw);
+  }
+
+  .hero-action-btn {
+    min-height: 52px;
+    padding: 7px 9px 7px 7px;
+    gap: 8px;
+  }
+
+  .hero-action-icon {
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
+    font-size: 0.95rem;
+  }
+
+  .hero-action-copy strong {
+    font-size: 0.76rem;
+  }
+
+  .hero-action-copy small {
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-actions-overlay {
+    right: 10px;
+    width: auto;
+    gap: 8px;
+  }
+
+  .hero-action-btn {
+    width: 48px;
+    min-height: 48px;
+    padding: 5px;
+    justify-content: center;
+    border-radius: 12px;
+  }
+
+  .hero-action-icon {
+    margin: 0;
+  }
+
+  .hero-action-copy {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-action-btn,
+  .hero-action-icon,
+  #notesFab.has-unread {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .hero-action-btn {
+    transition: none;
   }
 }
 
@@ -1037,30 +1199,6 @@ textarea {
     opacity: 0;
     transform: translateY(-6px);
   }
-}
-
-/* Floating WhatsApp Icon */
-#whatsappWidget {
-  position: fixed;
-  top: calc(35% + 40px);
-  right: 24px;
-  background: #25d366;
-  color: white;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 28px;
-  cursor: pointer;
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.25);
-  z-index: 1000;
-  transition: transform 0.2s ease;
-}
-
-#whatsappWidget:hover {
-  transform: scale(1.1);
 }
 
 /* WhatsApp Modal Layout */
