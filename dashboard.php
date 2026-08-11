@@ -1759,35 +1759,35 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
     <div class="container">
         <div class="sidebar" data-aos="slide-right">
-            <h2>Adaugă Comandă</h2>
+            <h2><i class="fa-solid fa-receipt"></i> Adaugă Comandă</h2>
             <form id="orderForm" method="post" action="dashboard.php?<?= htmlspecialchars($_SERVER['QUERY_STRING']) ?>" autocomplete="off">
                 <input type="hidden" name="return"
                     value="<?= htmlspecialchars($_SERVER['QUERY_STRING'] ? 'dashboard.php?' . $_SERVER['QUERY_STRING'] : 'dashboard.php') ?>">
                 <input type="hidden" name="add_order" value="1">
-                <div class="form-group">
 
-                    <label for="client_id"><strong>Caută client:</strong></label>
+                <div class="form-group">
+                    <label for="client_id"><i class="fa-solid fa-magnifying-glass"></i> <strong>Caută client:</strong></label>
                     <select id="client_id" name="client_id" style="width: 70%; margin-right: 10px;">
                         <option value="">Caută</option>
                     </select>
                     <div id="edit_client_button" class="button" style="display:none; margin-top:10px;">
                         <button type="button">Editează client</button>
-
                     </div>
                 </div>
+
                 <div id="new_client_fields" class="form-group collapsible">
                     <div class="collapsible-inner">
                         <div class="flex-container">
                             <div class="form-group">
-                                <label for="client_name"><strong>Nume Client:</strong></label>
+                                <label for="client_name"><i class="fa-solid fa-user"></i> <strong>Nume Client:</strong></label>
                                 <input required placeholder="Prenume și Nume" type="text" id="client_name" name="client_name">
                             </div>
                             <div class="form-group">
-                                <label for="client_phone"><strong>Telefon Client:</strong></label>
+                                <label for="client_phone"><i class="fa-solid fa-phone"></i> <strong>Telefon Client:</strong></label>
                                 <input required placeholder="07XXXXXXXX" type="text" id="client_phone" name="client_phone" pattern="0[0-9]{9}" title="Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0">
                             </div>
                             <div class="form-group">
-                                <label for="client_email">Email Client:</label>
+                                <label for="client_email"><i class="fa-solid fa-envelope"></i> Email Client:</label>
                                 <input placeholder="colorprint_roman@yahoo.com" type="email" id="client_email" name="client_email">
                             </div>
                         </div>
@@ -1796,7 +1796,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </div>
 
                 <div class="form-group">
-                    <label for="order_details"><strong>Info Comandă:</strong></label>
+                    <label for="order_details"><i class="fa-solid fa-circle-info"></i> <strong>Info Comandă:</strong></label>
                     <textarea id="order_details"
                         name="order_details"
                         rows="4"
@@ -1806,17 +1806,17 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </div>
 
                 <div class="form-group">
-                    <label for="avans">Avans:</label>
+                    <label for="avans"><i class="fa-solid fa-coins"></i> Avans:</label>
                     <input placeholder="50% din total" type="number" id="avans" name="avans" max="9999" step="0.01">
                 </div>
 
                 <div class="form-group">
-                    <label for="datePickerSelect"><strong>Data Livrare:</strong></label>
+                    <label for="datePickerSelect"><i class="fa-solid fa-calendar-days"></i> <strong>Data Livrare:</strong></label>
                     <select id="datePickerSelect" name="due_date"></select>
                 </div>
 
                 <div class="form-group" style="display: none;">
-                    <label for="category_id">Categorie:</label>
+                    <label for="category_id"><i class="fa-solid fa-layer-group"></i> Categorie:</label>
                     <select id="category_id" name="category_id">
                         <?php
                         foreach ($categories as $category) {
@@ -1827,7 +1827,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </div>
 
                 <div class="form-group">
-                    <label for="assigned_to">Atribuie comanda lui:</label>
+                    <label for="assigned_to"><i class="fa-solid fa-user-check"></i> Atribuie comanda lui:</label>
                     <select required id="assigned_to" name="assigned_to">
                         <option value="" disabled hidden selected>Operator</option>
                         <?php
@@ -1843,6 +1843,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                         ?>
                     </select>
                 </div>
+
                 <div class="form-group">
                     <button class="button" type="submit">
                         <i class="fa-solid fa-circle-plus"></i> Adaugă Comandă

@@ -23,16 +23,42 @@
 }
 
 .sidebar {
-  flex: 0 0 250px; /* Adjust the width as needed */
+  flex: 0 0 250px;
   padding: 15px;
   order: 1;
-  position: relative; /* Required for pseudo-element */
+  position: relative;
   margin-left: 15px;
   margin-top: 30px;
   color: white;
-  box-shadow: 2px 3px 6px rgba(255, 255, 0, 0.5);
+  box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.5);
   background: linear-gradient(135deg, #000000 0%, #3c3c3c 50%, #6c6c6c 100%);
   border-radius: 15px;
+  /* Yellow borders on container */
+  border-left: 5px solid #ffde00;
+}
+
+/* Styled header with a yellow bottom accent border */
+.sidebar h2 {
+  color: #ffffff;
+  padding-bottom: 8px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #ffde00; /* Added yellow underline to header */
+}
+
+/* Header icon style */
+.sidebar h2 i {
+  color: #ffde00;
+  margin-right: 8px;
+}
+
+/* Ensure form label icons remain white */
+.sidebar label i {
+  color: #ffffff;
+  margin-right: 6px;
+}
+
+textarea {
+  margin-top: 10px;
 }
 
 /* Responsive Table Wrapper */
