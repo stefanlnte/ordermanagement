@@ -1723,6 +1723,14 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             $(document).on('mousedown', function(e) {
                 if ($(e.target).closest('#order_lookup_dropdown, #order_lookup').length) return;
                 closeDropdown();
+
+                // Clicking outside resets the field, not just closes the dropdown.
+                if (currentXhr) currentXhr.abort();
+                clearTimeout(debounceTimer);
+                $input.val('');
+                currentTerm = '';
+                results = [];
+                activeIndex = -1;
             });
 
             $(window).on('resize scroll', function() {
