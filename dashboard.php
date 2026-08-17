@@ -548,20 +548,27 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             });
         });
 
-        // Delay Select2 close to allow exit animation to play
+        // Add animating class on open
+        $(document).on('select2:open', function() {
+            $('.select2-dropdown').addClass('animating');
+
+            setTimeout(function() {
+                $('.select2-dropdown').removeClass('animating');
+            }, 500); // match animation duration
+        });
+
+        // Delay Select2 close to allow exit animation
         $(document).on('select2:closing', function(e) {
             var $dropdown = $('.select2-dropdown');
 
             if (!$dropdown.hasClass('is-closing')) {
-                e.preventDefault(); // Prevent immediate removal
+                e.preventDefault();
                 $dropdown.addClass('is-closing');
 
                 setTimeout(function() {
-                    var $target = $(e.target);
-                    $target.select2('close'); // Complete close action
-                }, 750); // 750ms matches the exit animation duration
+                    $(e.target).select2('close');
+                }, 500);
             } else {
-                // Reset class once fully closed for future opens
                 $dropdown.removeClass('is-closing');
             }
         });
@@ -1284,13 +1291,19 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         /* Animate Select2 dropdown opening */
         /* Animate Select2 dropdown opening */
         .select2-container--open .select2-dropdown {
-            animation: select2DropdownOpen 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: select2DropdownOpen 0.50s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             transform-origin: top center;
         }
 
         /* Animate Select2 dropdown closing */
         .select2-dropdown.is-closing {
-            animation: select2DropdownClose 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            animation: select2DropdownClose 0.50s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        }
+
+        /* Block interaction during animations */
+        .select2-dropdown.animating,
+        .select2-dropdown.is-closing {
+            pointer-events: none !important;
         }
 
         @keyframes select2DropdownOpen {
