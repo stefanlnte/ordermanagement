@@ -1329,6 +1329,61 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 transform: translateY(-8px) scaleY(0.96);
             }
         }
+
+        /* Order lookup: single-box search (no separate select2 search field) */
+        .order-lookup-input {
+            background-color: #fff;
+            border: 1px solid #a9a9a9;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            color: #333;
+            padding: 8px 10px;
+            padding-left: 30px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .order-lookup-input:focus {
+            border-color: #708090;
+            box-shadow: 0 0 5px rgba(169, 169, 169, 0.5);
+        }
+
+        #order_lookup_dropdown {
+            position: fixed;
+            display: none;
+            z-index: 1051;
+        }
+
+        #order_lookup_dropdown.select2-dropdown {
+            animation: select2DropdownOpen 0.50s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transform-origin: top center;
+        }
+
+        #order_lookup_dropdown.select2-dropdown.is-closing {
+            animation: select2DropdownClose 0.50s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        }
+
+        #order_lookup_dropdown.select2-dropdown.animating,
+        #order_lookup_dropdown.select2-dropdown.is-closing {
+            pointer-events: none !important;
+        }
+
+        #order_lookup_dropdown .select2-results__option {
+            cursor: pointer;
+        }
+
+        #order_lookup_dropdown .select2-results__option mark.highlight,
+        #order_lookup_dropdown .highlight {
+            background-color: #FFFF00;
+            padding: 0 1px;
+        }
+
+        #order_lookup_dropdown .select2-results__message {
+            padding: 12px;
+            color: #777;
+            font-size: 13px;
+        }
     </style>
 
     <!-- Sweet alert -->
@@ -1446,9 +1501,16 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                     <div class="header-search-wrap" data-aos="fade-down"
                         data-aos-easing="linear"
-                        data-aos-duration="800">
+                        data-aos-duration="800"
+                        style="position:relative;">
                         <i class="fa-solid fa-magnifying-glass header-search-icon" aria-hidden="true"></i>
-                        <select id="order_lookup" style="width:100%;"></select>
+                        <input type="text"
+                            id="order_lookup"
+                            class="order-lookup-input"
+                            style="width:100%;"
+                            autocomplete="off"
+                            spellcheck="false"
+                            placeholder="Căutare comandă (nr. comenzii, client, telefon, detalii comandă)...">
                     </div>
                 </form>
             </div>
@@ -1470,8 +1532,25 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
     <script>
         $(function() {
-            var orderLookup = $('#order_lookup');
-            if (!orderLookup.length) return;
+            var $input = $('#order_lookup');
+            if (!$input.length) return;
+
+            // Dropdown lives outside the header so it can never be clipped,
+            // same reasoning the old select2 config had (dropdownParent: body).
+            var $dropdown = $(
+                '<div id="order_lookup_dropdown" class="select2-dropdown header-order-search select2-container--default">' +
+                '<span class="select2-results"><ul class="select2-results__options"></ul></span>' +
+                '</div>'
+            ).appendTo('body');
+            var $list = $dropdown.find('.select2-results__options');
+
+            var currentTerm = '';
+            var currentXhr = null;
+            var debounceTimer = null;
+            var results = [];
+            var activeIndex = -1;
+            var isOpen = false;
+            var closeTimer = null;
 
             function highlightTerm(text, term) {
                 if (!text) return '';
@@ -1481,79 +1560,179 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 return text.replace(regex, '<span class="highlight">$1</span>');
             }
 
-            function getSearchTerm() {
-                var s2 = orderLookup.data('select2');
-                if (s2 && s2.dropdown && s2.dropdown.$search) {
-                    return s2.dropdown.$search.val() || '';
-                }
-                return '';
+            function renderOption(order, index) {
+                var term = currentTerm;
+                var phoneLine = order.client_phone ?
+                    '<div style="font-size:12px;color:#666;"><i class="fa-solid fa-phone" style="font-size:10px;"></i> ' + highlightTerm(order.client_phone, term) + '</div>' :
+                    '';
+                return $(
+                    '<li class="select2-results__option" role="option" data-index="' + index + '" aria-selected="false">' +
+                    '<div><strong>#' + order.id + '</strong> – ' + highlightTerm(order.client_name, term) + '</div>' +
+                    phoneLine +
+                    '<div style="font-size:12px;color:#555;">' + highlightTerm(order.order_details, term) + '</div>' +
+                    '<div style="font-size:11px;color:#999;">' + highlightTerm(order.detalii_suplimentare, term) + '</div>' +
+                    '</li>'
+                );
             }
 
-            orderLookup.select2({
-                placeholder: 'Căutare comandă (nr. comenzii, client, telefon, detalii comandă)...',
-                minimumInputLength: 1,
-                allowClear: true,
-                dropdownParent: $('body'),
-                dropdownCssClass: 'header-order-search',
-                width: '100%',
-                ajax: {
-                    url: 'search_orders.php',
-                    dataType: 'json',
-                    delay: 250,
-                    data: function(params) {
-                        return {
-                            search_orders: 1,
-                            q: params.term
-                        };
-                    },
-                    processResults: function(data) {
-                        return {
-                            results: data
-                        };
-                    },
-                    cache: true
-                },
-                templateResult: function(order) {
-                    if (!order.id) return order.text;
-                    var term = getSearchTerm();
-                    var phoneLine = order.client_phone ?
-                        '<div style="font-size:12px;color:#666;"><i class="fa-solid fa-phone" style="font-size:10px;"></i> ' + highlightTerm(order.client_phone, term) + '</div>' :
-                        '';
-                    return $(
-                        '<div>' +
-                        '<div><strong>#' + order.id + '</strong> – ' + highlightTerm(order.client_name, term) + '</div>' +
-                        phoneLine +
-                        '<div style="font-size:12px;color:#555;">' + highlightTerm(order.order_details, term) + '</div>' +
-                        '<div style="font-size:11px;color:#999;">' + highlightTerm(order.detalii_suplimentare, term) + '</div>' +
-                        '</div>'
-                    );
-                },
-                templateSelection: function(order) {
-                    return order.client_name ? '#' + order.id + ' – ' + order.client_name : order.text;
-                },
-                escapeMarkup: function(markup) {
-                    return markup;
-                }
-            }).on('select2:select', function(e) {
-                var orderId = e.params.data.id;
-                if (!orderId) return;
+            function positionDropdown() {
+                var rect = $input[0].getBoundingClientRect();
+                $dropdown.css({
+                    top: rect.bottom + 'px',
+                    left: rect.left + 'px',
+                    width: rect.width + 'px'
+                });
+            }
+
+            function setActive(index) {
+                $list.find('.select2-results__option').removeClass('select2-results__option--highlighted').attr('aria-selected', 'false');
+                activeIndex = index;
+                if (index < 0 || index >= results.length) return;
+                var $opt = $list.find('.select2-results__option[data-index="' + index + '"]');
+                $opt.addClass('select2-results__option--highlighted').attr('aria-selected', 'true');
+                var optEl = $opt[0];
+                if (optEl && optEl.scrollIntoView) optEl.scrollIntoView({
+                    block: 'nearest'
+                });
+            }
+
+            function selectOrder(order) {
+                if (!order || !order.id) return;
 
                 if (typeof window.openOrderSlider === 'function') {
-                    window.openOrderSlider(orderId);
+                    window.openOrderSlider(order.id);
                 } else {
                     var returnInput = document.querySelector('#lookupForm input[name="return"]');
                     var returnUrl = returnInput ? returnInput.value : '';
-                    window.location.href = 'view_order.php?order_id=' + orderId +
+                    window.location.href = 'view_order.php?order_id=' + order.id +
                         (returnUrl ? '&return=' + encodeURIComponent(returnUrl) : '');
                 }
 
-                orderLookup.val(null).trigger('change');
+                $input.val('');
+                currentTerm = '';
+                closeDropdown();
+                $input.trigger('blur');
+            }
+
+            function openDropdown() {
+                clearTimeout(closeTimer);
+                if (isOpen) return;
+                isOpen = true;
+                positionDropdown();
+                $dropdown.removeClass('is-closing').addClass('animating').show();
+                setTimeout(function() {
+                    $dropdown.removeClass('animating');
+                }, 260);
+            }
+
+            function closeDropdown() {
+                if (!isOpen) return;
+                isOpen = false;
+                activeIndex = -1;
+                $dropdown.addClass('is-closing');
+                closeTimer = setTimeout(function() {
+                    $dropdown.hide().removeClass('is-closing');
+                }, 260);
+            }
+
+            function showMessage(text) {
+                $list.html('<li class="select2-results__message">' + text + '</li>');
+            }
+
+            function fetchResults(term) {
+                if (currentXhr) currentXhr.abort();
+                currentXhr = $.ajax({
+                    url: 'search_orders.php',
+                    dataType: 'json',
+                    data: {
+                        search_orders: 1,
+                        q: term
+                    }
+                }).done(function(data) {
+                    results = data || [];
+                    $list.empty();
+                    if (!results.length) {
+                        showMessage('Niciun rezultat');
+                    } else {
+                        results.forEach(function(order, index) {
+                            $list.append(renderOption(order, index));
+                        });
+                    }
+                    activeIndex = -1;
+                    openDropdown();
+                }).fail(function(xhr, status) {
+                    if (status === 'abort') return;
+                    showMessage('Eroare la căutare');
+                    openDropdown();
+                });
+            }
+
+            // Typing directly in the visible field is all it takes — no second
+            // search box, one click (or focus) is enough to start searching.
+            $input.on('input', function() {
+                var term = $input.val().trim();
+                currentTerm = term;
+                clearTimeout(debounceTimer);
+
+                if (term.length < 1) {
+                    if (currentXhr) currentXhr.abort();
+                    closeDropdown();
+                    return;
+                }
+
+                debounceTimer = setTimeout(function() {
+                    fetchResults(term);
+                }, 250);
+            });
+
+            $input.on('focus', function() {
+                if (currentTerm.length >= 1 && results.length) openDropdown();
+            });
+
+            $input.on('keydown', function(e) {
+                if (!isOpen && (e.key === 'ArrowDown' || e.key === 'ArrowUp') && results.length) {
+                    openDropdown();
+                }
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setActive(Math.min(activeIndex + 1, results.length - 1));
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setActive(Math.max(activeIndex - 1, 0));
+                } else if (e.key === 'Enter') {
+                    if (activeIndex >= 0 && results[activeIndex]) {
+                        e.preventDefault();
+                        selectOrder(results[activeIndex]);
+                    }
+                } else if (e.key === 'Escape') {
+                    closeDropdown();
+                }
+            });
+
+            $list.on('mouseenter', '.select2-results__option', function() {
+                setActive(parseInt($(this).data('index'), 10));
+            });
+
+            $list.on('mousedown', '.select2-results__option', function(e) {
+                // mousedown (not click) so it fires before the input's blur/close
+                e.preventDefault();
+                var index = parseInt($(this).data('index'), 10);
+                if (results[index]) selectOrder(results[index]);
+            });
+
+            $(document).on('mousedown', function(e) {
+                if ($(e.target).closest('#order_lookup_dropdown, #order_lookup').length) return;
+                closeDropdown();
+            });
+
+            $(window).on('resize scroll', function() {
+                if (isOpen) positionDropdown();
             });
 
             document.addEventListener('keydown', function(e) {
                 if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
                     e.preventDefault();
-                    orderLookup.select2('open');
+                    $input.trigger('focus');
                 }
             });
         });
