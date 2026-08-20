@@ -2045,6 +2045,30 @@ textarea {
   box-shadow: 0 15px 30px rgba(0, 200, 81, 0.25); /* Glow verde */
 }
 
+/* 🟠 Card De livrat azi (finalizate cu livrare programată azi) */
+.card-deliver-today {
+  border-left: 4px solid #ff8800;
+}
+.card-deliver-today .stat-icon {
+  background: rgba(255, 136, 0, 0.15);
+  color: #ff8800;
+}
+.card-deliver-today:hover {
+  box-shadow: 0 15px 30px rgba(255, 136, 0, 0.25);
+}
+
+/* 🔵 Card Livrate azi */
+.card-delivered-today {
+  border-left: 4px solid #33b5e5;
+}
+.card-delivered-today .stat-icon {
+  background: rgba(51, 181, 229, 0.15);
+  color: #33b5e5;
+}
+.card-delivered-today:hover {
+  box-shadow: 0 15px 30px rgba(51, 181, 229, 0.25);
+}
+
 /* ================================
    OFF-CANVAS ORDER SLIDER PANEL
    ================================ */

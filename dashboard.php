@@ -187,26 +187,25 @@ $total_stmt->close();
 $total_pages = ceil($total_orders / $limit);
 
 // --- STATISTICI RAPIDE PENTRU CARDS ---
-
-// 1. Număr comenzi cu Termen Depășit (Strict cele cu status 'assigned' care au depășit data curentă)
-$stats_overdue_sql = "SELECT COUNT(*) as total 
-                      FROM orders 
-                      WHERE status = 'assigned' 
-                      AND due_date < CURDATE() ";
-$stats_overdue_res = $conn->query($stats_overdue_sql);
-$stats_overdue = $stats_overdue_res ? $stats_overdue_res->fetch_assoc()['total'] : 0;
-
-// 2. Număr comenzi În Lucru / Atribuite (active, dar care nu sunt marcate ca finalizate sau livrate)
-$stats_active_sql = "SELECT COUNT(*) as total FROM orders WHERE status = 'assigned'";
-$stats_active_res = $conn->query($stats_active_sql);
-$stats_active = $stats_active_res ? $stats_active_res->fetch_assoc()['total'] : 0;
-
-// 3. Număr comenzi Finalizate (Include toate comenzile gata, chiar dacă au termenul depășit în trecut)
-$stats_completed_sql = "SELECT COUNT(*) as total 
-                        FROM orders 
-                        WHERE status = 'completed'";
-$stats_completed_res = $conn->query($stats_completed_sql);
-$stats_completed = $stats_completed_res ? $stats_completed_res->fetch_assoc()['total'] : 0;
+// Un singur query cu agregare condițională înlocuiește cele 3 COUNT(*) separate.
+$stats_sql = "SELECT
+                SUM(status = 'assigned' AND due_date < CURDATE())              AS overdue,
+                SUM(status = 'assigned')                                       AS active,
+                SUM(status = 'completed')                                      AS completed,
+                SUM(status = 'assigned' AND due_date = CURDATE())              AS deliver_today,
+                SUM(status = 'delivered' AND DATE(delivery_date) = CURDATE())  AS delivered_today,
+                SUM(status = 'delivered')                                      AS delivered_total,
+                SUM(status = 'cancelled')                                      AS cancelled_total
+              FROM orders";
+$stats_res = $conn->query($stats_sql);
+$stats_row = $stats_res ? $stats_res->fetch_assoc() : [];
+$stats_overdue    = (int)($stats_row['overdue'] ?? 0);
+$stats_active     = (int)($stats_row['active'] ?? 0);
+$stats_completed  = (int)($stats_row['completed'] ?? 0);
+$stats_deliver_today = (int)($stats_row['deliver_today'] ?? 0);
+$stats_delivered_today = (int)($stats_row['delivered_today'] ?? 0);
+$stats_delivered_total = (int)($stats_row['delivered_total'] ?? 0);
+$stats_cancelled_total = (int)($stats_row['cancelled_total'] ?? 0);
 
 // Handle form submission for adding an order
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
@@ -913,7 +912,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
             function animateStatCards(currentSection, updatedSection) {
                 if (!currentSection || !updatedSection) return;
-                const keys = ['card-overdue', 'card-active', 'card-completed'];
+                const keys = ['card-overdue', 'card-active', 'card-completed', 'card-deliver-today', 'card-delivered-today'];
 
                 keys.forEach(key => {
                     const numberEl = currentSection.querySelector(`.${key} h3`);
@@ -1931,6 +1930,24 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             <div class="stat-info">
                 <h3><?= $stats_completed; ?></h3>
                 <p>Finalizate</p>
+            </div>
+        </div>
+
+        <!-- Card De livrat azi (finalizate cu delivery_date = azi) -->
+        <div class="stat-card card-deliver-today">
+            <div class="stat-icon"><i class="fa-solid fa-truck-fast"></i></div>
+            <div class="stat-info">
+                <h3><?= $stats_deliver_today; ?></h3>
+                <p>De livrat azi</p>
+            </div>
+        </div>
+
+        <!-- Card Livrate azi -->
+        <div class="stat-card card-delivered-today">
+            <div class="stat-icon"><i class="fa-solid fa-flag-checkered"></i></div>
+            <div class="stat-info">
+                <h3><?= $stats_delivered_today; ?></h3>
+                <p>Livrate azi</p>
             </div>
         </div>
     </div>
