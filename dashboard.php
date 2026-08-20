@@ -82,15 +82,13 @@ $limit = 18;                                         // Număr de comenzi pe pag
 $offset = ($page - 1) * $limit;                      // Offset-ul pentru paginare
 
 // Construim query-ul pentru selectarea comenzilor cu filtre și sortare
-$order_sql = "SELECT o.*, c.client_name, u.username as assigned_user, cat.category_name, o.delivery_date FROM orders o 
-              JOIN clients c ON o.client_id = c.client_id 
-              LEFT JOIN users u ON o.assigned_to = u.user_id 
-              LEFT JOIN categories cat ON o.category_id = cat.category_id 
+$order_sql = "SELECT SQL_CALC_FOUND_ROWS o.*, c.client_name, u.username as assigned_user, cat.category_name, o.delivery_date FROM orders o
+              JOIN clients c ON o.client_id = c.client_id
+              LEFT JOIN users u ON o.assigned_to = u.user_id
+              LEFT JOIN categories cat ON o.category_id = cat.category_id
               WHERE 1=1"; // WHERE 1=1 pentru a putea adăuga condiții dinamice
 
 // Inițializăm variabile pentru parametrii și tipurile lor (pentru prepared statements)
-$total_params = [];
-$total_types = '';
 $params = [];
 $types = '';
 
@@ -140,48 +138,10 @@ $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $orders_result = $stmt->get_result();
 
-// Construim query-ul pentru numărul total de comenzi (pentru paginare)
-$total_orders_sql = "SELECT COUNT(*) as total 
-FROM orders o
-JOIN clients c ON o.client_id = c.client_id
-LEFT JOIN users u ON o.assigned_to = u.user_id
-LEFT JOIN categories cat ON o.category_id = cat.category_id
-WHERE 1=1";
-
-if ($status_filter !== 'delivered' && $status_filter !== 'cancelled') {
-    $total_orders_sql .= " AND o.status NOT IN ('delivered', 'cancelled')";
-}
-if ($status_filter) {
-    $total_orders_sql .= " AND o.status = ?";
-    $total_params[] = $status_filter;
-    $total_types .= 's';
-}
-if ($assigned_filter) {
-    $total_orders_sql .= " AND o.assigned_to = ?";
-    $total_params[] = $assigned_filter;
-    $total_types .= 'i';
-}
-if ($category_filter) {
-    $total_orders_sql .= " AND o.category_id = ?";
-    $total_params[] = $category_filter;
-    $total_types .= 'i';
-}
-if ($client_filter) {
-    $total_orders_sql .= " AND o.client_id = ?";
-    $total_params[] = $client_filter;
-    $total_types .= 'i';
-}
-
-// Pregătim și executăm query-ul pentru numărul total de comenzi
-$total_stmt = $conn->prepare($total_orders_sql);
-if (!empty($total_types)) {
-    $total_stmt->bind_param($total_types, ...$total_params);
-}
-
-$total_stmt->execute();
-$total_result = $total_stmt->get_result();
-$total_orders = $total_result->fetch_assoc()['total']; // Extragem numărul total
-$total_stmt->close();
+// Numărul total de comenzi (pentru paginare) — folosim FOUND_ROWS() pentru a
+// evita al doilea query cu aceleași condiții WHERE. Returnează numărul de rânduri
+// care s-ar fi potrivit fără clauza LIMIT/OFFSET, exact ce ne trebuie pentru $total_pages.
+$total_orders = (int) $conn->query("SELECT FOUND_ROWS() AS total")->fetch_assoc()['total'];
 
 // Calculăm numărul total de pagini
 $total_pages = ceil($total_orders / $limit);
@@ -206,6 +166,11 @@ $stats_deliver_today = (int)($stats_row['deliver_today'] ?? 0);
 $stats_delivered_today = (int)($stats_row['delivered_today'] ?? 0);
 $stats_delivered_total = (int)($stats_row['delivered_total'] ?? 0);
 $stats_cancelled_total = (int)($stats_row['cancelled_total'] ?? 0);
+
+// --- LISTA DE OPERATORI (filtrare users) ---
+// Același query se executa de 3 ori (dropdown "Atribuie", filtru "Operator", dropdown "Trimite către").
+// Extras într-un include partajat, folosit și de view_order.php.
+include 'get_operators.php';
 
 // Handle form submission for adding an order
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_order'])) {
@@ -390,15 +355,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 $('#status_filter, #assigned_filter, #category_filter, #assigned_to, #category_id').select2({
                     dropdownAutoWidth: true,
                     width: 'auto'
-                });
-            });
-
-            $(function() {
-                $('#noteReceiver').select2({
-                    dropdownParent: $('#notesModal'),
-                    width: '200px',
-                    placeholder: "Alege colegul",
-                    allowClear: true
                 });
             });
 
@@ -2048,14 +2004,8 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <select required id="assigned_to" name="assigned_to">
                         <option value="" disabled hidden selected>Operator</option>
                         <?php
-                        // Exclude Nicolas and Adrian
-                        $users_sql = "SELECT user_id, username FROM users WHERE user_id NOT IN (3, 4)";
-                        $users_result = $conn->query($users_sql);
-
-                        if ($users_result->num_rows > 0) {
-                            while ($user = $users_result->fetch_assoc()) {
-                                echo "<option value='" . $user['user_id'] . "'>" . $user['username'] . "</option>";
-                            }
+                        foreach ($operators as $user) {
+                            echo "<option value='" . $user['user_id'] . "'>" . $user['username'] . "</option>";
                         }
                         ?>
                     </select>
@@ -2118,14 +2068,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                         <select id="assigned_filter" name="assigned_filter">
                             <option value="">Toți</option>
                             <?php
-                            // Exclude Nicolas and Adrian
-                            $users_sql = "SELECT user_id, username FROM users WHERE user_id NOT IN (3, 4)";
-                            $users_result = $conn->query($users_sql);
-                            if ($users_result->num_rows > 0) {
-                                while ($user = $users_result->fetch_assoc()) {
-                                    $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
-                                    echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
-                                }
+                            foreach ($operators as $user) {
+                                $selected = ($assigned_filter == $user['user_id']) ? 'selected' : '';
+                                echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
                             }
                             ?>
                         </select>
@@ -2293,47 +2238,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             </div>
         </div>
     </div>
-
-    <!-- Notes Modal -->
-    <div id="notesModal">
-        <div class="notes-modal-content">
-
-            <div class="notes-header">
-                <h4><i class="fa-solid fa-note-sticky"></i> Notițe colegi</h4>
-                <button class="notes-close-btn" id="notesClose">&times;</button>
-            </div>
-
-            <div class="notes-body">
-
-                <label for="noteReceiver">Trimite către:</label>
-                <select id="noteReceiver" style="width: 200px;">
-                    <option value="">Alege colegul</option>
-                    <?php
-                    $uid = $_SESSION['user_id'];
-
-                    $users = $conn->query("
-    SELECT user_id, username 
-    FROM users 
-    WHERE user_id NOT IN ($uid, 3, 4)
-    ORDER BY username
-");
-                    while ($u = $users->fetch_assoc()) {
-                        echo "<option value='{$u['user_id']}'>{$u['username']}</option>";
-                    }
-                    ?>
-                </select>
-
-                <div class="notes-list">
-                    <ul id="notesList"></ul>
-                </div>
-
-                <div class="notes-input">
-                    <textarea id="noteText" placeholder="Scrie o notiță pentru colegul tău..." rows="6" cols="60"></textarea>
-                    <button id="sendNoteBtn">Trimite</button>
-                </div>
-
-            </div>
-        </div>
     </div>
 
 

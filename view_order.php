@@ -82,15 +82,8 @@ $client_phone = $client_row['client_phone'] ?? 'Unknown';
 $client_email = $client_row['client_email'] ?? 'Unknown';
 $stmt->close();
 
-// Fetch all users for the "assigned to" dropdown
-$users_sql = "SELECT user_id, username FROM users WHERE role = 'operator'";
-$users_result = $conn->query($users_sql);
-$users = [];
-if ($users_result->num_rows > 0) {
-    while ($row = $users_result->fetch_assoc()) {
-        $users[] = $row;
-    }
-}
+// Fetch operators for the "assigned to" dropdown — query partajat cu dashboard.php
+include 'get_operators.php';
 ?>
 
 <?php $returnUrl = $_GET['return'] ?? 'dashboard.php'; ?>
@@ -1418,14 +1411,10 @@ $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_time
                 <label for="assigned_to">Atribuie comanda lui:</label>
                 <select id="assigned_to" name="assigned_to">
                     <?php
-                    // Exclude Nicolas and Adrian
-                    $users_sql = "SELECT user_id, username FROM users WHERE user_id NOT IN (3, 4)";
-                    $users_result = $conn->query($users_sql);
-
-                    if ($users_result->num_rows > 0) {
-                        while ($user = $users_result->fetch_assoc()) {
-                            echo "<option value='" . $user['user_id'] . "'>" . $user['username'] . "</option>";
-                        }
+                    // Folosim lista de operatori calculată o singură dată în dashboard.php
+                    foreach ($operators as $user) {
+                        $selected = ((int)$order['assigned_to'] === (int)$user['user_id']) ? 'selected' : '';
+                        echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
                     }
                     ?>
                 </select>
