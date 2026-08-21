@@ -147,7 +147,7 @@ $total_orders = (int) $conn->query("SELECT FOUND_ROWS() AS total")->fetch_assoc(
 $total_pages = ceil($total_orders / $limit);
 
 // --- STATISTICI RAPIDE PENTRU CARDS ---
-// Un singur query cu agregare condițională înlocuiește cele 3 COUNT(*) separate.
+// Un singur query cu agregare condițională.
 $stats_sql = "SELECT
                 SUM(status = 'assigned' AND due_date < CURDATE())              AS overdue,
                 SUM(status = 'assigned')                                       AS active,

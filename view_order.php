@@ -55,13 +55,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_due_date'])) {
     $stmt->close();
 }
 
-// Fetch order details including assigned_to, created_by, and status
-$order_sql = "SELECT o.*, 
+// Fetch order + client details in a single query
+$order_sql = "SELECT o.*,
                    u.username as assigned_user,
-                   cu.username as created_user 
-              FROM orders o 
-              LEFT JOIN users u ON o.assigned_to = u.user_id 
-              LEFT JOIN users cu ON o.created_by = cu.user_id 
+                   cu.username as created_user,
+                   c.client_name,
+                   c.client_phone,
+                   c.client_email
+              FROM orders o
+              LEFT JOIN users u  ON u.user_id  = o.assigned_to
+              LEFT JOIN users cu ON cu.user_id = o.created_by
+              LEFT JOIN clients c ON c.client_id = o.client_id
               WHERE o.order_id = ?";
 $stmt = $conn->prepare($order_sql);
 $stmt->bind_param("i", $order_id);
@@ -70,17 +74,9 @@ $order_result = $stmt->get_result();
 $order = $order_result->fetch_assoc();
 $stmt->close();
 
-// Fetch client details
-$client_sql = "SELECT client_name, client_phone, client_email FROM clients WHERE client_id = ?";
-$stmt = $conn->prepare($client_sql);
-$stmt->bind_param("i", $order['client_id']);
-$stmt->execute();
-$client_result = $stmt->get_result();
-$client_row = $client_result->fetch_assoc();
-$client_name = $client_row['client_name'] ?? 'Unknown';
-$client_phone = $client_row['client_phone'] ?? 'Unknown';
-$client_email = $client_row['client_email'] ?? 'Unknown';
-$stmt->close();
+$client_name  = $order['client_name']  ?? 'Unknown';
+$client_phone = $order['client_phone'] ?? 'Unknown';
+$client_email = $order['client_email'] ?? 'Unknown';
 
 // Fetch operators for the "assigned to" dropdown — query partajat cu dashboard.php
 include 'get_operators.php';
