@@ -81,12 +81,8 @@ $page = $_GET['page'] ?? 1;                          // Pagina curentă pentru p
 $limit = 18;                                         // Număr de comenzi pe pagină
 $offset = ($page - 1) * $limit;                      // Offset-ul pentru paginare
 
-// Construim query-ul pentru selectarea comenzilor cu filtre și sortare
-$order_sql = "SELECT SQL_CALC_FOUND_ROWS o.*, c.client_name, u.username as assigned_user, cat.category_name, o.delivery_date FROM orders o
-              JOIN clients c ON o.client_id = c.client_id
-              LEFT JOIN users u ON o.assigned_to = u.user_id
-              LEFT JOIN categories cat ON o.category_id = cat.category_id
-              WHERE 1=1"; // WHERE 1=1 pentru a putea adăuga condiții dinamice
+// Construim clauza WHERE (comună pentru query-ul de date și cel de numărare)
+$where_sql = " WHERE 1=1"; // WHERE 1=1 pentru a putea adăuga condiții dinamice
 
 // Inițializăm variabile pentru parametrii și tipurile lor (pentru prepared statements)
 $params = [];
@@ -94,30 +90,37 @@ $types = '';
 
 // Excludem comenzile cu status 'delivered' și 'cancelled' în mod implicit
 if ($status_filter !== 'delivered' && $status_filter !== 'cancelled') {
-    $order_sql .= " AND o.status NOT IN ('delivered', 'cancelled') ";
+    $where_sql .= " AND o.status NOT IN ('delivered', 'cancelled') ";
 }
 
 // Adăugăm filtre dinamice în funcție de parametrii primiți
 if ($status_filter) {
-    $order_sql .= " AND o.status = ?";
+    $where_sql .= " AND o.status = ?";
     $params[] = $status_filter;
     $types .= 's'; // string
 }
 if ($assigned_filter) {
-    $order_sql .= " AND o.assigned_to = ?";
+    $where_sql .= " AND o.assigned_to = ?";
     $params[] = $assigned_filter;
     $types .= 'i'; // integer
 }
 if ($category_filter) {
-    $order_sql .= " AND o.category_id = ?";
+    $where_sql .= " AND o.category_id = ?";
     $params[] = $category_filter;
     $types .= 'i';
 }
 if ($client_filter) {
-    $order_sql .= " AND o.client_id = ?";
+    $where_sql .= " AND o.client_id = ?";
     $params[] = $client_filter;
     $types .= 'i';
 }
+
+// Query-ul pentru selectarea comenzilor cu filtre și sortare
+$order_sql = "SELECT o.*, c.client_name, u.username as assigned_user, cat.category_name, o.delivery_date FROM orders o
+              JOIN clients c ON o.client_id = c.client_id
+              LEFT JOIN users u ON o.assigned_to = u.user_id
+              LEFT JOIN categories cat ON o.category_id = cat.category_id"
+              . $where_sql;
 
 // Adăugăm sortarea și paginarea
 // Override sorting when filtering delivered orders
@@ -128,20 +131,30 @@ if ($status_filter === 'delivered') {
 }
 
 $order_sql .= " LIMIT ? OFFSET ?";
-$params[] = $limit;
-$params[] = $offset;
-$types .= 'ii'; // integer, integer
+$data_params = array_merge($params, [$limit, $offset]);
+$data_types = $types . 'ii'; // integer, integer
 
 // Pregătim și executăm query-ul pentru comenzile filtrate
 $stmt = $conn->prepare($order_sql);
-$stmt->bind_param($types, ...$params);
+$stmt->bind_param($data_types, ...$data_params);
 $stmt->execute();
 $orders_result = $stmt->get_result();
 
-// Numărul total de comenzi (pentru paginare) — folosim FOUND_ROWS() pentru a
-// evita al doilea query cu aceleași condiții WHERE. Returnează numărul de rânduri
-// care s-ar fi potrivit fără clauza LIMIT/OFFSET, exact ce ne trebuie pentru $total_pages.
-$total_orders = (int) $conn->query("SELECT FOUND_ROWS() AS total")->fetch_assoc()['total'];
+// Numărul total de comenzi (pentru paginare) — în loc de SQL_CALC_FOUND_ROWS
+// (care forțează numărarea tuturor rândurilor ce se potrivesc, indiferent de
+// LIMIT, și nu poate folosi eficient un index "covering"), rulăm un COUNT(*)
+// separat cu aceleași condiții WHERE, dar fără JOIN-urile inutile (nu avem
+// nevoie de coloane din clients/users/categories doar ca să numărăm rândurile).
+// Pe tabele mari, cu index pe o.status/coloanele filtrate, varianta asta este
+// de regulă mai rapidă decât SQL_CALC_FOUND_ROWS.
+$count_sql = "SELECT COUNT(*) AS total FROM orders o" . $where_sql;
+$count_stmt = $conn->prepare($count_sql);
+if ($types !== '') {
+    $count_stmt->bind_param($types, ...$params);
+}
+$count_stmt->execute();
+$total_orders = (int) $count_stmt->get_result()->fetch_assoc()['total'];
+$count_stmt->close();
 
 // Calculăm numărul total de pagini
 $total_pages = ceil($total_orders / $limit);
