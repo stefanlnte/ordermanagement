@@ -352,6 +352,23 @@ div.pagination :hover {
   }
 }
 
+@media (max-width: 1500px) {
+  .stats-banner {
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px 15px;
+    width: 75%;
+    justify-self: center;
+  }
+  .stat-card {
+    padding: 18px 22px;
+  }
+  .stat-info h3 {
+    font-size: 2.2rem;
+    justify-content: end;
+  }
+}
+
 /* =================================================================
    MOBILE RESPONSIVE FLEXBOX STACKING
    ================================================================ */
@@ -2159,24 +2176,4 @@ textarea {
 #orderSliderBackdrop.open {
   display: block;
   opacity: 1;
-}
-
-@media (max-width: 768px) {
-  #orderSliderPanel {
-    width: 100%;
-  }
-}
-/* Responsivitate pentru ecrane mici */
-@media (max-width: 768px) {
-  .stats-banner {
-    flex-direction: column;
-    gap: 15px;
-    margin: 20px 15px;
-  }
-  .stat-card {
-    padding: 18px 22px;
-  }
-  .stat-info h3 {
-    font-size: 2.2rem;
-  }
 }
