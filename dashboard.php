@@ -2407,20 +2407,36 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                 if (finishBtn) {
                     finishBtn.onclick = function() {
-                        if (confirm('Marcați comanda #' + orderId + ' ca terminată?')) {
-                            quickUpdateOrderStatus(orderId, 'completed', {}, instance);
-                        }
+                        Swal.fire({
+                            title: 'Marcați comanda #' + orderId + ' ca terminată?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Da',
+                            cancelButtonText: 'Anulează'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                quickUpdateOrderStatus(orderId, 'completed', {}, instance);
+                            }
+                        });
                     };
                 }
 
                 if (deliverBtn) {
                     deliverBtn.onclick = function() {
-                        if (confirm('Marcați comanda #' + orderId + ' ca livrată?')) {
-                            const currentDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
-                            quickUpdateOrderStatus(orderId, 'delivered', {
-                                delivery_date: currentDate
-                            }, instance);
-                        }
+                        Swal.fire({
+                            title: 'Marcați comanda #' + orderId + ' ca livrată?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Da',
+                            cancelButtonText: 'Anulează'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const currentDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+                                quickUpdateOrderStatus(orderId, 'delivered', {
+                                    delivery_date: currentDate
+                                }, instance);
+                            }
+                        });
                     };
                 }
 
