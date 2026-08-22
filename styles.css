@@ -365,7 +365,6 @@ div.pagination :hover {
   }
   .stat-info h3 {
     font-size: 2.2rem;
-    justify-content: end;
   }
 }
 
@@ -2000,6 +1999,7 @@ textarea {
   color: #ffffff; /* Alb curat pentru lizibilitate maximă */
   line-height: 1.1;
   font-family: 'Segoe UI', Roboto, sans-serif;
+  justify-content: end;
 }
 
 /* Textul descriptiv secundar */

@@ -120,7 +120,7 @@ $order_sql = "SELECT o.*, c.client_name, u.username as assigned_user, cat.catego
               JOIN clients c ON o.client_id = c.client_id
               LEFT JOIN users u ON o.assigned_to = u.user_id
               LEFT JOIN categories cat ON o.category_id = cat.category_id"
-              . $where_sql;
+    . $where_sql;
 
 // Adăugăm sortarea și paginarea
 // Override sorting when filtering delivered orders
@@ -1814,10 +1814,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 17: {
                     word: 'Finalizăm comenzile',
                     icon: 'fa-check-double'
-                },
-                18: {
-                    word: 'Tragem linie',
-                    icon: 'fa-clipboard-list'
                 }
             };
 
@@ -2394,6 +2390,136 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <script>
         document.addEventListener("DOMContentLoaded", function() {
 
+            // --- ORDER PREVIEW ACTIONS (finish / deliver / print) ---
+            // order_preview.php's HTML is injected into the Tippy popup via
+            // instance.setContent(), which sets innerHTML — any <script> tag inside
+            // that HTML is inert (browsers never execute scripts inserted that way).
+            // So the buttons' handlers are bound here instead, directly against the
+            // live DOM. This works because Tippy appends its popup to
+            // document.body (see appendTo below), not into an iframe.
+            function bindOrderPreviewActions(instance, orderId) {
+                const root = instance.popper;
+                if (!root) return;
+
+                const finishBtn = root.querySelector('#finishBtn');
+                const deliverBtn = root.querySelector('#deliverBtn');
+                const printBtn = root.querySelector('#printBtn');
+
+                if (finishBtn) {
+                    finishBtn.onclick = function() {
+                        if (confirm('Marcați comanda #' + orderId + ' ca terminată?')) {
+                            quickUpdateOrderStatus(orderId, 'completed', {}, instance);
+                        }
+                    };
+                }
+
+                if (deliverBtn) {
+                    deliverBtn.onclick = function() {
+                        if (confirm('Marcați comanda #' + orderId + ' ca livrată?')) {
+                            const currentDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+                            quickUpdateOrderStatus(orderId, 'delivered', {
+                                delivery_date: currentDate
+                            }, instance);
+                        }
+                    };
+                }
+
+                if (printBtn) {
+                    printBtn.onclick = function() {
+                        printOrderTicket(orderId);
+                    };
+                }
+            }
+
+            // Shared by finish/deliver above — same endpoint & param shape
+            // view_order.php already uses for these actions.
+            function quickUpdateOrderStatus(orderId, status, extra, instance) {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'update_order_status.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+                let body = 'order_id=' + encodeURIComponent(orderId) + '&status=' + encodeURIComponent(status);
+                Object.keys(extra).forEach(key => {
+                    body += '&' + key + '=' + encodeURIComponent(extra[key]);
+                });
+
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState !== 4) return;
+
+                    if (xhr.status === 200) {
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Comandă actualizată'
+                        });
+                        if (instance) instance.hide();
+                        if (typeof window.quietRefresh === 'function') window.quietRefresh();
+                    } else {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Nu s-a putut actualiza comanda'
+                        });
+                    }
+                };
+                xhr.onerror = function() {
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'Nu s-a putut actualiza comanda'
+                    });
+                };
+                xhr.send(body);
+            }
+
+            // The "ticket" is the real view_order.php page — it already has the
+            // #printArea / @media print rules that hide everything except the
+            // order contents. Load it off-screen in a hidden iframe, then fire the
+            // browser print dialog against THAT window, so the tippy preview's
+            // print button produces the same ticket as the "Print Order" button
+            // on the full order page, without navigating the dashboard away.
+            function printOrderTicket(orderId) {
+                const existing = document.getElementById('ticketPrintFrame');
+                if (existing) existing.remove();
+
+                const iframe = document.createElement('iframe');
+                iframe.id = 'ticketPrintFrame';
+                // Not display:none — some browsers skip printing content from
+                // display:none frames. Kept in-flow but off-screen and invisible.
+                iframe.style.position = 'fixed';
+                iframe.style.right = '0';
+                iframe.style.bottom = '0';
+                iframe.style.width = '0';
+                iframe.style.height = '0';
+                iframe.style.border = '0';
+                iframe.style.visibility = 'hidden';
+
+                let cleaned = false;
+                const cleanup = () => {
+                    if (cleaned) return;
+                    cleaned = true;
+                    setTimeout(() => iframe.remove(), 500);
+                };
+
+                iframe.onload = function() {
+                    try {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.addEventListener('afterprint', cleanup);
+                        iframe.contentWindow.print();
+                    } catch (err) {
+                        console.error('Nu s-a putut printa comanda:', err);
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Nu s-a putut printa comanda'
+                        });
+                        cleanup();
+                    }
+                    // Safety net in case 'afterprint' never fires (e.g. print dialog
+                    // was cancelled in a way some browsers don't report).
+                    setTimeout(cleanup, 15000);
+                };
+
+                iframe.src = 'view_order.php?order_id=' + encodeURIComponent(orderId);
+                document.body.appendChild(iframe);
+            }
+
             // Wrap Tippy init in a global function
             window.initTippy = function() {
                 tippy('.order-row', {
@@ -2419,6 +2545,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                             .then(res => res.text())
                             .then(html => {
                                 instance.setContent(html);
+                                bindOrderPreviewActions(instance, id);
                             })
                             .catch(() => {
                                 instance.setContent("Eroare la încărcare");

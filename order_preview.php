@@ -149,9 +149,9 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
     }
 </style>
 
-<div style="font-family:Poppins; font-size:14px; padding:5px; line-height:1.4;">
+<div class="order-preview-content" data-order-id="<?= (int)$order_id ?>" style="font-family:Poppins; font-size:14px; padding:5px; line-height:1.4;">
 
-    <strong><?= htmlspecialchars($order['client_name']) ?></strong><br>
+    <strong id="clientNameText"><?= htmlspecialchars($order['client_name']) ?></strong><br>
 
     📞 <?= htmlspecialchars($order['client_phone']) ?>
     &nbsp;•&nbsp;
@@ -162,7 +162,6 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
     </a>
     <br>
     <br>
-
     <strong>Articole:</strong><br>
     <?php if ($articles->num_rows > 0): ?>
         <ul style="margin:6px 0 0 18px; padding:0;">
@@ -174,10 +173,37 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
             <?php endforeach; ?>
         </ul>
     <?php else: ?>
-        <em>Fără articole</em>
+        <em style="font-size: 12px;">Fără articole</em>
     <?php endif; ?>
 
     <br>
 
-    <strong>Total:</strong> <?= number_format($remaining, 2) ?> lei
+    <strong class="total-text">Total: <?= number_format($remaining, 2) ?> lei</strong>
+
+    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 10px 0;">
+
+    <div class="actions" style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">
+        <button id="printBtn" class="action-btn" title="Print Order" style="background: #555; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">
+            <i class="fa-solid fa-print"></i> Print
+        </button>
+
+        <button id="finishBtn" class="action-btn" title="Mark as Completed" style="background: #2ecc71; color: white; border: none; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
+            <i class="fa-solid fa-flag-checkered"></i> Terminată
+        </button>
+
+        <button id="deliverBtn" class="action-btn" title="Mark as Delivered" style="background: #3498db; color: white; border: none; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">
+            <i class="fa-solid fa-truck-ramp-box"></i> Livrată
+        </button>
+    </div>
+
+    <!--
+        No inline <script> here on purpose: this HTML is fetched by dashboard.php
+        and injected into a Tippy popup via instance.setContent(), which sets
+        innerHTML — browsers never execute <script> tags inserted that way.
+        The click handlers for #finishBtn / #deliverBtn / #printBtn are bound
+        from dashboard.php's tippy onShow callback, against this same live DOM
+        (Tippy appends the popup to document.body, so it's not an iframe —
+        real listeners work fine there). Cancel isn't offered here on purpose —
+        it stays a full-page-only action on view_order.php.
+    -->
 </div>
