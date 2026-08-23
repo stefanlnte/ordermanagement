@@ -338,7 +338,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 <head>
     <title>Dashboard Utilizator</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
-    <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -830,13 +829,11 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                     <div class="header-search-wrap" data-aos="fade-down"
                         data-aos-easing="linear"
-                        data-aos-duration="800"
-                        style="position:relative;">
+                        data-aos-duration="800">
                         <i class="fa-solid fa-magnifying-glass header-search-icon" aria-hidden="true"></i>
                         <input type="text"
                             id="order_lookup"
                             class="order-lookup-input"
-                            style="width:100%;"
                             autocomplete="off"
                             spellcheck="false"
                             placeholder="Căutare comandă (nr. comenzii, client, telefon, detalii comandă)...">
@@ -860,16 +857,15 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     </header>
 
 
-    <div class="image-container" style="width: 100%; height: 300px; position: relative; overflow: hidden;">
-        <video autoplay muted loop playsinline
-            style="width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1;">
+    <div class="image-container hero-video-container">
+        <video autoplay muted loop playsinline class="hero-video">
             <source src="https://color-print.ro/magazincp/header.mp4" type="video/mp4">
         </video>
 
         <div class="image-overlay"></div>
 
         <!-- Wrapper-ul care gestionează EXCLUSIV centrarea absolută -->
-        <div style="width: 50%; height: 50%; position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">
+        <div class="hero-logo-wrapper">
 
             <!-- Logo-ul care gestionează EXCLUSIV animația AOS -->
             <object data-aos="zoom-in"
@@ -877,18 +873,18 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 data-aos-duration="800"
                 type="image/svg+xml"
                 data="https://color-print.ro/magazincp/comenzi.svg"
-                style="width: 100%; height: 100%; object-fit: contain; display: block;">
+                class="hero-logo-object">
             </object>
 
         </div>
 
         <!-- Container greeting -->
-        <div class="hero-greeting-overlay" style="transform: scale(1.25); transform-origin: bottom left; max-width: 75%; white-space: normal;" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800">
+        <div class="hero-greeting-overlay" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800">
             <!-- Icon va fi injectat de JS -->
             <div class="hero-greeting-icon" id="heroGreetingIcon"></div>
 
-            <div class="hero-greeting-copy" style="min-width: 0;">
-                <p class="hero-greeting-text" style="word-wrap: break-word; line-height: 1.3;">
+            <div class="hero-greeting-copy">
+                <p class="hero-greeting-text">
                     <!-- Mesajul va fi injectat de JS -->
                     <span id="heroGreetingWord"></span>,
                     <!-- PHP doar pentru numele utilizatorului -->
@@ -970,7 +966,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
     <div class="pinned-section" data-aos="fade-in">
         <?php if ($pinned_result && $pinned_result->num_rows > 0): ?>
-            <h2 style="margin-left:20px;">📌 Comenzi urgente</h2>
+            <h2 class="pinned-section-heading">📌 Comenzi urgente</h2>
             <div class="pinned-feed">
                 <?php while ($pin = $pinned_result->fetch_assoc()): ?>
                     <a href="view_order.php?order_id=<?= $pin['order_id']; ?>&return=<?= urlencode($_SERVER['REQUEST_URI']); ?>">
@@ -999,10 +995,10 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                 <div class="form-group">
                     <label for="client_id"><i class="fa-solid fa-magnifying-glass"></i> <strong>Caută client:</strong></label>
-                    <select id="client_id" name="client_id" style="width: 70%; margin-right: 10px;">
+                    <select id="client_id" name="client_id">
                         <option value="">Caută</option>
                     </select>
-                    <div id="edit_client_button" class="button" style="display:none; margin-top:10px;">
+                    <div id="edit_client_button" class="button">
                         <button type="button">Editează client</button>
                     </div>
                 </div>
@@ -1023,7 +1019,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                 <input placeholder="colorprint_roman@yahoo.com" type="email" id="client_email" name="client_email">
                             </div>
                         </div>
-                        <button type="button" id="save_edit_button" style="display:none;">Salvează Modificările</button>
+                        <button type="button" id="save_edit_button">Salvează Modificările</button>
                     </div>
                 </div>
 
@@ -1047,7 +1043,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     <select id="datePickerSelect" name="due_date"></select>
                 </div>
 
-                <div class="form-group" style="display: none;">
+                <div class="form-group form-group--hidden">
                     <label for="category_id"><i class="fa-solid fa-layer-group"></i> Categorie:</label>
                     <select id="category_id" name="category_id">
                         <?php
@@ -1081,7 +1077,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
 
         <!-- Add this modal HTML in your main HTML file -->
-        <div id="editClientModal" class="modal" style="display: none;">
+        <div id="editClientModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>Editează detalii</h2>
@@ -1107,7 +1103,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             </div>
         </div>
         <div class="main-content" data-aos="slide-up">
-            <div class="filters" style="margin-bottom: 20px;">
+            <div class="filters">
                 <form method="GET" action="dashboard.php">
                     <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
 
@@ -1137,7 +1133,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
                     <div class="filter-group">
                         <label>Client:</label>
-                        <select id="client_filter" name="client_filter" style="width: 200px;">
+                        <select id="client_filter" name="client_filter">
                             <option value="">Toți</option>
                         </select>
                     </div>
@@ -1152,7 +1148,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                     </div>
 
                     <div>
-                        <button type="submit" style="display: none">Aplică filtre</button>
+                        <button type="submit" class="hidden-submit">Aplică filtre</button>
                         <button type="button" id="resetFiltersBtn">Resetează filtre</button>
                     </div>
                 </form>
@@ -1161,7 +1157,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr style="display: none">
+                        <tr class="table-head-row--hidden">
                             <th>Nr. Comanda</th>
                             <th>Client</th>
                             <th>Info Comandă</th>
@@ -1213,7 +1209,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                     $theme_class = 'theme-key'; // Delivered (Grey/Black)
                                 }
 
-                                $due_date_display = $is_overdue ? "<span class='text-magenta' style='font-weight: 800;'>$due_date</span>" : $due_date;
+                                $due_date_display = $is_overdue ? "<span class='text-magenta'>$due_date</span>" : $due_date;
 
                                 // 3. Randarea rândului cu clasele noi
                                 echo "<tr class='order-row heavy-row $theme_class' data-order-id='{$row["order_id"]}' onclick=\"window.location.href='view_order.php?order_id={$row["order_id"]}&return=" . urlencode($_SERVER['REQUEST_URI']) . "'\">";
@@ -1231,7 +1227,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                 echo "</tr>";
                             }
                         } else {
-                            echo "<tr><td colspan='7' style='text-align: center; padding: 3rem; background: #fff; border-radius: 12px;'>Nu există comenzi.</td></tr>";
+                            echo "<tr><td colspan='7' class='empty-state-cell'>Nu există comenzi.</td></tr>";
                         }
                         ?>
                     </tbody>
@@ -1345,7 +1341,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 <object
                     type="image/svg+xml"
                     data="https://color-print.ro/magazincp/comenzi.svg"
-                    style="width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none;">
+                    class="footer-logo-object">
                 </object>
             </a>
             <span class="operator-context">
@@ -1363,10 +1359,10 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <!-- Right Side: Action Links -->
         <div class="footer-links">
             <a href="archive.php" class="footer-link">
-                <i class="fa-solid fa-box-archive" style="color:yellow;"></i> Arhivă
+                <i class="fa-solid fa-box-archive"></i> Arhivă
             </a>
             <a href="unpaid_orders.php" class="footer-link">
-                <i class=" fa-solid fa-ban" style="color:yellow;"></i> Comenzi nefacturate
+                <i class="fa-solid fa-ban"></i> Comenzi nefacturate
             </a>
         </div>
     </footer>

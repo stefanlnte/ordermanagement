@@ -1,3 +1,335 @@
+/* ================================================================
+   FONTS
+   ------------------------------------------------------------------
+   Custom @font-face for the site's body
+   font; everything falls back to sans-serif until this loads.
+   ================================================================ */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  src: url('https://color-print.ro/magazincp/fonts/Poppins-Regular.ttf')
+    format('truetype');
+}
+
+/* ================================================================
+   GLOBAL RESET / BASE
+   ------------------------------------------------------------------
+   Page-wide defaults: no default margin/
+   padding on html/body, base font-family, and background color.
+   ================================================================ */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: white;
+  z-index: 1;
+}
+
+/* ================================================================
+   LINKS
+   ------------------------------------------------------------------
+   Strips the default underline/blue color
+   from anchors site-wide; individual components re-color links as
+   needed (e.g. .footer-link below).
+   ================================================================ */
+a {
+  text-decoration: none;
+  color: black;
+}
+
+/* ================================================================
+   TOP HEADER BAR (#header)
+   ------------------------------------------------------------------
+   Sticky black/grey gradient header that
+   holds the order-search box and the header action buttons.
+   ================================================================ */
+#header {
+  position: sticky;
+  display: flex;
+  top: 0;
+  z-index: 1000; /* Asigură-te că este deasupra altor elemente */
+  background:
+    radial-gradient(circle at top left, grey 0%, transparent 40%),
+    radial-gradient(circle at bottom right, grey 0%, transparent 40%),
+    linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+  background-blend-mode: screen, normal;
+  box-shadow: 0 3px 6px rgba(251, 255, 0, 0.5); /* Adaugă un efect de umbră pentru a diferenția header-ul */
+  color: white !important;
+  padding: 10px 20px;
+  min-height: 50px;
+  margin: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+#header .header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 960px;
+}
+
+#header .header-search {
+  flex: 1;
+  max-width: 640px;
+  min-width: 220px;
+}
+
+#header .header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+#header .header-actions button {
+  margin: 0;
+  white-space: nowrap;
+}
+
+#header > div > a {
+  margin-left: 5px;
+}
+
+/* ================================================================
+   VIEW TRANSITIONS STACKING FIX
+   ------------------------------------------------------------------
+      #header, #notesFab, and #whatsappWidget are each given a
+   view-transition-name in dashboard.php (main-header, notes-widget,
+   whatsapp-widget) so they persist smoothly across quiet refreshes.
+
+   Once an element has a view-transition-name, the browser renders it
+   inside a separate top-layer pseudo-element tree (::view-transition)
+   for the duration of the animation — this sits ABOVE the normal page,
+   so the element's own z-index (e.g. #header's z-index: 1000 above)
+   no longer has any effect on how it stacks against other transitioning
+   content. Table rows get their own transition name too (order-row-N,
+   assigned dynamically right before the transition starts), and
+   without an explicit z-index here, a row's snapshot can briefly
+   paint above the header's snapshot mid-animation.
+
+   Setting z-index directly on the ::view-transition-group() pseudo-
+   elements is the only way to control this stacking.
+   ================================================================ */
+::view-transition-group(main-header) {
+  z-index: 9999;
+}
+
+::view-transition-group(notes-widget),
+::view-transition-group(whatsapp-widget) {
+  z-index: 9998;
+}
+
+/* ================================================================
+   PAGE FOOTER (<footer>)
+   ------------------------------------------------------------------
+   Base black/grey gradient bar for the
+   <footer> element itself (mirrors the #header gradient/shadow).
+   ================================================================ */
+footer {
+  gap: 5px;
+  height: 100px;
+  background:
+    radial-gradient(circle at top left, grey 0%, transparent 40%),
+    radial-gradient(circle at bottom right, grey 0%, transparent 40%),
+    linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+  background-blend-mode: screen, normal;
+  box-shadow: 0 -3px 6px rgba(251, 255, 0, 0.5); /* Adaugă un efect de umbră pentru a diferenția header-ul */
+  color: white !important;
+  padding: 25px;
+  margin-top: 20px !important;
+  font-size: medium;
+}
+
+/* ================================================================
+   DASHBOARD FOOTER CONTAINER
+   ------------------------------------------------------------------
+   The flex row that lays out the footer
+   brand/logo on the left and the footer links on the right.
+   ================================================================ */
+.dashboard-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: #1a1a1a;
+  border-top: 1px solid #333;
+  font-size: 14px;
+  margin-top: auto;
+}
+
+/* ================================================================
+   FOOTER BRAND / LOGO
+   ------------------------------------------------------------------
+   Left side of the footer: the comenzi.svg
+   logo (sized via .footer-logo-wrapper) plus the operator status.
+   ================================================================ */
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Controls the exact size of your SVG */
+.footer-logo-wrapper {
+  display: block;
+  height: 70px; /* Adjust this to make the logo taller/shorter */
+  width: 280px; /* Adjust this to fit the aspect ratio of comenzi.svg */
+  transition: transform 0.2s ease;
+}
+
+.footer-logo-wrapper:hover {
+  transform: scale(1.02);
+}
+
+/* Moved from inline style on the footer <object> (SVG logo) in
+   dashboard.php */
+.footer-logo-object {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+/* ================================================================
+   FOOTER SYSTEM STATUS DOT
+   ------------------------------------------------------------------
+   The small green "system is up" pulse
+   indicator shown next to the operator info in the footer.
+   ================================================================ */
+.system-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: white;
+  margin-left: 15px;
+  padding-left: 15px;
+  border-left: 1px solid white;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #2ecc71;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(46, 204, 113, 0.6);
+}
+
+/* ================================================================
+   FOOTER LINKS (right side)
+   ------------------------------------------------------------------
+   "Arhivă" and "Comenzi nefacturate" links.
+   ================================================================ */
+.footer-links {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-link {
+  text-decoration: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.footer-link:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Moved from inline style on the footer-link <i> icons in dashboard.php
+   (Arhivă / Comenzi nefacturate) */
+.footer-link i {
+  color: yellow;
+}
+
+/* ================================================================
+   OPERATOR CONTEXT (logged-in username in footer)
+   ------------------------------------------------------------------
+   Shows "Operator: <username>" next to the
+   logo in the footer brand area.
+   ================================================================ */
+.operator-context {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: white;
+  margin-left: 15px;
+  padding-left: 15px;
+  border-left: 1px solid white;
+}
+
+/* Optional: Give the icon a subtle accent color */
+.operator-icon {
+  color: yellow;
+  font-size: 14px;
+}
+
+.operator-label {
+  font-weight: 400;
+}
+
+/* Emphasize the dynamic username */
+.operator-name {
+  color: yellow;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* ================================================================
+   FOOTER RESPONSIVENESS (mobile)
+   ------------------------------------------------------------------
+   Stacks the footer and its sub-sections
+   vertically, and drops the left borders used as separators on
+   desktop, below 600px.
+   ================================================================ */
+@media (max-width: 600px) {
+  .operator-context {
+    border-left: none;
+    margin-left: 0;
+    padding-left: 0;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-footer {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .footer-brand {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .system-status {
+    border-left: none;
+    margin-left: 0;
+    padding-left: 0;
+  }
+}
+
+/* ================================================================
+   PAGE LAYOUT CONTAINER
+   ------------------------------------------------------------------
+   Original styles.css content begins here: the main flex container
+   that holds the sidebar (order form) and main-content (orders table).
+   ================================================================ */
 .container {
   display: flex;
   flex-direction: column;
@@ -10,6 +342,41 @@
   position: relative;
   overflow: hidden;
   z-index: 1;
+}
+
+/* Moved from inline style on the hero video wrapper in dashboard.php */
+.hero-video-container {
+  width: 100%;
+  height: 300px;
+}
+
+/* Moved from inline style on the <video> tag (hero background) */
+.hero-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+/* Moved from inline style on the wrapper div that centers the hero logo */
+.hero-logo-wrapper {
+  width: 50%;
+  height: 50%;
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+/* Moved from inline style on the hero logo <object> itself */
+.hero-logo-object {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
 .image-overlay {
@@ -294,6 +661,8 @@ tbody tr:hover {
 }
 .text-magenta {
   color: rgb(159, 50, 50);
+  /* Moved from inline style on the overdue due-date <span> in dashboard.php */
+  font-weight: 800;
 }
 
 /* Green (Finalizată) - Rich confirmation color */
@@ -498,6 +867,58 @@ div.pagination :hover {
   margin-bottom: 10px;
 }
 
+/* Moved from inline style on the #client_id select in dashboard.php */
+#client_id {
+  width: 70%;
+  margin-right: 10px;
+}
+
+/* Moved from inline style on the #edit_client_button div in dashboard.php */
+#edit_client_button {
+  display: none;
+  margin-top: 10px;
+}
+
+/* Moved from inline style on the #save_edit_button button in dashboard.php */
+#save_edit_button {
+  display: none;
+}
+
+/* Moved from inline style on the #client_filter select in dashboard.php */
+#client_filter {
+  width: 200px;
+}
+
+/* Utility class: replaces inline `style="display:none"` on the
+   category_id form-group wrapper in dashboard.php (field is populated
+   and shown via JS) */
+.form-group--hidden {
+  display: none;
+}
+
+/* Utility class: replaces inline `style="display:none"` on the hidden
+   "Aplică filtre" submit button in dashboard.php (form submits via JS,
+   this button is kept for accessibility / Enter-key submission) */
+.hidden-submit {
+  display: none;
+}
+
+/* Utility class: replaces inline `style="display:none"` on the table's
+   thead row in dashboard.php (mobile layout uses data-label attributes
+   instead of visible column headers) */
+.table-head-row--hidden {
+  display: none;
+}
+
+/* Moved from inline style on the "Nu există comenzi." empty-state <td>
+   in dashboard.php */
+.empty-state-cell {
+  text-align: center;
+  padding: 3rem;
+  background: #fff;
+  border-radius: 12px;
+}
+
 /* Header inline order search */
 #header .header-search .select2-container {
   width: 100% !important;
@@ -528,7 +949,15 @@ div.pagination :hover {
 }
 
 #header .header-search-wrap {
+  /* This rule already covered the inline `style="position:relative;"`
+     that was on this element in dashboard.php, so that inline style
+     was simply removed rather than duplicated here. */
   position: relative;
+}
+
+/* Moved from inline style on the #order_lookup input (.order-lookup-input) */
+.order-lookup-input {
+  width: 100%;
 }
 
 #header .header-search-wrap .header-search-icon {
@@ -586,6 +1015,8 @@ div.pagination :hover {
 /* Outer wrapper styling */
 .filters {
   margin-top: 20px;
+  /* Moved from inline style on the .filters div in dashboard.php */
+  margin-bottom: 20px;
   padding: 12px 16px;
   background: whitesmoke;
   backdrop-filter: blur(6px);
@@ -752,6 +1183,11 @@ textarea {
 .modal-content input[type='submit']:hover {
   background-color: yellow;
   color: #333;
+}
+
+/* Moved from inline style on the "Comenzi urgente" <h2> in dashboard.php */
+.pinned-section-heading {
+  margin-left: 20px;
 }
 
 /* Container for pinned cards */
@@ -1799,7 +2235,14 @@ textarea {
   display: flex;
   align-items: center;
   gap: 10px;
-  max-width: min(300px, calc(100% - 36px));
+  /* max-width, transform, transform-origin and white-space below were
+     previously an inline style on this element in dashboard.php; the
+     max-width value here replaces the old min()/calc() value since the
+     inline style was overriding it anyway. */
+  max-width: 75%;
+  transform: scale(1.25);
+  transform-origin: bottom left;
+  white-space: normal;
   padding: 8px 14px 8px 8px;
   border-radius: 14px;
   background: rgba(10, 10, 10, 0.5);
@@ -1811,6 +2254,8 @@ textarea {
 }
 
 .hero-greeting-copy {
+  /* min-width: 0 was already set here; the identical inline style on
+     this element in dashboard.php was redundant and has been removed. */
   min-width: 0;
 }
 
@@ -1844,7 +2289,10 @@ textarea {
   font-size: 0.88rem;
   font-weight: 600;
   letter-spacing: 0.1px;
+  /* line-height: 1.3 was already set here, matching the inline style
+     on this element in dashboard.php; word-wrap is new from that style. */
   line-height: 1.3;
+  word-wrap: break-word;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

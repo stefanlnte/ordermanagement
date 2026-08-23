@@ -68,6 +68,35 @@ function formatDateWithoutYearWithDay(dateString) {
 }
 
 /**
+ * Formats how many days remain until an order's due date, prefixed
+ * with the Romanian name of the due-date's weekday. Never returns a
+ * negative count — anything already past due is clamped to "0 zile rămase".
+ * @param {string} dueDate - The order's due date, parseable by `new Date()`.
+ * @returns {string} e.g. "Marți, 3 zile rămase".
+ */
+function formatRemainingDays(dueDate) {
+  var currentDate = new Date();
+  var dueDateObj = new Date(dueDate);
+  var timeDiff = dueDateObj - currentDate;
+  var daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+  var daysOfWeek = [
+    'Duminică',
+    'Luni',
+    'Marți',
+    'Miercuri',
+    'Joi',
+    'Vineri',
+    'Sâmbătă',
+  ];
+  var dayOfWeek = daysOfWeek[dueDateObj.getDay()];
+  if (daysDiff >= 0) {
+    return dayOfWeek + ', ' + daysDiff + ' zile rămase';
+  } else {
+    return dayOfWeek + ', 0 zile rămase';
+  }
+}
+
+/**
  * Shows either the "new client" fields or the "existing client"
  * details button, depending on whether a client is selected in the
  * #client_id dropdown. When an existing client is chosen, kicks off
