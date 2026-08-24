@@ -504,6 +504,7 @@ $(document).on('select2:closing', function (e) {
  * ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
   const select = document.getElementById('datePickerSelect');
+  if (!select) return; // date picker only exists on dashboard.php
   const today = new Date();
 
   const daysToGenerate = 90; // only 90 days ahead
@@ -567,6 +568,16 @@ document.addEventListener('DOMContentLoaded', function () {
   const sliderBackdrop = document.getElementById('orderSliderBackdrop');
   const sliderIframe = document.getElementById('orderSliderIframe');
   const closeSliderBtn = document.getElementById('closeOrderSlider');
+
+  if (
+    !sliderPanel ||
+    !sliderBackdrop ||
+    !sliderIframe ||
+    !closeSliderBtn
+  ) {
+    return; // slider markup only exists on dashboard.php
+  }
+
   const sliderTitle = sliderPanel.querySelector('.order-slider-header h3');
 
   // --- 1. SLIDER LOGIC FOR ORDERS ---
@@ -945,9 +956,10 @@ document.addEventListener('DOMContentLoaded', function () {
  * script hasn't loaded for some reason).
  * ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
-  document
-    .getElementById('orderForm')
-    .addEventListener('submit', function (event) {
+  const orderForm = document.getElementById('orderForm');
+  if (!orderForm) return; // form only exists on dashboard.php
+
+  orderForm.addEventListener('submit', function (event) {
       event.preventDefault(); // Prevent default form submission
 
       fetch('dashboard.php', {
@@ -1018,7 +1030,8 @@ document.addEventListener('DOMContentLoaded', function () {
  * the header and hero elements.
  * ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
-  // Init AOS
+  // Init AOS — library is only included on dashboard.php
+  if (typeof AOS === 'undefined') return;
   AOS.init({
     duration: 800, // Adjust animation duration here
     once: true,
@@ -1426,6 +1439,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const closeBtn = document.querySelector('.whatsapp-close-btn');
   const sendBtn = document.getElementById('sendWhatsappBtn');
 
+  if (!widget || !modal || !closeBtn || !sendBtn) {
+    return; // quick-send widget only exists on dashboard.php
+  }
+
   widget.addEventListener('click', () => {
     modal.style.display = 'flex'; // match Notes modal behavior
   });
@@ -1458,6 +1475,8 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('DOMContentLoaded', function () {
   const dropdown = document.getElementById('countryPrefixSelect');
   const manual = document.getElementById('manualPrefix');
+
+  if (!dropdown || !manual) return; // prefix controls only exist on dashboard.php
 
   function updatePrefixUI() {
     if (manual.value.trim() !== '') {
@@ -1689,8 +1708,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   };
 
-  // Initialize on first load
-  window.initTippy();
+  // Initialize on first load — Tippy is only included on dashboard.php
+  if (typeof tippy === 'function') window.initTippy();
 });
 
 /* ============================================================
@@ -1710,6 +1729,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const filtersWrapper = document.querySelector('.filters');
     const filterForm = document.querySelector('.filters form');
     const resetBtn = document.getElementById('resetFiltersBtn');
+
+    if (!filterForm || !hiddenInput) return; // filter toolbar only exists on dashboard.php
 
     // Highlight active arrow on load
     arrows.forEach((a) => {
@@ -1859,3 +1880,838 @@ $(document).ready(function () {
     syncClientRequiredState,
   );
 });
+
+/* ============================================================
+ * SECTION: View Order Page (view_order.php)
+ * ------------------------------------------------------------
+ * All JavaScript that used to live in inline <script> blocks
+ * inside view_order.php. PHP-generated values are read from
+ * the #viewOrderDataBridge data attributes emitted by the
+ * server, so no inline PHP appears in this file.
+ *
+ * Guarded: everything is a no-op unless the data-bridge element
+ * exists (i.e. we are on view_order.php).
+ *
+ * The Toast mixin is the same one defined earlier in this file
+ * (~line 300), so it is reused here rather than redefined.
+ * ============================================================ */
+
+(function () {
+
+    // ---- Guard: only run on view_order.php ----
+    var bridge = document.getElementById('viewOrderDataBridge');
+    if (!bridge) return;
+
+    // ---- PHP → JS value bridge ----
+    var currentOrderId = parseInt(bridge.getAttribute('data-order-id') || '0', 10);
+    var assignedTo      = bridge.getAttribute('data-assigned-to') || '';
+    var clientName      = bridge.getAttribute('data-client-name') || '';
+    var boss            = bridge.getAttribute('data-boss') || '';
+    var clientPhone     = bridge.getAttribute('data-client-phone') || '';
+    var waLink          = bridge.getAttribute('data-wa-link') || '';
+
+    // ---- SLA data (replaces inline const SLA) ----
+    var SLA = {
+        dueDateIso: bridge.getAttribute('data-due-date-iso') || null,
+        serverNowIso: bridge.getAttribute('data-server-now-iso') || null,
+        warnThresholdSeconds: 24 * 3600
+    };
+
+    // ---- Flash messages (replaces inline PHP flash scripts) ----
+    $(function () {
+        var fs = bridge.getAttribute('data-flash-success');
+        var fe = bridge.getAttribute('data-flash-error');
+        if (fs) Toast.fire({ icon: 'success', title: fs });
+        if (fe) Toast.fire({ icon: 'success', title: fe });
+    });
+
+    // ============================================================
+    // Global functions — called from inline onclick attributes
+    // in view_order.php's HTML, so they must live on window.
+    // ============================================================
+
+    window.editOrderDetails = function () {
+        const suplText = document.getElementById('detalii_suplimentare_text');
+        if (suplText) suplText.style.display = 'none';
+
+        const avansText = document.getElementById('avans_text');
+        if (avansText) avansText.style.display = 'none';
+
+        // Show inputs
+        const suplEdit = document.getElementById('detalii_suplimentare_edit');
+        if (suplEdit) suplEdit.style.display = 'block';
+
+        const avansEdit = document.getElementById('avans_edit');
+        if (avansEdit) avansEdit.style.display = 'inline';
+
+        // Toggle buttons
+        const btnEdit = document.querySelector('button[onclick="editOrderDetails()"]');
+        const btnSave = document.querySelector('button[onclick="saveOrderDetails()"]');
+        if (btnEdit) btnEdit.style.display = 'none';
+        if (btnSave) btnSave.style.display = 'inline';
+    };
+
+    window.saveOrderDetails = function () {
+        const detaliiSuplimentare = $('#detalii_suplimentare_edit').val() || '';
+        const avans = $('#avans_edit').val() || '';
+        const orderId = currentOrderId;
+
+        $.ajax({
+            url: 'update_order_details.php',
+            method: 'POST',
+            data: {
+                order_id: orderId,
+                detalii_suplimentare: detaliiSuplimentare,
+                avans: avans
+            },
+            success: function () {
+                $('#detalii_suplimentare_text').text(detaliiSuplimentare).show();
+                $('#detalii_suplimentare_edit').hide();
+                $('#avans_text').text(avans).show();
+                $('#avans_edit').hide();
+                $('button[onclick="editOrderDetails()"]').show();
+                $('button[onclick="saveOrderDetails()"]').hide();
+                Toast.fire({ icon: 'success', title: 'Detaliile comenzii au fost salvate!' });
+                setTimeout(() => { location.reload(); }, 1500);
+            },
+            error: function (xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Eroare la salvare',
+                    text: xhr.responseText || ('Status: ' + xhr.status),
+                    position: 'center'
+                });
+            }
+        });
+    };
+
+    window.togglePin = function (orderId, pinState) {
+        $.post('toggle_pin.php', { order_id: orderId, is_pinned: pinState })
+            .done(() => {
+                Toast.fire({ icon: 'success', title: 'Pin actualizat 📌' });
+                setTimeout(() => location.reload(), 1200);
+            })
+            .fail(xhr => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Eroare',
+                    text: xhr.responseText || 'Nu s-a putut actualiza pin-ul.',
+                    position: 'center'
+                });
+            });
+    };
+
+    window.finishOrder = function () {
+        var orderId = currentOrderId;
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'update_order_status.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    $('#step-completed-circle')
+                        .css('background', '#2ecc71')
+                        .css('color', '#fff')
+                        .html('<i class="fa-solid fa-flag"></i>');
+                    sendSMS(clientPhone, orderId, assignedTo, clientName, boss);
+                    var button = document.getElementById('finishButton');
+                    if (button) {
+                        console.log('Butonul a fost găsit și va fi șters.');
+                        button.parentNode.removeChild(button);
+                    } else {
+                        console.log('Butonul nu a fost găsit.');
+                    }
+                } else {
+                    console.error('Cererea a eșuat cu status:', xhr.status);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Eroare',
+                        text: 'Finalizarea comenzii a eșuat.',
+                        position: 'center'
+                    });
+                }
+            }
+        };
+
+        xhr.onerror = function () {
+            console.error('Eroare la cererea AJAX');
+            Swal.fire({
+                icon: 'error',
+                title: 'Eroare',
+                text: 'Finalizarea comenzii a eșuat.',
+                position: 'center'
+            });
+        };
+
+        xhr.send('order_id=' + encodeURIComponent(orderId) + '&status=completed');
+    };
+
+    // sendSMS is called from finishOrder() — local to the IIFE
+    function sendSMS(clientPhone, orderId, assignedTo, clientName, boss) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'send_sms.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Felicitări!',
+                    text: 'Comanda a fost terminată cu succes 🎉',
+                    position: 'center',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                }).then(() => {
+                    console.log('SMS SENT');
+                });
+            }
+        };
+        xhr.send(
+            'to=' + encodeURIComponent(clientPhone) +
+            '&order_id=' + encodeURIComponent(orderId) +
+            '&assigned_to=' + encodeURIComponent(assignedTo) +
+            '&client_name=' + encodeURIComponent(clientName) +
+            '&boss=' + encodeURIComponent(boss)
+        );
+    }
+
+    window.deliverOrder = function () {
+        var orderId = currentOrderId;
+        var currentDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'update_order_status.php', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                $('#step-completed-circle')
+                    .css('background', '#2ecc71')
+                    .css('color', '#fff')
+                    .html('<i class="fa-solid fa-flag"></i>');
+                $('#step-delivered-circle')
+                    .css('background', 'linear-gradient(135deg, #3498db, #2ecc71)')
+                    .css('color', '#fff')
+                    .html('<i class="fa-solid fa-gift"></i>');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Comanda livrată',
+                    text: xhr.responseText,
+                    position: 'center',
+                    showConfirmButton: false,
+                    timer: 2000
+                }).then(() => {
+                    console.log('Comanda Livrată');
+                });
+            } else if (xhr.readyState == 4) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Eroare',
+                    text: 'Nu s-a putut marca comanda ca livrată.',
+                    position: 'center'
+                });
+            }
+        };
+        xhr.send('order_id=' + orderId + '&status=delivered&delivery_date=' + encodeURIComponent(currentDate));
+        var button = document.getElementById('deliverButton');
+        button.parentNode.removeChild(button);
+    };
+
+    window.cancelOrder = function () {
+        var orderId = currentOrderId;
+        Swal.fire({
+            title: 'Anulezi comanda?',
+            text: 'Sigur vrei să anulezi comanda #' + orderId + '?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Da, anulează',
+            cancelButtonText: 'Renunță'
+        }).then(result => {
+            if (!result.isConfirmed) return;
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'cancel_order.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    $('#step-inprogress-circle').css('background', '#ddd').css('color', '#888').text('2');
+                    $('#step-completed-circle').css('background', '#ddd').css('color', '#888').text('3');
+                    $('#step-delivered-circle').css('background', '#ddd').css('color', '#888').text('4');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Comanda anulată',
+                        text: xhr.responseText,
+                        position: 'center',
+                        showConfirmButton: false,
+                        timer: 2000
+                    }).then(() => window.location.reload());
+                } else if (xhr.readyState == 4) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Eroare',
+                        text: 'Nu s-a putut anula comanda.',
+                        position: 'center'
+                    });
+                }
+            };
+            xhr.send('order_id=' + orderId);
+        });
+    };
+
+    window.printOrder = function () {
+        window.print();
+    };
+
+    // Fills the articles for orders
+    function loadOrderArticles(orderId) {
+        const $table = $('#bonTable');
+        const $tbody = $('#bonTableBody');
+        const emptyNote = document.getElementById('emptyNote');
+
+        if (emptyNote) {
+            emptyNote.style.display = 'none';
+        }
+
+        $.getJSON('fetch_order_articles.php?order_id=' + encodeURIComponent(orderId), data => {
+            $tbody.empty();
+
+            if (!data.length) {
+                if (emptyNote) {
+                    emptyNote.style.display = 'block';
+                }
+                $table.addClass('no-print');
+                $('#totalPrice').text('0.00 lei');
+                return;
+            }
+
+            $table.removeClass('no-print');
+            let total = 0;
+            data.forEach(row => {
+                const qty = Number(row.quantity);
+                const unit = Number(row.price_per_unit);
+                total += qty * unit;
+
+                $tbody.append(`
+    <tr data-id="${row.id}">
+        <td>${row.name}</td>
+        <td>${qty}</td>
+        <td>${unit.toFixed(2)}</td>
+        <td><button class="removeArticle">✖</button></td>
+    </tr>
+    `);
+            });
+            const avans = parseFloat($('#avans_text').text()) || 0;
+            $('#totalPrice').text((total - avans).toFixed(2) + ' lei');
+        });
+    }
+
+    window.toggleComandaLucru = function () {
+        var comandaLucruElement = document.getElementById('comandaLucruElement');
+        if (comandaLucruElement) {
+            comandaLucruElement.parentNode.removeChild(comandaLucruElement);
+        } else {
+            var h2Element = document.createElement('h2');
+            h2Element.id = 'comandaLucruElement';
+            h2Element.textContent = 'Comandă în lucru';
+            document.querySelector('h2').insertAdjacentElement('afterend', h2Element);
+        }
+    };
+
+    window.openWhatsAppWithMessage = function (rawPhone, rawMessage) {
+        const countryCode = "+4";
+        const digitsOnly = String(rawPhone || '').replace(/\D/g, '');
+        const waNumber = countryCode + digitsOnly;
+
+        if (!digitsOnly || digitsOnly.length < 6) {
+            console.error('Invalid phone after normalization:', waNumber);
+            Swal.fire({
+                icon: 'error',
+                title: 'Număr invalid',
+                text: 'Numărul clientului nu este valid.'
+            });
+            return;
+        }
+
+        const message = String(rawMessage || '').trim();
+        if (!message) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Mesaj gol',
+                text: 'Completează mesajul înainte de a trimite.'
+            });
+            return;
+        }
+        const encoded = encodeURIComponent(message);
+        const waUrl = `https://wa.me/${encodeURIComponent(waNumber)}?text=${encoded}`;
+        const newWindow = window.open(waUrl, '_blank');
+        if (!newWindow) {
+            window.location.href = waUrl;
+        }
+        console.log('WhatsApp URL:', waUrl);
+    };
+
+    // ============================================================
+    // Event handlers and initialization
+    // ============================================================
+
+    $(function () {
+
+        // --- Load articles on page load ---
+        loadOrderArticles(currentOrderId);
+
+        // --- Add article form via AJAX (consolidated) ---
+        $(document).on('submit', '#addArticleForm', function (e) {
+            e.preventDefault();
+            const form = this;
+            $.ajax({
+                url: $(form).attr('action'),
+                method: 'POST',
+                data: $(form).serialize(),
+                success: function (resp) {
+                    loadOrderArticles(currentOrderId);
+                    Toast.fire({ icon: 'success', title: 'Articolul a fost adăugat!' });
+                    $('#articleSelect').val(null).trigger('change');
+                    $('#quantity').val(1);
+                    $('#price').val('');
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Eroare',
+                        text: xhr.responseText || 'Nu s-a putut adăuga articolul.',
+                        position: 'center'
+                    });
+                }
+            });
+        });
+
+        // --- Remove article ---
+        $(document).on('click', '.removeArticle', function () {
+            const row = $(this).closest('tr');
+            const id = row.data('id');
+            if (!id) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Eroare',
+                    text: 'ID-ul articolului lipsește, nu se poate șterge.',
+                    position: 'center'
+                });
+                return;
+            }
+            Swal.fire({
+                title: 'Ștergi articolul?',
+                text: 'Această acțiune nu poate fi anulată.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Șterge',
+                cancelButtonText: 'Renunță'
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                $.post('delete_article.php', { id })
+                    .done(() => {
+                        loadOrderArticles(currentOrderId);
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Articolul a fost șters!'
+                        });
+                    })
+                    .fail(xhr => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Eroare',
+                            text: xhr.responseText || 'Nu s-a putut șterge articolul.',
+                            position: 'center'
+                        });
+                    });
+            });
+        });
+
+        // --- Date picker (new_due_date_select) ---
+        const dateSelect = document.getElementById('new_due_date_select');
+        if (dateSelect) {
+            const today = new Date();
+            const daysToGenerate = 365;
+            for (let i = 0; i < daysToGenerate; i++) {
+                const d = new Date();
+                d.setDate(today.getDate() + i);
+                if (d.getDay() === 0) continue; // Skip Sundays
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const label = d.toLocaleDateString('ro-RO', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                });
+                const option = new Option(label, `${year}-${month}-${day}`);
+                if (i === 0) option.selected = true;
+                dateSelect.add(option);
+            }
+            $('#new_due_date_select').select2({
+                dropdownAutoWidth: true,
+                width: 'auto',
+                placeholder: "Selectează data"
+            });
+        }
+
+        // --- Toggle achitat (paid) button ---
+        $('#toggleAchitatButton').on('click', function () {
+            const orderId = $(this).data('order-id');
+            const currentState = $(this).data('current-state');
+            const newState = currentState === 1 ? 0 : 1;
+            const $container = $('#achitatContainer-' + orderId);
+            $.ajax({
+                url: 'update_achitat.php',
+                method: 'POST',
+                data: { order_id: orderId, is_achitat: newState },
+                success: function () {
+                    if (newState === 1) {
+                        const $badge = $('<h2 class="achitatBadge">Comandă achitată</h2>').hide();
+                        $container.append($badge);
+                        $badge.fadeIn(400);
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Comanda a fost achitată <i class="fa-solid fa-sack-dollar"></i>'
+                        });
+                    } else {
+                        $container.find('.achitatBadge').fadeOut(400, function () {
+                            $(this).remove();
+                        });
+                    }
+                    $('#toggleAchitatButton')
+                        .data('current-state', newState)
+                        .html(
+                            newState === 1 ?
+                            '<i class="fa-solid fa-ban"></i> Neachitat' :
+                            '<i class="fa-solid fa-sack-dollar"></i> Comandă achitată'
+                        );
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Eroare',
+                        text: xhr.responseText || 'Nu s-a putut actualiza starea comenzii.',
+                        position: 'center'
+                    });
+                }
+            });
+        });
+
+        // --- Select2 initialization (filters) ---
+        $('#status_filter, #assigned_filter, #category_filter, #sort_order, #assigned_to, #category_id').select2({
+            dropdownAutoWidth: true,
+            width: 'auto'
+        });
+
+        // --- Article Select2 with AJAX ---
+        $('#articleSelect').select2({
+            tags: true,
+            ajax: {
+                url: 'fetch_articles.php',
+                dataType: 'json',
+                processResults: function (data) {
+                    return {
+                        results: data.map(item => ({
+                            id: item.id,
+                            text: `${item.name} (${item.price} lei)`,
+                            price: item.price
+                        }))
+                    };
+                }
+            }
+        });
+
+        // --- Autofill price for existing items ---
+        $('#articleSelect').on('select2:select', function (e) {
+            const data = e.params.data;
+            if (data.price !== undefined) {
+                $('#price').val(data.price);
+            } else {
+                $('#price').val('');
+            }
+        });
+
+        // --- Delete attachment ---
+        $(document).on('click', '.deleteAttachment', function () {
+            const id = $(this).data('id');
+            Swal.fire({
+                title: 'Ștergi fișierul?',
+                text: 'Această acțiune nu poate fi anulată.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Șterge',
+                cancelButtonText: 'Renunță'
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                $.post('delete_attachment.php', { id })
+                    .done(resp => {
+                        $('#attachment-' + id).remove();
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'Fișierul a fost șters.'
+                        });
+                    })
+                    .fail(xhr => {
+                        Toast.fire({
+                            icon: 'error',
+                            title: xhr.responseText || 'Nu s-a putut șterge fișierul.'
+                        });
+                    });
+            });
+        });
+
+        // --- Template message modal ---
+        $("#templateMsgWidget").on("click", function () {
+            $("#templateMsgModal").fadeIn(150).css("display", "flex");
+        });
+        $("#closeTemplateMsg").on("click", function () {
+            $("#templateMsgModal").fadeOut(150);
+        });
+        $(window).on("click", function (e) {
+            if (e.target.id === "templateMsgModal") {
+                $("#templateMsgModal").fadeOut(150);
+            }
+        });
+        $("#templateSelect").on("change", function () {
+            let text = $(this).val();
+            if (!text) return;
+            text = text
+                .replace("{{client}}", clientName)
+                .replace("{{order}}", currentOrderId);
+            $("#templateMessage").val(text);
+        });
+        $("#sendTemplateMsgBtn").on("click", function () {
+            const msg = $("#templateMessage").val().trim();
+            if (!msg) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Mesaj gol",
+                    text: "Completează mesajul înainte de a trimite."
+                });
+                return;
+            }
+            const encoded = encodeURIComponent(msg);
+            const separator = waLink.includes('?') ? '&' : '?';
+            const url = `${waLink}${separator}text=${encoded}`;
+            const newWindow = window.open(url, "_blank");
+            if (!newWindow) {
+                window.location.href = url;
+            }
+            $("#templateMsgModal").fadeOut(150);
+        });
+
+        // --- Update default price button ---
+        const priceBtn = document.getElementById('updateDefaultPriceBtn');
+        const priceInput = document.getElementById('price');
+        const artSelect = document.getElementById('articleSelect');
+        if (priceBtn) {
+            priceBtn.addEventListener('click', function () {
+                const articleId = artSelect.value;
+                const newPrice = priceInput.value.trim();
+                if (!articleId || isNaN(Number(articleId))) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Atenție',
+                        text: 'Selectează un articol existent înainte de a actualiza prețul.'
+                    });
+                    return;
+                }
+                if (newPrice === '' || isNaN(Number(newPrice))) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Atenție',
+                        text: 'Introdu un preț numeric valid.'
+                    });
+                    return;
+                }
+                fetch('update_default_price.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'article_id=' + encodeURIComponent(articleId) +
+                          '&price=' + encodeURIComponent(newPrice)
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'Prețul implicit a fost actualizat.'
+                            });
+                            const selected = $('#articleSelect').select2('data')[0];
+                            if (selected && selected.name) {
+                                selected.price = parseFloat(newPrice);
+                                selected.text = `${selected.name} (${selected.price.toFixed(2)} lei)`;
+                                $('#articleSelect').trigger('change.select2');
+                            }
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Eroare',
+                                text: data && data.error ? data.error : 'Nu s-a putut actualiza prețul.'
+                            });
+                        }
+                    })
+                    .catch(() =>
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Eroare de rețea',
+                            text: 'Nu s-a putut actualiza prețul.'
+                        })
+                    );
+            });
+        }
+    });
+
+    // --- beforeprint / Ctrl+P handler ---
+    window.addEventListener('beforeprint', () => {
+        const table = document.getElementById('bonTable');
+        const hasRows = table.querySelectorAll('tbody tr').length > 0;
+        if (!hasRows) {
+            table.classList.add('no-print');
+        } else {
+            table.classList.remove('no-print');
+        }
+    });
+    document.addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+            e.preventDefault();
+            const printBtn = document.querySelector('#printBtn') || document.querySelector('.print-button');
+            if (printBtn) {
+                printBtn.click();
+            } else {
+                window.print();
+            }
+        }
+    });
+
+    // --- Dropzone configuration ---
+    Dropzone.options.orderDropzone = {
+        paramName: "file",
+        maxFilesize: 1024, // MB
+        acceptedFiles: null,
+        dictDefaultMessage: "Adaugă fișiere",
+        dictFallbackMessage: "Browserul dvs. nu suportă încărcarea",
+        dictFileTooBig: "Fișierul este prea mare ({{filesize}}MiB). Dimensiunea maximă: {{maxFilesize}}MiB.",
+        dictInvalidFileType: "Nu puteți încărca fișiere de acest tip.",
+        dictResponseError: "Serverul a răspuns cu codul {{statusCode}}.",
+        dictCancelUpload: "Anulează încărcarea",
+        dictRemoveFile: "Șterge fișierul",
+        dictMaxFilesExceeded: "Nu puteți încărca mai multe fișiere.",
+        init: function () {
+            this.on("success", function (file, response) {
+                console.log("Uploaded:", response);
+            });
+            this.on("queuecomplete", function () {
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Toate fișierele au fost adăugate cu succes!'
+                }).then(() => {
+                    window.location.reload();
+                });
+            });
+        }
+    };
+
+    // ============================================================
+    // SLA Countdown
+    // Reads dueDateIso and serverNowIso from the SLA data object
+    // (populated from the #viewOrderDataBridge data attributes).
+    // Updates the #slaTimer element every second and resyncs the
+    // server clock every 60s via server_time.php.
+    // ============================================================
+
+    (function () {
+
+        var dueIso        = SLA.dueDateIso;
+        var serverNowIso  = SLA.serverNowIso;
+        var warnThreshold = SLA.warnThresholdSeconds || (24 * 3600);
+
+        var timerEl = document.getElementById('slaTimer');
+        var badgeEl = document.getElementById('slaBadge');
+
+        if (!dueIso) {
+            if (timerEl) timerEl.innerText = 'Data scadentă nu este setată';
+            if (badgeEl) badgeEl.style.background = '#999';
+            return;
+        }
+
+        var dueMs = Date.parse(dueIso);
+        if (isNaN(dueMs)) {
+            if (timerEl) timerEl.innerText = 'Data scadentă invalidă';
+            if (badgeEl) badgeEl.style.background = '#999';
+            return;
+        }
+
+        // offset: clientNow - serverNow (ms)
+        var clientServerOffset = Date.now() - Date.parse(serverNowIso);
+
+        function remainingSeconds() {
+            var estimatedServerNow = Date.now() - clientServerOffset;
+            return Math.floor((dueMs - estimatedServerNow) / 1000);
+        }
+
+        function pad(n) {
+            return String(n).padStart(2, '0');
+        }
+
+        // Format: days = 24h blocks; last day runs until dueMs (may be 18:00)
+        function formatWithSeconds(totalSec) {
+            if (totalSec <= 0) return 'Termen depășit';
+            var days = Math.floor(totalSec / 86400);
+            var rem  = totalSec - days * 86400;
+            var hours = Math.floor(rem / 3600);
+            rem -= hours * 3600;
+            var mins = Math.floor(rem / 60);
+            var secs = rem % 60;
+
+            var dayPart = '';
+            if (days === 1)      dayPart = '1 zi ';
+            else if (days > 1)   dayPart = days + ' zile ';
+
+            if (days === 0) {
+                return pad(hours) + ':' + pad(mins) + ':' + pad(secs);
+            }
+            return dayPart + pad(hours) + ':' + pad(mins) + ':' + pad(secs);
+        }
+
+        function updateSlaTimer() {
+            var rem = remainingSeconds();
+            if (rem <= 0) {
+                if (timerEl) timerEl.innerText = 'Termen depășit';
+                if (badgeEl) badgeEl.style.background = '#e74c3c';
+                return;
+            }
+
+            if (rem <= warnThreshold) {
+                if (badgeEl) badgeEl.style.background = '#f1c40f';
+            } else {
+                if (badgeEl) badgeEl.style.background = '#2ecc71';
+            }
+
+            if (timerEl) timerEl.innerText = formatWithSeconds(rem);
+        }
+
+        // Initial render + per-second tick
+        updateSlaTimer();
+        setInterval(updateSlaTimer, 1000);
+
+        // Resync server time every 60s (no reload)
+        setInterval(function () {
+            fetch('server_time.php', { cache: 'no-store' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data && data.serverNowIso) {
+                        var newServerMs = Date.parse(data.serverNowIso);
+                        if (!isNaN(newServerMs)) {
+                            clientServerOffset = Date.now() - newServerMs;
+                        }
+                    }
+                })
+                .catch(err => console.warn('SLA resync failed', err));
+        }, 60000);
+
+    })();
+
+})(); // end of View Order IIFE
