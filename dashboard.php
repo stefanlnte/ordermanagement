@@ -545,7 +545,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                         <option value="">Caută</option>
                     </select>
                     <div id="edit_client_button" class="button">
-                        <button type="button">Editează client</button>
+                        <button type="button" id="editClientTrigger">Editează client</button>
                     </div>
                 </div>
 

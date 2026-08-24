@@ -461,8 +461,13 @@ document.addEventListener('DOMContentLoaded', function () {
       .catch((error) => console.error('Error:', error));
   });
 
-  // Add event listener for the edit button
-  $('#edit_client_button').on('click', function () {
+  // Add event listener for the edit button.
+  // Bound to the inner <button> (not the wrapping div) so the click area
+  // matches the button's visual size — otherwise the wrapping block-level
+  // div extends to the full form-group width and every click within
+  // that row would open the edit modal.
+  $('#editClientTrigger').on('click', function (e) {
+    e.stopPropagation();
     var clientId = $('#client_id').val();
     if (clientId) {
       openEditModal(clientId);
