@@ -676,7 +676,11 @@ document.addEventListener('DOMContentLoaded', function () {
   // Grouped into a function so it can be re-run after fetching new HTML
   function bindOrderClickEvents() {
     document.querySelectorAll('.order-row').forEach((row) => {
-      row.removeAttribute('onclick');
+      // Inline onclick from the PHP markup has already been parsed into
+      // a property listener; removeAttribute() wouldn't touch it. Setting
+      // onclick = null detaches the inline handler so this JS handler is
+      // the only one that runs.
+      row.onclick = null;
       row.style.cursor = 'pointer';
 
       row.addEventListener('click', function (e) {
@@ -1876,8 +1880,12 @@ function syncClientRequiredState() {
   }
 }
 
-// Run on page load
+// Run on page load — but only where #client_id exists (dashboard.php).
+// view_order.php loads this file too but has no client picker; running
+// syncClientRequiredState there would wrongly flip #client_name and
+// #client_phone to required on view_order.php's hidden inputs.
 $(document).ready(function () {
+  if (!$('#client_id').length) return;
   syncClientRequiredState();
   // Update when Select2 changes or is cleared
   $('#client_id').on(
