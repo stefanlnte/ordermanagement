@@ -1692,12 +1692,41 @@ document.addEventListener('DOMContentLoaded', function () {
         const reference = instance.reference;
         const id = reference.getAttribute('data-order-id');
 
+        // --- DYNAMIC THEMING -------------------------------------------------
+        // Each order row carries a heavy-theme class (theme-yellow / cyan /
+        // magenta / green / key). Read it off the hovered <tr> so the preview
+        // adopts that row's color: it is forwarded to order_preview.php as
+        // &theme= (server-side accent) AND mirrored onto the tippy box right
+        // away so the tooltip is already tinted while content loads.
+        const themeMatch = reference.className.match(
+          /theme-(yellow|cyan|magenta|green|key)/,
+        );
+        const theme = themeMatch ? themeMatch[1] : 'yellow';
+
+        const previewBox =
+          instance.popper && instance.popper.querySelector('.tippy-box');
+        if (previewBox) {
+          previewBox.classList.remove(
+            'theme-yellow',
+            'theme-cyan',
+            'theme-magenta',
+            'theme-green',
+            'theme-key',
+          );
+          previewBox.classList.add('theme-' + theme);
+        }
+
         // Fixed min-height container prevents vertical jumping on load
         instance.setContent(
           '<div style="min-height: 50px; display: flex; align-items: center; justify-content: center;">Loading...</div>',
         );
 
-        fetch('order_preview.php?id=' + id)
+        fetch(
+          'order_preview.php?id=' +
+            encodeURIComponent(id) +
+            '&theme=' +
+            encodeURIComponent(theme),
+        )
           .then((res) => res.text())
           .then((html) => {
             instance.setContent(html);
