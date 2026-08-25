@@ -43,10 +43,10 @@
  * @returns {string} The formatted day + date.
  */
 function formatDateWithoutYearWithDay(dateString) {
-  var date = new Date(dateString);
-  var day = date.getDate();
-  var month = date.getMonth() + 1; // Months are zero-based
-  var daysOfWeek = [
+  let date = new Date(dateString);
+  let day = date.getDate();
+  let month = date.getMonth() + 1; // Months are zero-based
+  let daysOfWeek = [
     'Duminică',
     'Luni',
     'Marți',
@@ -55,7 +55,7 @@ function formatDateWithoutYearWithDay(dateString) {
     'Vineri',
     'Sâmbătă',
   ];
-  var dayOfWeek = daysOfWeek[date.getDay()];
+  let dayOfWeek = daysOfWeek[date.getDay()];
   return (
     dayOfWeek +
     ', ' +
@@ -75,11 +75,11 @@ function formatDateWithoutYearWithDay(dateString) {
  * @returns {string} e.g. "Marți, 3 zile rămase".
  */
 function formatRemainingDays(dueDate) {
-  var currentDate = new Date();
-  var dueDateObj = new Date(dueDate);
-  var timeDiff = dueDateObj - currentDate;
-  var daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-  var daysOfWeek = [
+  let currentDate = new Date();
+  let dueDateObj = new Date(dueDate);
+  let timeDiff = dueDateObj - currentDate;
+  let daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+  let daysOfWeek = [
     'Duminică',
     'Luni',
     'Marți',
@@ -88,7 +88,7 @@ function formatRemainingDays(dueDate) {
     'Vineri',
     'Sâmbătă',
   ];
-  var dayOfWeek = daysOfWeek[dueDateObj.getDay()];
+  let dayOfWeek = daysOfWeek[dueDateObj.getDay()];
   if (daysDiff >= 0) {
     return dayOfWeek + ', ' + daysDiff + ' zile rămase';
   } else {
@@ -103,10 +103,10 @@ function formatRemainingDays(dueDate) {
  * fetchClientDetails() to populate the read-only details panel.
  */
 function toggleClientFields() {
-  var clientSelect = document.getElementById('client_id');
-  var newClientFields = document.getElementById('new_client_fields');
-  var clientDetailsButton = document.getElementById('client_details_button');
-  var clientDetails = document.getElementById('client_details');
+  let clientSelect = document.getElementById('client_id');
+  let newClientFields = document.getElementById('new_client_fields');
+  let clientDetailsButton = document.getElementById('client_details_button');
+  let clientDetails = document.getElementById('client_details');
   if (clientSelect.value === '') {
     newClientFields.style.display = 'block';
     clientDetailsButton.style.display = 'none';
@@ -124,7 +124,7 @@ function toggleClientFields() {
  * @param {string|number} clientId - The client_id to look up.
  */
 function fetchClientDetails(clientId) {
-  var xhr = new XMLHttpRequest();
+  let xhr = new XMLHttpRequest();
   xhr.open(
     'GET',
     'dashboard.php?fetch_client_details=true&client_id=' + clientId,
@@ -132,7 +132,7 @@ function fetchClientDetails(clientId) {
   );
   xhr.onreadystatechange = function () {
     if (xhr.readyState == 4 && xhr.status == 200) {
-      var client = JSON.parse(xhr.responseText);
+      let client = JSON.parse(xhr.responseText);
       document.getElementById('client_name_display').innerText =
         client.client_name;
       document.getElementById('client_email_display').innerText =
@@ -155,9 +155,9 @@ function fetchClientDetails(clientId) {
  * @returns {boolean} true if the due date is valid (in the future).
  */
 function validateDueDateTime() {
-  var dueDate = document.getElementById('due_date').value;
-  var dueDateObj = new Date(dueDate);
-  var currentDate = new Date();
+  let dueDate = document.getElementById('due_date').value;
+  let dueDateObj = new Date(dueDate);
+  let currentDate = new Date();
   if (dueDateObj <= currentDate) {
     alert('Data livrării trebuie să fie în viitor.');
     return false;
@@ -175,12 +175,12 @@ function submitOrderForm(event) {
   if (!validateDueDateTime()) {
     return;
   }
-  var formData = new FormData(document.getElementById('orderForm'));
-  var xhr = new XMLHttpRequest();
+  let formData = new FormData(document.getElementById('orderForm'));
+  let xhr = new XMLHttpRequest();
   xhr.open('POST', 'dashboard.php', true);
   xhr.onreadystatechange = function () {
     if (xhr.readyState == 4 && xhr.status == 200) {
-      var response = JSON.parse(xhr.responseText);
+      let response = JSON.parse(xhr.responseText);
       if (response.success) {
         alert('Comanda a fost adăugată cu succes.');
         location.reload();
@@ -199,8 +199,8 @@ function submitOrderForm(event) {
  */
 function submitEditClientForm(event) {
   event.preventDefault();
-  var formData = new FormData(document.getElementById('editClientForm'));
-  var xhr = new XMLHttpRequest();
+  let formData = new FormData(document.getElementById('editClientForm'));
+  let xhr = new XMLHttpRequest();
   xhr.open('POST', 'edit_client.php', true);
   xhr.onreadystatechange = function () {
     if (xhr.readyState == 4 && xhr.status == 200) {
@@ -217,10 +217,10 @@ function submitEditClientForm(event) {
  * no client is currently selected.
  */
 function toggleClientDetails() {
-  var clientSelect = document.getElementById('client_id');
-  var clientId = clientSelect.value;
+  let clientSelect = document.getElementById('client_id');
+  let clientId = clientSelect.value;
   if (clientId) {
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.open(
       'GET',
       'dashboard.php?fetch_client_details=true&client_id=' + clientId,
@@ -228,7 +228,7 @@ function toggleClientDetails() {
     );
     xhr.onreadystatechange = function () {
       if (xhr.readyState == 4 && xhr.status == 200) {
-        var client = JSON.parse(xhr.responseText);
+        let client = JSON.parse(xhr.responseText);
         document.getElementById('client_name_display').innerText =
           client.client_name;
         document.getElementById('client_email_display').innerText =
@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return client.text;
     }
 
-    var $client = $(
+    let $client = $(
       '<div class="select2-result-client">' +
         '<span style="font-weight: bold;">' +
         client.client_name +
@@ -405,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Function to toggle visibility of new client fields based on client selection
   function toggleClientFieldsVisibility() {
-    var clientId = $('#client_id').val();
+    let clientId = $('#client_id').val();
     if (clientId) {
       $('#new_client_fields').addClass('collapsed');
       $('#edit_client_button').show();
@@ -444,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Handle edit form submission
   $('#editClientForm').on('submit', function (event) {
     event.preventDefault();
-    var formData = new FormData(this);
+    let formData = new FormData(this);
     fetch('update_client.php', {
       method: 'POST',
       body: formData,
@@ -468,7 +468,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // that row would open the edit modal.
   $('#editClientTrigger').on('click', function (e) {
     e.stopPropagation();
-    var clientId = $('#client_id').val();
+    let clientId = $('#client_id').val();
     if (clientId) {
       openEditModal(clientId);
     }
@@ -476,17 +476,17 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 // Add animating class on open
-$(document).on('select2:open', function () {
-  $('.select2-dropdown').addClass('animating');
-
+$(document).on('select2:open', function (e) {
+  let $dropdown = $(e.target).data('select2').$dropdown;
+  $dropdown.addClass('animating');
   setTimeout(function () {
-    $('.select2-dropdown').removeClass('animating');
-  }, 500); // match animation duration
+    $dropdown.removeClass('animating');
+  }, 500);
 });
 
 // Delay Select2 close to allow exit animation
 $(document).on('select2:closing', function (e) {
-  var $dropdown = $('.select2-dropdown');
+  let $dropdown = $('.select2-dropdown');
 
   if (!$dropdown.hasClass('is-closing')) {
     e.preventDefault();
@@ -1051,37 +1051,37 @@ document.addEventListener('DOMContentLoaded', function () {
  * mouse selection. Selecting a result opens it in the order slider.
  * ============================================================ */
 $(function () {
-  var $input = $('#order_lookup');
+  let $input = $('#order_lookup');
   if (!$input.length) return;
 
   // Dropdown lives outside the header so it can never be clipped,
   // same reasoning the old select2 config had (dropdownParent: body).
-  var $dropdown = $(
+  let $dropdown = $(
     '<div id="order_lookup_dropdown" class="select2-dropdown header-order-search select2-container--default">' +
       '<span class="select2-results"><ul class="select2-results__options"></ul></span>' +
       '</div>',
   ).appendTo('body');
-  var $list = $dropdown.find('.select2-results__options');
+  let $list = $dropdown.find('.select2-results__options');
 
-  var currentTerm = '';
-  var currentXhr = null;
-  var debounceTimer = null;
-  var results = [];
-  var activeIndex = -1;
-  var isOpen = false;
-  var closeTimer = null;
+  let currentTerm = '';
+  let currentXhr = null;
+  let debounceTimer = null;
+  let results = [];
+  let activeIndex = -1;
+  let isOpen = false;
+  let closeTimer = null;
 
   function highlightTerm(text, term) {
     if (!text) return '';
     if (!term) return text;
-    var escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    var regex = new RegExp('(' + escaped + ')', 'gi');
+    let escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    let regex = new RegExp('(' + escaped + ')', 'gi');
     return text.replace(regex, '<span class="highlight">$1</span>');
   }
 
   function renderOption(order, index) {
-    var term = currentTerm;
-    var phoneLine = order.client_phone
+    let term = currentTerm;
+    let phoneLine = order.client_phone
       ? '<div style="font-size:12px;color:#666;"><i class="fa-solid fa-phone" style="font-size:10px;"></i> ' +
         highlightTerm(order.client_phone, term) +
         '</div>'
@@ -1107,7 +1107,7 @@ $(function () {
   }
 
   function positionDropdown() {
-    var rect = $input[0].getBoundingClientRect();
+    let rect = $input[0].getBoundingClientRect();
     $dropdown.css({
       top: rect.bottom + 'px',
       left: rect.left + 'px',
@@ -1122,13 +1122,13 @@ $(function () {
       .attr('aria-selected', 'false');
     activeIndex = index;
     if (index < 0 || index >= results.length) return;
-    var $opt = $list.find(
+    let $opt = $list.find(
       '.select2-results__option[data-index="' + index + '"]',
     );
     $opt
       .addClass('select2-results__option--highlighted')
       .attr('aria-selected', 'true');
-    var optEl = $opt[0];
+    let optEl = $opt[0];
     if (optEl && optEl.scrollIntoView)
       optEl.scrollIntoView({
         block: 'nearest',
@@ -1141,10 +1141,10 @@ $(function () {
     if (typeof window.openOrderSlider === 'function') {
       window.openOrderSlider(order.id);
     } else {
-      var returnInput = document.querySelector(
+      let returnInput = document.querySelector(
         '#lookupForm input[name="return"]',
       );
-      var returnUrl = returnInput ? returnInput.value : '';
+      let returnUrl = returnInput ? returnInput.value : '';
       window.location.href =
         'view_order.php?order_id=' +
         order.id +
@@ -1215,7 +1215,7 @@ $(function () {
   // Typing directly in the visible field is all it takes — no second
   // search box, one click (or focus) is enough to start searching.
   $input.on('input', function () {
-    var term = $input.val().trim();
+    let term = $input.val().trim();
     currentTerm = term;
     clearTimeout(debounceTimer);
 
@@ -1265,7 +1265,7 @@ $(function () {
   $list.on('mousedown', '.select2-results__option', function (e) {
     // mousedown (not click) so it fires before the input's blur/close
     e.preventDefault();
-    var index = parseInt($(this).data('index'), 10);
+    let index = parseInt($(this).data('index'), 10);
     if (results[index]) selectOrder(results[index]);
   });
 
@@ -1352,7 +1352,7 @@ $(function () {
     icon: 'fa-power-off',
   };
 
-  var dayNames = [
+  let dayNames = [
     'Duminică',
     'Luni',
     'Marți',
@@ -1361,7 +1361,7 @@ $(function () {
     'Vineri',
     'Sâmbătă',
   ];
-  var monthNames = [
+  let monthNames = [
     'ianuarie',
     'februarie',
     'martie',
@@ -1385,11 +1385,11 @@ $(function () {
   }
 
   function updateHeroGreeting() {
-    var now = new Date();
+    let now = new Date();
 
     // Update Clock & Date
-    var clockEl = document.getElementById('heroGreetingClock');
-    var dateEl = document.getElementById('heroGreetingDate');
+    let clockEl = document.getElementById('heroGreetingClock');
+    let dateEl = document.getElementById('heroGreetingDate');
     if (clockEl) {
       clockEl.textContent =
         pad(now.getHours()) +
@@ -1408,10 +1408,10 @@ $(function () {
     }
 
     // Update Greeting Word & Icon
-    var hour = now.getHours();
-    var greetingData = getHourlyGreeting(hour);
-    var wordEl = document.getElementById('heroGreetingWord');
-    var iconEl = document.getElementById('heroGreetingIcon');
+    let hour = now.getHours();
+    let greetingData = getHourlyGreeting(hour);
+    let wordEl = document.getElementById('heroGreetingWord');
+    let iconEl = document.getElementById('heroGreetingIcon');
 
     if (wordEl && iconEl) {
       // Only update the DOM if the text actually changed to save browser rendering resources
@@ -1904,22 +1904,22 @@ $(document).ready(function () {
 
 (function () {
   // ---- Guard: only run on view_order.php ----
-  var bridge = document.getElementById('viewOrderDataBridge');
+  let bridge = document.getElementById('viewOrderDataBridge');
   if (!bridge) return;
 
   // ---- PHP → JS value bridge ----
-  var currentOrderId = parseInt(
+  let currentOrderId = parseInt(
     bridge.getAttribute('data-order-id') || '0',
     10,
   );
-  var assignedTo = bridge.getAttribute('data-assigned-to') || '';
-  var clientName = bridge.getAttribute('data-client-name') || '';
-  var boss = bridge.getAttribute('data-boss') || '';
-  var clientPhone = bridge.getAttribute('data-client-phone') || '';
-  var waLink = bridge.getAttribute('data-wa-link') || '';
+  let assignedTo = bridge.getAttribute('data-assigned-to') || '';
+  let clientName = bridge.getAttribute('data-client-name') || '';
+  let boss = bridge.getAttribute('data-boss') || '';
+  let clientPhone = bridge.getAttribute('data-client-phone') || '';
+  let waLink = bridge.getAttribute('data-wa-link') || '';
 
   // ---- SLA data (replaces inline const SLA) ----
-  var SLA = {
+  let SLA = {
     dueDateIso: bridge.getAttribute('data-due-date-iso') || null,
     serverNowIso: bridge.getAttribute('data-server-now-iso') || null,
     warnThresholdSeconds: 24 * 3600,
@@ -1927,8 +1927,8 @@ $(document).ready(function () {
 
   // ---- Flash messages (replaces inline PHP flash scripts) ----
   $(function () {
-    var fs = bridge.getAttribute('data-flash-success');
-    var fe = bridge.getAttribute('data-flash-error');
+    let fs = bridge.getAttribute('data-flash-success');
+    let fe = bridge.getAttribute('data-flash-error');
     if (fs) Toast.fire({ icon: 'success', title: fs });
     if (fe) Toast.fire({ icon: 'success', title: fe });
   });
@@ -1994,7 +1994,7 @@ $(document).ready(function () {
       error: function (xhr) {
         Swal.fire({
           icon: 'error',
-          title: 'Eroare la salvare',
+          title: 'Eroare la salete',
           text: xhr.responseText || 'Status: ' + xhr.status,
           position: 'center',
         });
@@ -2019,9 +2019,9 @@ $(document).ready(function () {
   };
 
   window.finishOrder = function () {
-    var orderId = currentOrderId;
+    let orderId = currentOrderId;
 
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.open('POST', 'update_order_status.php', true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -2033,7 +2033,7 @@ $(document).ready(function () {
             .css('color', '#fff')
             .html('<i class="fa-solid fa-flag"></i>');
           sendSMS(clientPhone, orderId, assignedTo, clientName, boss);
-          var button = document.getElementById('finishButton');
+          let button = document.getElementById('finishButton');
           if (button) {
             console.log('Butonul a fost găsit și va fi șters.');
             button.parentNode.removeChild(button);
@@ -2067,7 +2067,7 @@ $(document).ready(function () {
 
   // sendSMS is called from finishOrder() — local to the IIFE
   function sendSMS(clientPhone, orderId, assignedTo, clientName, boss) {
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.open('POST', 'send_sms.php', true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.onreadystatechange = function () {
@@ -2100,10 +2100,10 @@ $(document).ready(function () {
   }
 
   window.deliverOrder = function () {
-    var orderId = currentOrderId;
-    var currentDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    let orderId = currentOrderId;
+    let currentDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-    var xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
     xhr.open('POST', 'update_order_status.php', true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
@@ -2142,12 +2142,12 @@ $(document).ready(function () {
         '&status=delivered&delivery_date=' +
         encodeURIComponent(currentDate),
     );
-    var button = document.getElementById('deliverButton');
+    let button = document.getElementById('deliverButton');
     button.parentNode.removeChild(button);
   };
 
   window.cancelOrder = function () {
-    var orderId = currentOrderId;
+    let orderId = currentOrderId;
     Swal.fire({
       title: 'Anulezi comanda?',
       text: 'Sigur vrei să anulezi comanda #' + orderId + '?',
@@ -2157,7 +2157,7 @@ $(document).ready(function () {
       cancelButtonText: 'Renunță',
     }).then((result) => {
       if (!result.isConfirmed) return;
-      var xhr = new XMLHttpRequest();
+      let xhr = new XMLHttpRequest();
       xhr.open('POST', 'cancel_order.php', true);
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
       xhr.onreadystatechange = function () {
@@ -2246,11 +2246,11 @@ $(document).ready(function () {
   }
 
   window.toggleComandaLucru = function () {
-    var comandaLucruElement = document.getElementById('comandaLucruElement');
+    let comandaLucruElement = document.getElementById('comandaLucruElement');
     if (comandaLucruElement) {
       comandaLucruElement.parentNode.removeChild(comandaLucruElement);
     } else {
-      var h2Element = document.createElement('h2');
+      let h2Element = document.createElement('h2');
       h2Element.id = 'comandaLucruElement';
       h2Element.textContent = 'Comandă în lucru';
       document.querySelector('h2').insertAdjacentElement('afterend', h2Element);
@@ -2675,12 +2675,12 @@ $(document).ready(function () {
   // ============================================================
 
   (function () {
-    var dueIso = SLA.dueDateIso;
-    var serverNowIso = SLA.serverNowIso;
-    var warnThreshold = SLA.warnThresholdSeconds || 24 * 3600;
+    let dueIso = SLA.dueDateIso;
+    let serverNowIso = SLA.serverNowIso;
+    let warnThreshold = SLA.warnThresholdSeconds || 24 * 3600;
 
-    var timerEl = document.getElementById('slaTimer');
-    var badgeEl = document.getElementById('slaBadge');
+    let timerEl = document.getElementById('slaTimer');
+    let badgeEl = document.getElementById('slaBadge');
 
     if (!dueIso) {
       if (timerEl) timerEl.innerText = 'Data scadentă nu este setată';
@@ -2688,7 +2688,7 @@ $(document).ready(function () {
       return;
     }
 
-    var dueMs = Date.parse(dueIso);
+    let dueMs = Date.parse(dueIso);
     if (isNaN(dueMs)) {
       if (timerEl) timerEl.innerText = 'Data scadentă invalidă';
       if (badgeEl) badgeEl.style.background = '#999';
@@ -2696,10 +2696,10 @@ $(document).ready(function () {
     }
 
     // offset: clientNow - serverNow (ms)
-    var clientServerOffset = Date.now() - Date.parse(serverNowIso);
+    let clientServerOffset = Date.now() - Date.parse(serverNowIso);
 
     function remainingSeconds() {
-      var estimatedServerNow = Date.now() - clientServerOffset;
+      let estimatedServerNow = Date.now() - clientServerOffset;
       return Math.floor((dueMs - estimatedServerNow) / 1000);
     }
 
@@ -2710,14 +2710,14 @@ $(document).ready(function () {
     // Format: days = 24h blocks; last day runs until dueMs (may be 18:00)
     function formatWithSeconds(totalSec) {
       if (totalSec <= 0) return 'Termen depășit';
-      var days = Math.floor(totalSec / 86400);
-      var rem = totalSec - days * 86400;
-      var hours = Math.floor(rem / 3600);
+      let days = Math.floor(totalSec / 86400);
+      let rem = totalSec - days * 86400;
+      let hours = Math.floor(rem / 3600);
       rem -= hours * 3600;
-      var mins = Math.floor(rem / 60);
-      var secs = rem % 60;
+      let mins = Math.floor(rem / 60);
+      let secs = rem % 60;
 
-      var dayPart = '';
+      let dayPart = '';
       if (days === 1) dayPart = '1 zi ';
       else if (days > 1) dayPart = days + ' zile ';
 
@@ -2728,7 +2728,7 @@ $(document).ready(function () {
     }
 
     function updateSlaTimer() {
-      var rem = remainingSeconds();
+      let rem = remainingSeconds();
       if (rem <= 0) {
         if (timerEl) timerEl.innerText = 'Termen depășit';
         if (badgeEl) badgeEl.style.background = '#e74c3c';
@@ -2754,7 +2754,7 @@ $(document).ready(function () {
     //     .then((r) => r.json())
     //     .then((data) => {
     //       if (data && data.serverNowIso) {
-    //         var newServerMs = Date.parse(data.serverNowIso);
+    //        let newServerMs = Date.parse(data.serverNowIso);
     //         if (!isNaN(newServerMs)) {
     //           clientServerOffset = Date.now() - newServerMs;
     //         }
