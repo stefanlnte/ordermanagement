@@ -42,6 +42,7 @@ $accent_soft = $accent_soft_map[$theme];
    ============================ */
 $sql = "SELECT 
             o.order_id,
+            o.status,
             o.detalii_suplimentare,
             o.avans,
             c.client_name,
@@ -111,6 +112,17 @@ if (preg_match('/^0\d{9}$/', $clean_phone)) {
 if (preg_match('/^7\d{8}$/', $clean_phone)) {
     $clean_phone = '40' . $clean_phone;
 }
+
+/* ============================
+   STATUS-DRIVEN ACTION BUTTONS
+   ============================ */
+/* "Terminată" / "Livrată" make no sense on an order that already has
+   that status, so they are omitted server-side (script.js already
+   guards its querySelector('#finishBtn'/'#deliverBtn') lookups).
+   Status values mirror dashboard.php: 'completed', 'delivered'. */
+$order_status = strtolower(trim((string)($order['status'] ?? '')));
+$is_completed = ($order_status === 'completed');
+$is_delivered = ($order_status === 'delivered');
 ?>
 
 <style>
@@ -446,13 +458,17 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
             <i class="fa-solid fa-print"></i> Print
         </button>
 
-        <button id="finishBtn" class="action-btn" title="Mark as Completed">
-            <i class="fa-solid fa-flag-checkered"></i> Terminată
-        </button>
+        <?php if (!$is_completed && !$is_delivered): ?>
+            <button id="finishBtn" class="action-btn" title="Mark as Completed">
+                <i class="fa-solid fa-flag-checkered"></i> Terminată
+            </button>
+        <?php endif; ?>
 
-        <button id="deliverBtn" class="action-btn" title="Mark as Delivered">
-            <i class="fa-solid fa-truck-ramp-box"></i> Livrată
-        </button>
+        <?php if (!$is_delivered): ?>
+            <button id="deliverBtn" class="action-btn" title="Mark as Delivered">
+                <i class="fa-solid fa-truck-ramp-box"></i> Livrată
+            </button>
+        <?php endif; ?>
     </div>
 
     <!--
