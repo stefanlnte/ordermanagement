@@ -1716,9 +1716,11 @@ document.addEventListener('DOMContentLoaded', function () {
           previewBox.classList.add('theme-' + theme);
         }
 
-        // Fixed min-height container prevents vertical jumping on load
+        // Placeholder sized close to the real preview (maxWidth is 350)
+        // so the popup barely resizes when the fetched HTML arrives —
+        // prevents any visible slide/jump on load.
         instance.setContent(
-          '<div style="min-height: 50px; display: flex; align-items: center; justify-content: center;">Loading...</div>',
+          '<div style="width: 300px; min-height: 110px; display: flex; align-items: center; justify-content: center;">Loading...</div>',
         );
 
         fetch(

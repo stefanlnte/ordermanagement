@@ -133,7 +133,8 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
        deep drop shadow, accent left-bar, floating hover lift.
        ============================================================ */
     .tippy-box[data-theme~='order-preview'] {
-        --preview-accent: #ffde00;             /* default: yellow / În lucru */
+        --preview-accent: #ffde00;
+        /* default: yellow / În lucru */
         --preview-accent-soft: rgba(255, 222, 0, 0.25);
 
         background: linear-gradient(135deg, #000000 0%, #3c3c3c 50%, #6c6c6c 100%);
@@ -145,7 +146,14 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         font-family: 'Poppins', sans-serif;
         overflow: hidden;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        /* Only animate visual effects — NOT layout properties like width,
+           otherwise the box visibly slides sideways when the "Loading..."
+           placeholder is swapped for the real (wider) HTML. */
+        transition:
+            transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+            opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+            border-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+            box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         transform-origin: top center;
     }
 
@@ -192,18 +200,22 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
         --preview-accent: #ffde00;
         --preview-accent-soft: rgba(255, 222, 0, 0.25);
     }
+
     .tippy-box[data-theme~='order-preview']:has(.order-preview-content.theme-cyan) {
         --preview-accent: #00aeef;
         --preview-accent-soft: rgba(0, 174, 239, 0.25);
     }
+
     .tippy-box[data-theme~='order-preview']:has(.order-preview-content.theme-magenta) {
         --preview-accent: #ff0000;
         --preview-accent-soft: rgba(255, 68, 68, 0.25);
     }
+
     .tippy-box[data-theme~='order-preview']:has(.order-preview-content.theme-green) {
         --preview-accent: #00c371;
         --preview-accent-soft: rgba(0, 195, 113, 0.25);
     }
+
     .tippy-box[data-theme~='order-preview']:has(.order-preview-content.theme-key) {
         --preview-accent: #a0aec0;
         --preview-accent-soft: rgba(160, 174, 192, 0.25);
@@ -227,7 +239,6 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
        lift + brighter hairline border + glow în culoarea accentului */
     .tippy-box[data-theme~='order-preview']:hover {
         opacity: 1;
-        transform: translateY(-5px);
         border-color: rgba(255, 255, 255, 0.15);
         border-left-color: var(--preview-accent);
         box-shadow:
@@ -244,7 +255,8 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
 
         font-family: 'Poppins', sans-serif;
         font-size: 14px;
-        padding: 22px 25px; /* same as .stat-card */
+        padding: 22px 25px;
+        /* same as .stat-card */
         line-height: 1.45;
         color: #fff;
     }
@@ -293,13 +305,16 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
         background: rgba(37, 211, 102, 0.16);
         color: #7dffad;
         text-decoration: none;
-        transition: all 0.3s ease;
+        transition:
+            background 0.3s ease,
+            color 0.3s ease,
+            transform 0.3s ease,
+            box-shadow 0.3s ease;
         box-shadow: 0 0 0 1px rgba(37, 211, 102, 0.3);
     }
 
     .order-preview-content .wa-link:hover {
         background: rgba(37, 211, 102, 0.32);
-        transform: translateY(-3px) scale(1.08);
         color: #7dffad;
         box-shadow:
             0 8px 16px rgba(37, 211, 102, 0.25),
@@ -315,7 +330,8 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
         display: block;
         margin-top: 14px;
         margin-bottom: 4px;
-        color: #aaaaaa; /* same secondary grey as .stat-info p */
+        color: #aaaaaa;
+        /* same secondary grey as .stat-info p */
         font-size: 0.8rem;
         font-weight: 700;
         text-transform: uppercase;
@@ -372,7 +388,6 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
     }
 
     .order-preview-content .action-btn:hover {
-        transform: translateY(-1px);
         filter: brightness(1.1);
     }
 
@@ -390,9 +405,9 @@ if (preg_match('/^7\d{8}$/', $clean_phone)) {
 </style>
 
 <div class="order-preview-content theme-<?= htmlspecialchars($theme) ?>"
-     data-order-id="<?= (int)$order_id ?>"
-     data-row-theme="<?= htmlspecialchars($theme) ?>"
-     style="--preview-accent: <?= htmlspecialchars($accent) ?>; --preview-accent-soft: <?= htmlspecialchars($accent_soft) ?>;">
+    data-order-id="<?= (int)$order_id ?>"
+    data-row-theme="<?= htmlspecialchars($theme) ?>"
+    style="--preview-accent: <?= htmlspecialchars($accent) ?>; --preview-accent-soft: <?= htmlspecialchars($accent_soft) ?>;">
 
     <strong id="clientNameText"><?= htmlspecialchars($order['client_name']) ?></strong>
 
