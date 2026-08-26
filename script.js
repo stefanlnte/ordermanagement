@@ -826,6 +826,10 @@ document.addEventListener('DOMContentLoaded', function () {
   // Expose globally so the filters/sort/pagination script (further down the
   // page) can trigger the same refresh instead of a full navigation.
   window.quietRefresh = quietRefresh;
+  // Expose the stat-card odometer animation so the background stat-only
+  // refresh (see the "Server-side quiet refresh" section at the file end) can
+  // roll the numbers without needing a full table refresh.
+  window.animateStatCards = animateStatCards;
 
   // Back/forward after a quiet filter/sort/page change should re-render too —
   // pushState alone only updates the address bar, not the page content.
@@ -2895,9 +2899,37 @@ document.addEventListener('DOMContentLoaded', function () {
     return window.location.search;
   }
 
-  let lastKey = null;    // view key we have a baseline for
-  let knownSig = null;   // hash of the table we believe is currently on screen
+  let lastKey = null;     // view key we have a baseline for
+  let knownPageSig = null;  // hash of the table/pagination/pinned for lastKey
+  let knownStatsSig = null; // hash of the stat cards currently on screen
   let checkInFlight = false;
+
+  /* Update ONLY the stat-card banner numbers (with the odometer roll). Used
+     when another user changed something that our filtered table wouldn't show,
+     so a full quietRefresh() would be pointless — the stats still moved. */
+  function applyStatCardsOnly(statsValues) {
+    if (typeof window.animateStatCards !== 'function') return false;
+    const banner = document.querySelector('.stats-banner');
+    if (!banner || !statsValues) return false;
+
+    // Build a synthetic banner carrying the NEW numbers, then hand both to the
+    // existing animateStatCards() so the old→new roll is animated correctly.
+    const synthetic = banner.cloneNode(true);
+    const map = [
+      ['card-overdue', statsValues.overdue],
+      ['card-active', statsValues.active],
+      ['card-completed', statsValues.completed],
+      ['card-deliver-today', statsValues.deliver_today],
+      ['card-delivered-today', statsValues.delivered_today],
+    ];
+    map.forEach(([cls, val]) => {
+      const el = synthetic.querySelector(`.${cls} h3`);
+      if (el) el.textContent = val;
+    });
+
+    window.animateStatCards(banner, synthetic);
+    return true;
+  }
 
   async function runCheck() {
     if (checkInFlight || document.visibilityState !== 'visible') return;
@@ -2911,7 +2943,12 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       if (!resp.ok) return; // not authed / server hiccup — stay quiet
       const data = await resp.json();
-      if (!data || typeof data.sig !== 'string') return;
+      if (
+        !data ||
+        typeof data.pageSig !== 'string' ||
+        typeof data.statsSig !== 'string'
+      )
+        return;
 
       // The user navigated to a different view while we were waiting.
       if (key !== currentViewKey()) return;
@@ -2921,29 +2958,49 @@ document.addEventListener('DOMContentLoaded', function () {
         // already shows this view, so just take a fresh baseline — acting on
         // it would only cause a pointless refresh.
         lastKey = key;
-        knownSig = data.sig;
+        knownPageSig = data.pageSig;
+        knownStatsSig = data.statsSig;
         return;
       }
 
-      if (knownSig === null) {
+      if (knownPageSig === null) {
         // First check for this view — capture the baseline without acting.
-        knownSig = data.sig;
+        knownPageSig = data.pageSig;
+        knownStatsSig = data.statsSig;
         return;
       }
 
-      if (knownSig === data.sig) return; // nothing the user sees changed
+      const pageChanged = knownPageSig !== data.pageSig;
+      const statsChanged = knownStatsSig !== data.statsSig;
 
-      // The visible table was changed by another user. Honour the guards:
+      // Nothing this user sees (neither the table nor the stat cards) changed.
+      if (!pageChanged && !statsChanged) return;
+
+      // Change from ANOTHER user; honour the guards.
       if (selfChangeGraceActive()) return; // it's our own recent action
       if (window.isOrderFormDirty()) return; // never clobber a draft
       if (detailViewBusy()) return; // user isn't just "looking at the table"
 
-      // Patch the table quietly. resetForm:false is critical — it means the
-      // "Add order" sidebar is NEVER wiped by an automatic refresh.
+      if (!pageChanged && statsChanged) {
+        // Only the global stat cards moved (e.g. an added order that this
+        // user's active filters wouldn't show). Refresh JUST the cards — do
+        // not churn the table, pinned strip or form.
+        applyStatCardsOnly(data.stats);
+        knownStatsSig = data.statsSig;
+        return;
+      }
+
+      // The table the user is looking at changed: full quiet refresh. It
+      // swaps table, pinned strip, pagination AND the stat banner together.
+      // resetForm:false means the "Add order" sidebar is never wiped.
       await window.quietRefresh(window.location.href, { resetForm: false });
 
-      // Record the hash we've now rendered, so the next poll is "no change".
-      if (currentViewKey() === key) knownSig = data.sig;
+      // The full refresh rendered the latest stats too, so both baselines now
+      // match what is on screen.
+      if (currentViewKey() === key) {
+        knownPageSig = data.pageSig;
+        knownStatsSig = data.statsSig;
+      }
     } catch (err) {
       // Network blip — simply try again on the next tick.
     } finally {

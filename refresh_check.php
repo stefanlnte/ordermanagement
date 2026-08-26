@@ -10,19 +10,24 @@
  * sort_order, page) together with `sig` — a hash of the table it rendered.
  *
  * The server re-runs the EXACT same filtered query dashboard.php uses and
- * re-hashes the result for THOSE filters. Two outcomes:
+ * re-hashes the result for THOSE filters. It returns TWO independent
+ * signatures so the client can refresh only what actually changed:
  *
- *   - hash unchanged -> nothing the user is currently looking at has changed
- *                       (e.g. a new order that their active filters exclude)
- *                       -> { "changed": false }
- *   - hash differs   -> the rows behind this user's current view changed
- *                       (another user added an order, delivered one, changed
- *                       a status, ...) -> { "changed": true, "sig": <new> }
+ *   - pageSig  : hash of the table rows currently shown, the page count and
+ *                the pinned strip. If two ticks differ here, the table view
+ *                this user is looking at changed (another user added an
+ *                order that their filters SHOW, delivered one, changed a
+ *                status, ...) -> client should do a full quietRefresh().
+ *   - statsSig : hash of the global stat-card aggregates (overdue/active/
+ *                completed/deliver_today/delivered_today). These are
+ *                computed over ALL orders, regardless of the user's filters.
+ *                If ONLY this differs, the table itself is unchanged (e.g. a
+ *                new order that the user's active filters exclude) but the
+ *                stat cards are stale -> client refreshes just the banner.
  *
- * This is what lets the client call its own quietRefresh() in response to
- * OTHER users' actions. The decision about whether the local user is
- * mid-draft in the "Add order" form is made client-side on this response, so
- * a refresh never wipes someone's in-progress form.
+ * The decision about whether the local user is mid-draft in the "Add order"
+ * form is made client-side on this response, so a refresh never wipes
+ * someone's in-progress form.
  * ---------------------------------------------------------------------------
  */
 
@@ -44,7 +49,13 @@ header('Content-Type: application/json; charset=utf-8');
 // Must be an authenticated user, just like dashboard.php.
 if (empty($_SESSION['username'])) {
     http_response_code(401);
-    echo json_encode(['changed' => false, 'sig' => '', 'unauthorized' => true]);
+    http_response_code(401);
+    echo json_encode([
+        'pageSig'  => '',
+        'statsSig' => '',
+        'stats'    => [],
+        'unauthorized' => true,
+    ]);
     exit;
 }
 
@@ -141,14 +152,48 @@ if ($pinned_res = $conn->query($pinned_sql)) {
 }
 $sig_parts[] = 'pinned:' . implode(',', $pinned_ids);
 
+/* ---- STAT CARDS (global aggregates over ALL orders, filter-independent) -- */
+/* Must match the $stats_sql aggregate in dashboard.php exactly.             */
+$stats_sql = "SELECT
+                SUM(status = 'assigned' AND due_date < CURDATE())             AS overdue,
+                SUM(status = 'assigned')                                      AS active,
+                SUM(status = 'completed')                                     AS completed,
+                SUM(status = 'assigned' AND due_date = CURDATE())             AS deliver_today,
+                SUM(status = 'delivered' AND DATE(delivery_date) = CURDATE()) AS delivered_today,
+                SUM(status = 'delivered')                                     AS delivered_total,
+                SUM(status = 'cancelled')                                     AS cancelled_total
+              FROM orders";
+$stats_row = [];
+if ($stats_res = $conn->query($stats_sql)) {
+    $stats_row = $stats_res->fetch_assoc() ?: [];
+}
+$stats = [
+    'overdue'         => (int)($stats_row['overdue']         ?? 0),
+    'active'          => (int)($stats_row['active']          ?? 0),
+    'completed'       => (int)($stats_row['completed']       ?? 0),
+    'deliver_today'   => (int)($stats_row['deliver_today']   ?? 0),
+    'delivered_today' => (int)($stats_row['delivered_today'] ?? 0),
+    'delivered_total' => (int)($stats_row['delivered_total'] ?? 0),
+    'cancelled_total' => (int)($stats_row['cancelled_total'] ?? 0),
+];
+
 $conn->close();
 
-$new_sig = hash('sha256', implode('|', $sig_parts));
-
-$client_sig = isset($_GET['sig']) && is_string($_GET['sig']) ? $_GET['sig'] : '';
-$changed    = ($client_sig !== '' && $client_sig !== $new_sig);
+// pageSig  -> governs the table / pagination / pinned strip (the existing
+//             sections quietRefresh() swaps). Does NOT include the stats.
+$page_sig = hash('sha256', implode('|', $sig_parts));
+// statsSig -> governs the stat-card banner only. Computed from the 5 values
+//             the dashboard actually displays.
+$stats_sig = hash('sha256', implode(':', [
+    $stats['overdue'],
+    $stats['active'],
+    $stats['completed'],
+    $stats['deliver_today'],
+    $stats['delivered_today'],
+]));
 
 echo json_encode([
-    'changed' => $changed,
-    'sig'     => $new_sig,
+    'pageSig'  => $page_sig,
+    'statsSig' => $stats_sig,
+    'stats'    => $stats,
 ]);
