@@ -117,7 +117,10 @@ if ($client_filter) {
 }
 
 /* ---- Visible rows for this page (ids + status drive the content hash) -- */
-$page_sql = 'SELECT o.order_id, o.status FROM orders o' . $where_sql;
+/* Mirror dashboard.php's INNER JOIN clients so the hash matches the rows the
+   table actually renders (orders with a missing client are excluded there). */
+$page_sql = 'SELECT o.order_id, o.status FROM orders o
+             JOIN clients c ON o.client_id = c.client_id' . $where_sql;
 if ($status_filter === 'delivered' || $status_filter === 'delivered_today') {
     // Same special sort dashboard.php uses for the delivered views.
     $page_sql .= ' ORDER BY o.delivery_date ' . $sort_order;
@@ -140,7 +143,10 @@ while ($row = $rows->fetch_assoc()) {
 }
 
 /* ---- Total count (drives the pagination block, also swapped) ----------- */
-$count_sql = 'SELECT COUNT(*) AS total FROM orders o' . $where_sql;
+/* Same INNER JOIN clients as dashboard.php, so the count matches the pages
+   the table can actually fill (no phantom pages from orphaned orders). */
+$count_sql = 'SELECT COUNT(*) AS total FROM orders o
+              JOIN clients c ON o.client_id = c.client_id' . $where_sql;
 $total_orders = 0;
 $count_stmt = $conn->prepare($count_sql);
 if ($types !== '') {

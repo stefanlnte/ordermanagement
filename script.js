@@ -3051,6 +3051,13 @@ document.addEventListener('DOMContentLoaded', function () {
       if (window.isOrderFormDirty()) return; // never clobber a draft
       if (detailViewBusy()) return; // user isn't just "looking at the table"
 
+      // A manual pagination / filter / sort refresh is already in flight (the
+      // toolbar adds .is-loading while goQuietly() fetches). If we fire a full
+      // quietRefresh() now it would race it and can undo the click — e.g. a
+      // pagination link that appears to "not work". Skip this tick; the next
+      // poll will pick the change up.
+      if (document.querySelector('.filters.is-loading')) return;
+
       if (!pageChanged && statsChanged) {
         // Only the global stat cards moved (e.g. an added order that this
         // user's active filters wouldn't show). Refresh JUST the cards — do

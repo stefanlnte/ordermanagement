@@ -150,23 +150,13 @@ if ($status_filter === 'delivered' || $status_filter === 'delivered_today') {
 }
 
 $order_sql .= " LIMIT ? OFFSET ?";
-$data_params = array_merge($params, [$limit, $offset]);
-$data_types = $types . 'ii'; // integer, integer
 
-// Pregătim și executăm query-ul pentru comenzile filtrate
-$stmt = $conn->prepare($order_sql);
-$stmt->bind_param($data_types, ...$data_params);
-$stmt->execute();
-$orders_result = $stmt->get_result();
-
-// Numărul total de comenzi (pentru paginare) — în loc de SQL_CALC_FOUND_ROWS
-// (care forțează numărarea tuturor rândurilor ce se potrivesc, indiferent de
-// LIMIT, și nu poate folosi eficient un index "covering"), rulăm un COUNT(*)
-// separat cu aceleași condiții WHERE, dar fără JOIN-urile inutile (nu avem
-// nevoie de coloane din clients/users/categories doar ca să numărăm rândurile).
-// Pe tabele mari, cu index pe o.status/coloanele filtrate, varianta asta este
-// de regulă mai rapidă decât SQL_CALC_FOUND_ROWS.
-$count_sql = "SELECT COUNT(*) AS total FROM orders o" . $where_sql;
+// Numărul total de comenzi (pentru paginare) — trebuie să reflecte ACELEAȘI
+// rânduri pe care le poate afișa tabelul. Tabelul folosește INNER JOIN clients,
+// deci rândurile orders cu un client inexistent sunt excluse din afișare; dacă
+// numărăm fără join, paginarea ar arăta pagini pe care tabelul nu le poate umple.
+$count_sql = "SELECT COUNT(*) AS total FROM orders o
+              JOIN clients c ON o.client_id = c.client_id" . $where_sql;
 $count_stmt = $conn->prepare($count_sql);
 if ($types !== '') {
     $count_stmt->bind_param($types, ...$params);
@@ -175,8 +165,22 @@ $count_stmt->execute();
 $total_orders = (int) $count_stmt->get_result()->fetch_assoc()['total'];
 $count_stmt->close();
 
-// Calculăm numărul total de pagini
-$total_pages = ceil($total_orders / $limit);
+$total_pages = max(1, (int) ceil($total_orders / $limit));
+
+// Pagină invalidă (utilizatorul a rămas pe un ?page= care acum depășește
+// ultima pagină — de ex. comenzi completate/livrate de alți utilizatori, un
+// filtru smart de tip „De livrat azi" care s-a golit, etc.). În loc să
+// afișăm o pagină goală "Nu există comenzi", sărim la ultima pagină validă.
+$page = max(1, min((int) $page, $total_pages));
+$offset = ($page - 1) * $limit;
+$data_types = $types . 'ii'; // integer, integer
+$data_params = array_merge($params, [$limit, $offset]);
+
+// Pregătim și executăm query-ul pentru comenzile filtrate
+$stmt = $conn->prepare($order_sql);
+$stmt->bind_param($data_types, ...$data_params);
+$stmt->execute();
+$orders_result = $stmt->get_result();
 
 // --- STATISTICI RAPIDE PENTRU CARDS ---
 // Un singur query cu agregare condițională.
