@@ -1781,6 +1781,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!filterForm || !hiddenInput) return; // filter toolbar only exists on dashboard.php
 
+    // Stat-card "smart" status buckets have no <option> in the #status_filter
+    // <select>, so they can't be represented by the form alone. BuildFilterUrl()
+    // reads the form, so without this we'd LOSE the filter when sorting/filtering
+    // (the select is empty for smart buckets and the param drops out). Keep the
+    // current smart filter here so buildFilterUrl() re-applies it.
+    const SMART_STATUS_FILTERS = ['overdue', 'deliver_today', 'delivered_today'];
+    let smartFilterStatus = '';
+
+    // If the page loaded with a smart filter already active (e.g. ?status_filter=
+    // deliver_today), pick it up so a subsequent sort keeps it.
+    const activeCard = document.querySelector(
+      '.stat-card.stat-filter-active[data-status-filter]',
+    );
+    if (activeCard) smartFilterStatus = activeCard.dataset.statusFilter;
+
     // Highlight active arrow on load
     arrows.forEach((a) => {
       if (a.dataset.value === hiddenInput.value) {
@@ -1796,6 +1811,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
       for (const [key, value] of formData.entries()) {
         if (value !== '') params.append(key, value);
+      }
+
+      // Smart stat-card filters can't live in the <select>, so re-apply the
+      // currently active one unless the caller explicitly overrides it.
+      if (smartFilterStatus !== '') {
+        params.set('status_filter', smartFilterStatus);
       }
 
       Object.entries(overrides).forEach(([key, value]) => {
@@ -1862,6 +1883,9 @@ document.addEventListener('DOMContentLoaded', function () {
         // Keep the stat-card highlight in step when the status is changed via
         // the dropdown (assigned/completed map to the matching card).
         if (this.id === 'status_filter') {
+          // A dropdown value is representable in the form — no longer a "smart"
+          // filter, so stop re-applying the stale smart bucket on sort.
+          smartFilterStatus = '';
           syncStatCardHighlight(this.value);
         }
         goQuietly(buildFilterUrl());
@@ -1882,6 +1906,7 @@ document.addEventListener('DOMContentLoaded', function () {
           if (a.dataset.value === 'ASC') a.classList.add('active');
         });
 
+        smartFilterStatus = '';
         clearStatCardActive();
         goQuietly('dashboard.php');
       });
@@ -1939,6 +1964,8 @@ document.addEventListener('DOMContentLoaded', function () {
           }
 
           syncStatCardHighlight(next === '' ? '' : value);
+          // Remember the active smart bucket so a later sort/filter keeps it.
+          smartFilterStatus = SMART_STATUS_FILTERS.includes(next) ? next : '';
           goQuietly(buildFilterUrl({ status_filter: next, page: 1 }));
         }
 
