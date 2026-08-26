@@ -79,10 +79,23 @@ $where_sql = ' WHERE 1=1';
 $params    = [];
 $types     = '';
 
-if ($status_filter !== 'delivered' && $status_filter !== 'cancelled') {
+// Stat-card smart filters — MUST mirror dashboard.php's $smart_status_filters.
+$smart_status_filters = [
+    'overdue'         => "o.status = 'assigned' AND o.due_date < CURDATE()",
+    'deliver_today'   => "o.status = 'assigned' AND o.due_date = CURDATE()",
+    'delivered_today' => "o.status = 'delivered' AND DATE(o.delivery_date) = CURDATE()",
+];
+
+if (
+    $status_filter !== 'delivered'
+    && $status_filter !== 'cancelled'
+    && !isset($smart_status_filters[$status_filter])
+) {
     $where_sql .= " AND o.status NOT IN ('delivered', 'cancelled')";
 }
-if ($status_filter) {
+if (isset($smart_status_filters[$status_filter])) {
+    $where_sql .= ' AND (' . $smart_status_filters[$status_filter] . ')';
+} elseif ($status_filter) {
     $where_sql .= ' AND o.status = ?';
     $params[] = $status_filter;
     $types   .= 's';
@@ -105,8 +118,8 @@ if ($client_filter) {
 
 /* ---- Visible rows for this page (ids + status drive the content hash) -- */
 $page_sql = 'SELECT o.order_id, o.status FROM orders o' . $where_sql;
-if ($status_filter === 'delivered') {
-    // Same special sort dashboard.php uses for the delivered view.
+if ($status_filter === 'delivered' || $status_filter === 'delivered_today') {
+    // Same special sort dashboard.php uses for the delivered views.
     $page_sql .= ' ORDER BY o.delivery_date ' . $sort_order;
 } else {
     $page_sql .= ' ORDER BY o.order_id ' . $sort_order;

@@ -1859,6 +1859,11 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#status_filter, #assigned_filter, #client_filter').on(
       'select2:select select2:clear',
       function () {
+        // Keep the stat-card highlight in step when the status is changed via
+        // the dropdown (assigned/completed map to the matching card).
+        if (this.id === 'status_filter') {
+          syncStatCardHighlight(this.value);
+        }
         goQuietly(buildFilterUrl());
       },
     );
@@ -1877,9 +1882,74 @@ document.addEventListener('DOMContentLoaded', function () {
           if (a.dataset.value === 'ASC') a.classList.add('active');
         });
 
+        clearStatCardActive();
         goQuietly('dashboard.php');
       });
     }
+
+    // --- STAT CARDS AS FILTER SHORTCUTS ---------------------------------
+    // Each .stat-card carries a data-status-filter. Clicking (or focusing +
+    // Enter/Space) toggles that status bucket on the table via the same quiet
+    // refresh used by the toolbar. Clicking the active card again clears it.
+
+    function clearStatCardActive() {
+      document.querySelectorAll('.stat-card').forEach((card) => {
+        card.classList.remove('stat-filter-active');
+        card.setAttribute('aria-pressed', 'false');
+      });
+    }
+
+    function syncStatCardHighlight(statusValue) {
+      document.querySelectorAll('.stat-card[data-status-filter]').forEach(
+        (card) => {
+          const active =
+            statusValue !== '' && card.dataset.statusFilter === statusValue;
+          card.classList.toggle('stat-filter-active', active);
+          card.setAttribute('aria-pressed', active ? 'true' : 'false');
+        },
+      );
+    }
+
+    document
+      .querySelectorAll('.stat-card[data-status-filter]')
+      .forEach((card) => {
+        function applyCardFilter() {
+          const value = card.dataset.statusFilter;
+          const wasActive = card.classList.contains('stat-filter-active');
+          const next = wasActive ? '' : value; // click active card → clear
+
+          // Keep the toolbar's status <select> honest: values it has an option
+          // for are shown, smart buckets (overdue/deliver_today/...) have no
+          // <option> so fall back to the neutral "Active" entry.
+          const statusSelect = document.getElementById('status_filter');
+          if (statusSelect) {
+            const knownOptions = [
+              '',
+              'assigned',
+              'completed',
+              'delivered',
+              'cancelled',
+            ];
+            statusSelect.value = knownOptions.includes(next) ? next : '';
+            // Repaint the Select2 widget WITHOUT firing our select2 refresh
+            // handler (that would cause a second, redundant table fetch).
+            if (typeof jQuery !== 'undefined') {
+              $(statusSelect).trigger('change');
+            }
+          }
+
+          syncStatCardHighlight(next === '' ? '' : value);
+          goQuietly(buildFilterUrl({ status_filter: next, page: 1 }));
+        }
+
+        card.addEventListener('click', applyCardFilter);
+        card.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            applyCardFilter();
+          }
+        });
+      });
 
     // Pagination links live inside the AJAX-swapped .pagination block, so
     // they're recreated on every refresh — rebind after each one via the

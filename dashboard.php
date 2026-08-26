@@ -88,13 +88,32 @@ $where_sql = " WHERE 1=1"; // WHERE 1=1 pentru a putea adăuga condiții dinamic
 $params = [];
 $types = '';
 
+// Stat cards act as filter shortcuts. Each card maps to a bucket; the values
+// below are accepted as `status_filter` so clicking a card filters the table
+// to exactly that bucket. They mirror the aggregate expressions in the
+// "STATISTICI RAPIDE" query below (must stay in sync with both that query
+// and the JS in script.js).
+$smart_status_filters = [
+    'overdue'         => "o.status = 'assigned' AND o.due_date < CURDATE()",
+    'deliver_today'   => "o.status = 'assigned' AND o.due_date = CURDATE()",
+    'delivered_today' => "o.status = 'delivered' AND DATE(o.delivery_date) = CURDATE()",
+];
+
 // Excludem comenzile cu status 'delivered' și 'cancelled' în mod implicit
-if ($status_filter !== 'delivered' && $status_filter !== 'cancelled') {
+// (skipped for the smart filters, which already pin the status explicitly)
+if (
+    $status_filter !== 'delivered'
+    && $status_filter !== 'cancelled'
+    && !isset($smart_status_filters[$status_filter])
+) {
     $where_sql .= " AND o.status NOT IN ('delivered', 'cancelled') ";
 }
 
 // Adăugăm filtre dinamice în funcție de parametrii primiți
-if ($status_filter) {
+if (isset($smart_status_filters[$status_filter])) {
+    // Stat-card bucket filter (e.g. "Termen Depășit", "Livrate azi").
+    $where_sql .= ' AND (' . $smart_status_filters[$status_filter] . ')';
+} elseif ($status_filter) {
     $where_sql .= " AND o.status = ?";
     $params[] = $status_filter;
     $types .= 's'; // string
@@ -123,8 +142,8 @@ $order_sql = "SELECT o.*, c.client_name, u.username as assigned_user, cat.catego
     . $where_sql;
 
 // Adăugăm sortarea și paginarea
-// Override sorting when filtering delivered orders
-if ($status_filter === 'delivered') {
+// Override sorting when filtering delivered orders (or the delivered-today card)
+if ($status_filter === 'delivered' || $status_filter === 'delivered_today') {
     $order_sql .= " ORDER BY o.delivery_date $sort_order";
 } else {
     $order_sql .= " ORDER BY o.order_id $sort_order";
@@ -464,7 +483,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <!-- Banner Statistici Rapide -->
     <div class="stats-banner" data-aos="fade-down" data-aos-duration="800">
         <!-- Card Termen Depășit -->
-        <div class="stat-card card-overdue">
+        <div class="stat-card card-overdue<?= $status_filter === 'overdue' ? ' stat-filter-active' : '' ?>"
+             data-status-filter="overdue"
+             title="Filtrează: Termen Depășit"
+             tabindex="0"
+             role="button"
+             aria-pressed="<?= $status_filter === 'overdue' ? 'true' : 'false' ?>">
             <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_overdue; ?></h3>
@@ -473,7 +497,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
 
         <!-- Card În Lucru -->
-        <div class="stat-card card-active">
+        <div class="stat-card card-active<?= $status_filter === 'assigned' ? ' stat-filter-active' : '' ?>"
+             data-status-filter="assigned"
+             title="Filtrează: Atribuite"
+             tabindex="0"
+             role="button"
+             aria-pressed="<?= $status_filter === 'assigned' ? 'true' : 'false' ?>">
             <div class="stat-icon"><i class="fa-solid fa-person-digging"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_active; ?></h3>
@@ -482,7 +511,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
 
         <!-- Card Finalizate -->
-        <div class="stat-card card-completed">
+        <div class="stat-card card-completed<?= $status_filter === 'completed' ? ' stat-filter-active' : '' ?>"
+             data-status-filter="completed"
+             title="Filtrează: Finalizate"
+             tabindex="0"
+             role="button"
+             aria-pressed="<?= $status_filter === 'completed' ? 'true' : 'false' ?>">
             <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_completed; ?></h3>
@@ -491,7 +525,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
 
         <!-- Card De livrat azi (finalizate cu delivery_date = azi) -->
-        <div class="stat-card card-deliver-today">
+        <div class="stat-card card-deliver-today<?= $status_filter === 'deliver_today' ? ' stat-filter-active' : '' ?>"
+             data-status-filter="deliver_today"
+             title="Filtrează: De livrat azi"
+             tabindex="0"
+             role="button"
+             aria-pressed="<?= $status_filter === 'deliver_today' ? 'true' : 'false' ?>">
             <div class="stat-icon"><i class="fa-solid fa-truck-fast"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_deliver_today; ?></h3>
@@ -500,7 +539,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
 
         <!-- Card Livrate azi -->
-        <div class="stat-card card-delivered-today">
+        <div class="stat-card card-delivered-today<?= $status_filter === 'delivered_today' ? ' stat-filter-active' : '' ?>"
+             data-status-filter="delivered_today"
+             title="Filtrează: Livrate azi"
+             tabindex="0"
+             role="button"
+             aria-pressed="<?= $status_filter === 'delivered_today' ? 'true' : 'false' ?>">
             <div class="stat-icon"><i class="fa-solid fa-flag-checkered"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_delivered_today; ?></h3>

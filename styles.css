@@ -2432,6 +2432,28 @@ textarea {
   border-color: rgba(255, 255, 255, 0.15);
 }
 
+/* Stat cards double as filter shortcuts */
+.stat-card {
+  cursor: pointer;
+  user-select: none;
+}
+.stat-card:focus-visible {
+  outline: 2px solid #ffff00;
+  outline-offset: 2px;
+}
+
+/* Active (filter applied) — yellow accent matches the theme */
+.stat-card.stat-filter-active {
+  border-color: #ffff00;
+  box-shadow:
+    0 0 0 1px #ffff00,
+    0 10px 25px rgba(0, 0, 0, 0.35);
+}
+.stat-card.stat-filter-active h3,
+.stat-card.stat-filter-active p {
+  color: #ffff00;
+}
+
 /* Aliniere text interior */
 .stat-info {
   display: flex;
