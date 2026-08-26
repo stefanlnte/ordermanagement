@@ -850,6 +850,11 @@ document.addEventListener('DOMContentLoaded', function () {
         // 3. Sync the Select2 UI for Date and Operator to reflect the native form reset
         $('#datePickerSelect, #assigned_to').trigger('change');
       }
+      // Keep the server-side quiet-refresh dirty-guard in sync: after a real
+      // reset the form has no user input, so it must NOT read as "dirty".
+      if (typeof window.markOrderFormClean === 'function') {
+        window.markOrderFormClean();
+      }
     }
   }
 
@@ -978,6 +983,13 @@ document.addEventListener('DOMContentLoaded', function () {
             title: 'Comanda a fost adăugată!',
           });
           this.reset();
+          // The change was made by THIS user: suppress the server-side quiet
+          // refresh for a short window so we don't echo our own action back,
+          // and record that the add-order form is clean (nothing to protect).
+          window.__autoRefreshSuppressUntil = Date.now() + 10000;
+          if (typeof window.markOrderFormClean === 'function') {
+            window.markOrderFormClean();
+          }
 
           const match = data.match(/order_id=(\d+)/);
           const orderId = match ? match[1] : null;
@@ -2795,3 +2807,155 @@ $(document).ready(function () {
     // }, 60000);
   })();
 })(); // end of View Order IIFE
+
+/**
+ * ============================================================
+ * SECTION: Server-side quiet refresh (multi-user live updates)
+ * ------------------------------------------------------------
+ * The app is used by several logged-in users at the same time. When one of
+ * them adds an order / delivers one / changes a status / etc., everyone
+ * else who is currently looking at a view that WOULD show that change
+ * should see it appear by itself — without reloading the page.
+ *
+ * This is the client half. It polls refresh_check.php in the background,
+ * sending the current filters/sort/page plus a hash of the table the
+ * browser is showing. The server re-hashes the CURRENT data for those exact
+ * filters. If the hash differs, our view has been changed by another user,
+ * so we call the existing window.quietRefresh() to patch the table in place.
+ *
+ * The safety rules enforced here:
+ *   - DO NOT refresh while the "Add order" sidebar has ANY filled field
+ *     (we must never throw away somebody's in-progress draft).
+ *   - DO NOT refresh when the current filters wouldn't even show the change
+ *     (in that case refresh_check.php already answers changed:false).
+ *   - DO NOT refresh in the seconds right after the LOCAL user themself made
+ *     a change (we don't want to echo our own action back at us).
+ *   - DO NOT refresh while the order/statistics slider or a modal is open
+ *     (that user is focusing on a detail view, not on "just looking" at the
+ *     table). Closing the slider already triggers its own quiet refresh.
+ * ============================================================ */
+document.addEventListener('DOMContentLoaded', function () {
+  const addForm = document.getElementById('orderForm'); // dashboard only
+  if (!addForm) return; // not the dashboard — nothing to auto-refresh
+
+  const POLL_INTERVAL_MS = 10000; // how often we ask the server about changes
+
+  /* ------------------------------------------------------------
+   * Dirty detection for the "Add order" form.
+   * We snapshot the serialised form after every real reset / submit and mark
+   * the form "dirty" whenever the current serialisation differs from that
+   * clean baseline (i.e. the user has typed or picked something).
+   * ------------------------------------------------------------ */
+  window.__orderFormCleanState = null;
+
+  function captureOrderFormState() {
+    if (typeof jQuery === 'undefined') return '';
+    return $('#orderForm').serialize();
+  }
+
+  window.markOrderFormClean = function () {
+    window.__orderFormCleanState = captureOrderFormState();
+  };
+
+  window.isOrderFormDirty = function () {
+    if (window.__orderFormCleanState === null) {
+      // No baseline yet (Select2 still warming up) — capture lazily and treat
+      // an untouched form as clean so a legitimate refresh is never blocked.
+      window.__orderFormCleanState = captureOrderFormState();
+      return false;
+    }
+    return captureOrderFormState() !== window.__orderFormCleanState;
+  };
+
+  // Seed the baseline now; DOMContentLoaded here runs after the Select2 init
+  // listeners, so the default selections (category, date, operator) are in.
+  window.markOrderFormClean();
+
+  /* ---- Did the LOCAL user just make the change themselves? ------------ */
+  function selfChangeGraceActive() {
+    return (
+      window.__autoRefreshSuppressUntil &&
+      Date.now() < window.__autoRefreshSuppressUntil
+    );
+  }
+
+  /* ---- Is the user focusing on a detail view / modal instead? --------- */
+  function detailViewBusy() {
+    const panel = document.getElementById('orderSliderPanel');
+    if (panel && panel.classList.contains('open')) return true;
+    if (typeof jQuery !== 'undefined') {
+      // Any in-page modal (notes, WhatsApp sender, ...) counts as "busy".
+      if ($('.modal:visible').length > 0) return true;
+    }
+    return false;
+  }
+
+  /* ---- The view key = the exact filter/sort/page in the address bar. -- */
+  function currentViewKey() {
+    return window.location.search;
+  }
+
+  let lastKey = null;    // view key we have a baseline for
+  let knownSig = null;   // hash of the table we believe is currently on screen
+  let checkInFlight = false;
+
+  async function runCheck() {
+    if (checkInFlight || document.visibilityState !== 'visible') return;
+    checkInFlight = true;
+
+    try {
+      const key = currentViewKey();
+
+      const resp = await fetch('refresh_check.php' + (key || ''), {
+        cache: 'no-store',
+      });
+      if (!resp.ok) return; // not authed / server hiccup — stay quiet
+      const data = await resp.json();
+      if (!data || typeof data.sig !== 'string') return;
+
+      // The user navigated to a different view while we were waiting.
+      if (key !== currentViewKey()) return;
+
+      if (key !== lastKey) {
+        // New view (manual filter / sort / pagination change). The browser
+        // already shows this view, so just take a fresh baseline — acting on
+        // it would only cause a pointless refresh.
+        lastKey = key;
+        knownSig = data.sig;
+        return;
+      }
+
+      if (knownSig === null) {
+        // First check for this view — capture the baseline without acting.
+        knownSig = data.sig;
+        return;
+      }
+
+      if (knownSig === data.sig) return; // nothing the user sees changed
+
+      // The visible table was changed by another user. Honour the guards:
+      if (selfChangeGraceActive()) return; // it's our own recent action
+      if (window.isOrderFormDirty()) return; // never clobber a draft
+      if (detailViewBusy()) return; // user isn't just "looking at the table"
+
+      // Patch the table quietly. resetForm:false is critical — it means the
+      // "Add order" sidebar is NEVER wiped by an automatic refresh.
+      await window.quietRefresh(window.location.href, { resetForm: false });
+
+      // Record the hash we've now rendered, so the next poll is "no change".
+      if (currentViewKey() === key) knownSig = data.sig;
+    } catch (err) {
+      // Network blip — simply try again on the next tick.
+    } finally {
+      checkInFlight = false;
+    }
+  }
+
+  // First poll quickly, then every interval, and re-check when the tab
+  // regains focus (it may have missed a change while hidden in the background).
+  if (document.visibilityState === 'visible') runCheck();
+  setInterval(runCheck, POLL_INTERVAL_MS);
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') runCheck();
+  });
+});
