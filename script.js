@@ -1523,6 +1523,47 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 /* ============================================================
+ * SECTION: sendSms (shared helper)
+ * ------------------------------------------------------------
+ * POSTs the "order finished" SMS to send_sms.php. Shared by the
+ * view_order.php flow (window.finishOrder) AND the order-preview
+ * Tippy popup on the dashboard, so marking an order Terminată
+ * from either place sends the same notification.
+ * Accepts an optional onSuccess callback (fires only when the
+ * request returns HTTP 200).
+ * ============================================================ */
+window.sendSms = function (clientPhone, orderId, assignedTo, clientName, boss, onSuccess) {
+  let xhr = new XMLHttpRequest();
+  xhr.open('POST', 'send_sms.php', true);
+  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        console.log('SMS SENT for order ' + orderId);
+        if (typeof onSuccess === 'function') onSuccess();
+      } else {
+        console.error('Nu s-a putut trimite SMS pentru comanda ' + orderId + ' (status ' + xhr.status + ')');
+      }
+    }
+  };
+  xhr.onerror = function () {
+    console.error('SMS request error for order ' + orderId);
+  };
+  xhr.send(
+    'to=' +
+      encodeURIComponent(clientPhone) +
+      '&order_id=' +
+      encodeURIComponent(orderId) +
+      '&assigned_to=' +
+      encodeURIComponent(assignedTo) +
+      '&client_name=' +
+      encodeURIComponent(clientName) +
+      '&boss=' +
+      encodeURIComponent(boss),
+  );
+};
+
+/* ============================================================
  * SECTION: Order preview tooltip (Tippy)
  * ------------------------------------------------------------
  * Attaches a Tippy.js tooltip to every order row that lazily loads
@@ -1557,7 +1598,20 @@ document.addEventListener('DOMContentLoaded', function () {
           cancelButtonText: 'Anulează',
         }).then((result) => {
           if (result.isConfirmed) {
-            quickUpdateOrderStatus(orderId, 'completed', {}, instance);
+            quickUpdateOrderStatus(orderId, 'completed', {}, instance, function () {
+              // Mirror view_order.php's finish flow: after the order is
+              // marked completed, notify the client via SMS.
+              const content = root.querySelector('.order-preview-content');
+              if (content) {
+                window.sendSms(
+                  content.dataset.clientPhone || '',
+                  orderId,
+                  content.dataset.assignedTo || '',
+                  content.dataset.clientName || '',
+                  content.dataset.boss || '',
+                );
+              }
+            });
           }
         });
       };
@@ -1599,7 +1653,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Shared by finish/deliver above — same endpoint & param shape
   // view_order.php already uses for these actions.
-  function quickUpdateOrderStatus(orderId, status, extra, instance) {
+  function quickUpdateOrderStatus(orderId, status, extra, instance, onSuccess) {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', 'update_order_status.php', true);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -1623,6 +1677,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         if (instance) instance.hide();
         if (typeof window.quietRefresh === 'function') window.quietRefresh();
+        if (typeof onSuccess === 'function') onSuccess();
       } else {
         Toast.fire({
           icon: 'error',
@@ -2209,38 +2264,24 @@ $(document).ready(function () {
     xhr.send('order_id=' + encodeURIComponent(orderId) + '&status=completed');
   };
 
-  // sendSMS is called from finishOrder() — local to the IIFE
+  // sendSMS is called from finishOrder() — local to the IIFE.
+  // It delegates the actual request to the shared window.sendSms helper
+  // (same one the order-preview Tippy popup uses), then shows the success
+  // modal only after send_sms.php answered with HTTP 200.
   function sendSMS(clientPhone, orderId, assignedTo, clientName, boss) {
-    let xhr = new XMLHttpRequest();
-    xhr.open('POST', 'send_sms.php', true);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState == 4 && xhr.status == 200) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Felicitări!',
-          text: 'Comanda a fost terminată cu succes 🎉',
-          position: 'center',
-          showConfirmButton: false,
-          timer: 2000,
-          timerProgressBar: true,
-        }).then(() => {
-          console.log('SMS SENT');
-        });
-      }
-    };
-    xhr.send(
-      'to=' +
-        encodeURIComponent(clientPhone) +
-        '&order_id=' +
-        encodeURIComponent(orderId) +
-        '&assigned_to=' +
-        encodeURIComponent(assignedTo) +
-        '&client_name=' +
-        encodeURIComponent(clientName) +
-        '&boss=' +
-        encodeURIComponent(boss),
-    );
+    window.sendSms(clientPhone, orderId, assignedTo, clientName, boss, function () {
+      Swal.fire({
+        icon: 'success',
+        title: 'Felicitări!',
+        text: 'Comanda a fost terminată cu succes 🎉',
+        position: 'center',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+      }).then(() => {
+        console.log('SMS SENT');
+      });
+    });
   }
 
   window.deliverOrder = function () {

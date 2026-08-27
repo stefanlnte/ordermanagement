@@ -45,10 +45,14 @@ $sql = "SELECT
             o.status,
             o.detalii_suplimentare,
             o.avans,
+            u.username AS assigned_user,
+            cu.username AS created_user,
             c.client_name,
             c.client_phone,
             c.client_email
         FROM orders o
+        LEFT JOIN users u  ON u.user_id  = o.assigned_to
+        LEFT JOIN users cu ON cu.user_id = o.created_by
         JOIN clients c ON o.client_id = c.client_id
         WHERE o.order_id = ?";
 
@@ -419,6 +423,10 @@ $is_delivered = ($order_status === 'delivered');
 <div class="order-preview-content theme-<?= htmlspecialchars($theme) ?>"
     data-order-id="<?= (int)$order_id ?>"
     data-row-theme="<?= htmlspecialchars($theme) ?>"
+    data-client-phone="<?= htmlspecialchars($order['client_phone'] ?? '', ENT_QUOTES) ?>"
+    data-client-name="<?= htmlspecialchars($order['client_name'] ?? '', ENT_QUOTES) ?>"
+    data-assigned-to="<?= htmlspecialchars($order['assigned_user'] ?? '', ENT_QUOTES) ?>"
+    data-boss="<?= htmlspecialchars($order['created_user'] ?? '', ENT_QUOTES) ?>"
     style="--preview-accent: <?= htmlspecialchars($accent) ?>; --preview-accent-soft: <?= htmlspecialchars($accent_soft) ?>;">
 
     <strong id="clientNameText"><?= htmlspecialchars($order['client_name']) ?></strong>
