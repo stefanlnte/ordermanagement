@@ -117,8 +117,10 @@ Interfața cu utilizatorul este **integral în limba română**.
 
 1. **Copiază proiectul** în rădăcina web a Apache-ului, de ex. `C:\xampp\htdocs\ordermanagement\`.
 2. **Pornește Apache și MySQL** din XAMPP Control Panel.
-3. **Creează baza de date** `order_management_system` în phpMyAdmin (`http://localhost/phpmyadmin`) și importă schema.
-   - ⚠️ În repo **nu există fișier de schema/migrare** — schema se obține printr-un export SQL de la o instalare existentă sau se recreează manual. Tabelele necesare sunt enumerate la secțiunea [Baza de date](#baza-de-date).
+3. **Importă schema** din [`schema.sql`](schema.sql) — fișierul include și `CREATE DATABASE order_management_system`:
+   - **phpMyAdmin**: deschide `http://localhost/phpmyadmin` → *Import* → selectează `schema.sql`;
+   - **CLI**: `C:\xampp\mysql\bin\mysql.exe -u root < schema.sql`.
+   - Fișierul creează toate tabelele (detaliate la [Baza de date](#baza-de-date)) + date de pornire: un utilizator `admin` (parola `password` — **schimb-o după primul login!**) și categoria `Diverse`. Necesită MySQL 8.0.13+ / MariaDB 10.2.1+.
 4. **Verifică datele de conexiune** în `db.php`:
 
    ```php
@@ -129,7 +131,7 @@ Interfața cu utilizatorul este **integral în limba română**.
    ```
 
 5. **Drepturi de scriere pentru `uploads/`** — `upload_attachment.php` creează la cerere structura `uploads/orders/<id_comandă>/`; directorul părinte trebuie să fie inscriptibil.
-6. **Creează un utilizator** direct în tabela `users`. Poți genera un hash bcrypt de parolă cu utilitarul `hash.php`.
+6. **Configurează utilizatorii** — schema vine cu un utilizator seed `admin` (parola `password`); schimbă-i parola sau adaugă operatori noi direct în tabela `users`. Poți genera hash-uri bcrypt cu `hash.php`.
 7. **Deschide aplicația**: `http://localhost/ordermanagement/login.php`.
 
 ---
@@ -184,6 +186,7 @@ Nu există strat de rutare: **fiecare fișier `.php` din rădăcină este un end
 |---|---|
 | `download_attachment.php` | Descărcarea atașamentelor |
 | `db.php` | Conexiunea `mysqli` unică (`$conn`), inclusă de toate paginile |
+| `schema.sql` | Schema bazei de date (se importă la instalare — vezi [Instalare](#instalare)) |
 | `hash.php` | Afișează un hash bcrypt pentru o parolă placeholder |
 | `archive_orders.php` | Script unic de arhivare + renumerotare (distructiv — vezi [avertismente](#scripturi-speciale-și-avertismente)) |
 | `add_user.php` | Script de administrare **neterminat** — nu-l folosi |
@@ -211,15 +214,15 @@ Nu există strat de rutare: **fiecare fișier `.php` din rădăcină este un end
 
 ## Baza de date
 
-Tabelele folosite de aplicație (în repo nu există migrări — schema se creează/importă manual):
+Schema completă a bazei de date se află în [`schema.sql`](schema.sql) și corespunde exact interogărilor din cod (tipuri, valori implicite și indecși justificați în comentariile fișierului). Tabelele folosite de aplicație:
 
 | Tabelă | Rol |
 |---|---|
 | `orders` | Comenzile active |
 | `order_articles` | Articolele din fiecare comandă („bonul”) |
-| `articles` | Catalogul articolelor |
+| `articles` | Catalogul articolelor (cu preț implicit) |
 | `categories` | Categoriile de articole |
-| `clients` | Clienții (cu preț implicit) |
+| `clients` | Clienții |
 | `users` | Operatorii / utilizatorii aplicației |
 | `order_attachments` | Metadatele atașamentelor (fișierele pe disc, în `uploads/orders/<id>/`) |
 | `unpaid_orders` | Comenzile nefacturate |
@@ -259,6 +262,7 @@ Tabelele folosite de aplicație (în repo nu există migrări — schema se cree
 | Simptom | Cauză probabilă / rezolvare |
 |---|---|
 | `Connection failed` la deschiderea paginilor | MySQL nu este pornit sau datele din `db.php` nu corespund |
+| Nu te poți loga pe o instalare nouă | Schema creează utilizatorul `admin` cu parola `password`; schimb-o după login sau generează un hash nou cu `hash.php` |
 | Login-ul „nu se ține” pe localhost | `session.cookie_secure = 1` cere HTTPS; pe `http://localhost` setează temporar `0` (doar local) |
 | Atașamentele nu se încarcă | Verifică drepturile de scriere pe `uploads/orders/` |
 | Comenzile adăugate nu apar la ceilalți utilizatori | Verifică sincronizarea logicii WHERE/ORDER și a `$limit = 18` între `dashboard.php` și `refresh_check.php` |
