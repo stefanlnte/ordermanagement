@@ -94,7 +94,7 @@ Interfața cu utilizatorul este **integral în limba română**.
 | Backend | PHP (fără framework), extensia `mysqli` |
 | Bază de date | MySQL / MariaDB |
 | Frontend | HTML, CSS, JavaScript (jQuery) |
-| Biblioteci UI (CDN) | Select2, SweetAlert2, AOS, Tippy.js, Dropzone.js, ApexCharts |
+| Biblioteci UI (CDN) | Select2, SweetAlert2, Tippy.js, Dropzone.js, ApexCharts |
 | Server | Apache (XAMPP) |
 
 **Observații:**
