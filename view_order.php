@@ -1006,6 +1006,7 @@ Vă mulțumim pentru colaborare și încredere!">Confirmare bun de tipar</option
         data-wa-link="<?= htmlspecialchars($waLink ?? '', ENT_QUOTES) ?>"
         data-due-date-iso="<?= htmlspecialchars($dueDateIso ?? '', ENT_QUOTES) ?>"
         data-server-now-iso="<?= htmlspecialchars($serverNowIso ?? '', ENT_QUOTES) ?>"
+        data-order-completed="<?= $isCompleted ? '1' : '0' ?>"
         <?php if (!empty($_SESSION['flash_success'])):
             echo 'data-flash-success="' . htmlspecialchars($_SESSION['flash_success'], ENT_QUOTES) . '"';
             unset($_SESSION['flash_success']);

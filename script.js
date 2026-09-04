@@ -2122,6 +2122,7 @@ $(document).ready(function () {
     dueDateIso: bridge.getAttribute('data-due-date-iso') || null,
     serverNowIso: bridge.getAttribute('data-server-now-iso') || null,
     warnThresholdSeconds: 24 * 3600,
+    isCompleted: bridge.getAttribute('data-order-completed') === '1',
   };
 
   // ---- Flash messages (replaces inline PHP flash scripts) ----
@@ -2863,6 +2864,7 @@ $(document).ready(function () {
     let dueIso = SLA.dueDateIso;
     let serverNowIso = SLA.serverNowIso;
     let warnThreshold = SLA.warnThresholdSeconds || 24 * 3600;
+    let isCompleted = !!SLA.isCompleted;
 
     let timerEl = document.getElementById('slaTimer');
     let badgeEl = document.getElementById('slaBadge');
@@ -2894,7 +2896,7 @@ $(document).ready(function () {
 
     // Format: days = 24h blocks; last day runs until dueMs (may be 18:00)
     function formatWithSeconds(totalSec) {
-      if (totalSec <= 0) return 'Termen depășit';
+      if (totalSec <= 0) return isCompleted ? 'Livrare în așteptare' : 'Termen depășit';
       let days = Math.floor(totalSec / 86400);
       let rem = totalSec - days * 86400;
       let hours = Math.floor(rem / 3600);
@@ -2915,8 +2917,13 @@ $(document).ready(function () {
     function updateSlaTimer() {
       let rem = remainingSeconds();
       if (rem <= 0) {
-        if (timerEl) timerEl.innerText = 'Termen depășit';
-        if (badgeEl) badgeEl.style.background = '#e74c3c';
+        if (isCompleted) {
+          if (timerEl) timerEl.innerText = 'Livrare în așteptare';
+          if (badgeEl) badgeEl.style.background = '#2ecc71';
+        } else {
+          if (timerEl) timerEl.innerText = 'Termen depășit';
+          if (badgeEl) badgeEl.style.background = '#e74c3c';
+        }
         return;
       }
 
