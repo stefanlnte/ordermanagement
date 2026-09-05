@@ -356,7 +356,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 ?>
 
 <!DOCTYPE html>
-<html lang="ro" class="has-bg-canvas">
+<html>
 
 <head>
     <title>Dashboard Utilizator</title>
@@ -367,6 +367,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <!-- Include Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Include AOS CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <!-- Include Select2 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
     <!-- Include jQuery -->
@@ -376,32 +379,26 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/themes/light-border.css" />
     <script src="https://unpkg.com/@popperjs/core@2"></script>
     <script src="https://unpkg.com/tippy.js@6"></script>
-    <!-- Include ScrollReveal (reversible scroll reveals) + three.js (WebGL background) -->
-    <script src="https://unpkg.com/scrollreveal@4.0.9/dist/scrollreveal.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- Include Select2 JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js"></script>
     <link rel="stylesheet" type="text/css" href="styles.css">
 
     <!-- Dashboard front-end logic (Select2 init, order slider, quiet AJAX
          refresh, header search, hero greeting, WhatsApp widget, order
-         preview tooltips, filters/sort/pagination, ScrollReveal scroll
-         animations, three.js background, etc). Must load after the
-         libraries above since it depends on $, Swal, tippy, ScrollReveal, THREE. -->
+         preview tooltips, filters/sort/pagination, etc). Must load after
+         the libraries above since it depends on $, Swal, tippy and AOS. -->
     <script src="script.js"></script>
 </head>
 
 <body>
-    <!-- three.js WebGL background: floating CMYK ink blobs, an ink-dust
-         particle field and a print registration grid, driven by scroll
-         position. See the "three.js background" section in script.js. -->
-    <canvas id="bg-canvas" aria-hidden="true"></canvas>
-    <header id="header" data-gsap="header">
+    <header id="header">
         <div class="header-inner">
             <div class="header-search">
                 <form id="lookupForm">
                     <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
-                    <div class="header-search-wrap" data-gsap="search">
+                    <div class="header-search-wrap" data-aos="fade-down"
+                        data-aos-easing="linear"
+                        data-aos-duration="800">
                         <i class="fa-solid fa-magnifying-glass header-search-icon" aria-hidden="true"></i>
                         <input type="text"
                             id="order_lookup"
@@ -414,10 +411,14 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
             </div>
             <div class="header-actions">
                 <button onclick="openStatsSlider()"
-                    data-gsap="btn-stats">
+                    data-aos="fade-down"
+                    data-aos-easing="linear"
+                    data-aos-duration="800">
                     <i class="fa-solid fa-chart-line"></i> Statistici
                 </button>
-                <button data-gsap="btn-logout" onclick="window.location.href='logout.php'">
+                <button data-aos="fade-down"
+                    data-aos-easing="linear"
+                    data-aos-duration="800" onclick="window.location.href='logout.php'">
                     <i class="fa-solid fa-right-from-bracket"></i> Deconectare
                 </button>
             </div>
@@ -435,8 +436,10 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <!-- Wrapper-ul care gestionează EXCLUSIV centrarea absolută -->
         <div class="hero-logo-wrapper">
 
-            <!-- Logo-ul care gestionează EXCLUSIV animația de scroll -->
-            <object data-gsap="hero-logo"
+            <!-- Logo-ul care gestionează EXCLUSIV animația AOS -->
+            <object data-aos="zoom-in"
+                data-aos-easing="linear"
+                data-aos-duration="800"
                 type="image/svg+xml"
                 data="https://color-print.ro/magazincp/comenzi.svg"
                 class="hero-logo-object">
@@ -445,7 +448,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
 
         <!-- Container greeting -->
-        <div class="hero-greeting-overlay" data-gsap="hero-greeting">
+        <div class="hero-greeting-overlay" data-aos="fade-up" data-aos-easing="linear" data-aos-duration="800">
             <!-- Icon va fi injectat de JS -->
             <div class="hero-greeting-icon" id="heroGreetingIcon"></div>
 
@@ -482,10 +485,9 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
 
     <!-- Banner Statistici Rapide -->
-    <div class="stats-banner" data-gsap="stats-banner">
+    <div class="stats-banner" data-aos="fade-down" data-aos-duration="800">
         <!-- Card Termen Depășit -->
         <div class="stat-card card-overdue<?= $status_filter === 'overdue' ? ' stat-filter-active' : '' ?>"
-             data-gsap="stat-card"
              data-status-filter="overdue"
              title="Filtrează: Termen Depășit"
              tabindex="0"
@@ -500,7 +502,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
         <!-- Card În Lucru -->
         <div class="stat-card card-active<?= $status_filter === 'assigned' ? ' stat-filter-active' : '' ?>"
-             data-gsap="stat-card"
              data-status-filter="assigned"
              title="Filtrează: Atribuite"
              tabindex="0"
@@ -515,7 +516,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
         <!-- Card Finalizate -->
         <div class="stat-card card-completed<?= $status_filter === 'completed' ? ' stat-filter-active' : '' ?>"
-             data-gsap="stat-card"
              data-status-filter="completed"
              title="Filtrează: Finalizate"
              tabindex="0"
@@ -530,7 +530,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
         <!-- Card De livrat azi (finalizate cu delivery_date = azi) -->
         <div class="stat-card card-deliver-today<?= $status_filter === 'deliver_today' ? ' stat-filter-active' : '' ?>"
-             data-gsap="stat-card"
              data-status-filter="deliver_today"
              title="Filtrează: De livrat azi"
              tabindex="0"
@@ -545,7 +544,6 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
         <!-- Card Livrate azi -->
         <div class="stat-card card-delivered-today<?= $status_filter === 'delivered_today' ? ' stat-filter-active' : '' ?>"
-             data-gsap="stat-card"
              data-status-filter="delivered_today"
              title="Filtrează: Livrate azi"
              tabindex="0"
@@ -560,7 +558,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     </div>
 
 
-    <div class="pinned-section" data-gsap="pinned-section">
+    <div class="pinned-section" data-aos="fade-in">
         <?php if ($pinned_result && $pinned_result->num_rows > 0): ?>
             <h2 class="pinned-section-heading">📌 Comenzi urgente</h2>
             <div class="pinned-feed">
@@ -582,7 +580,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     </div>
 
     <div class="container">
-        <div class="sidebar" data-gsap="sidebar">
+        <div class="sidebar" data-aos="slide-right">
             <h2><i class="fa-solid fa-receipt"></i> Adaugă Comandă</h2>
             <form id="orderForm" method="post" action="dashboard.php?<?= htmlspecialchars($_SERVER['QUERY_STRING']) ?>" autocomplete="off">
                 <input type="hidden" name="return"
@@ -698,7 +696,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                 </form>
             </div>
         </div>
-        <div class="main-content" data-gsap="main-content">
+        <div class="main-content" data-aos="slide-up">
             <div class="filters">
                 <form method="GET" action="dashboard.php">
                     <input type="hidden" name="return" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
@@ -930,15 +928,14 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
     </div>
 
-    <footer class="dashboard-footer" data-gsap="footer">
+    <footer class="dashboard-footer">
         <!-- Left Side: Logo & System Status -->
         <div class="footer-brand">
             <a href="dashboard.php" class="footer-logo-wrapper">
                 <object
                     type="image/svg+xml"
                     data="https://color-print.ro/magazincp/comenzi.svg"
-                    class="footer-logo-object"
-                    data-gsap="footer-logo">
+                    class="footer-logo-object">
                 </object>
             </a>
             <span class="operator-context">
@@ -954,7 +951,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         </div>
 
         <!-- Right Side: Action Links -->
-        <div class="footer-links" data-gsap="footer-links">
+        <div class="footer-links">
             <a href="archive.php" class="footer-link">
                 <i class="fa-solid fa-box-archive"></i> Arhivă
             </a>
