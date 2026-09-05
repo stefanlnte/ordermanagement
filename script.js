@@ -1331,13 +1331,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var dy = window.pageYOffset - lastY;
     lastY = window.pageYOffset;
     velocityBoost = Math.min(velocityBoost + Math.abs(dy) * 0.0025, 1.6);
-    // scrollProgress previously only got recalculated on load/resize, so
-    // the blobs/camera/grid never actually tracked real scroll position —
-    // only the transient velocityBoost kick moved anything, and that
-    // decays back to 0 the moment scrolling stops. Recompute it here on
-    // every scroll event so the scroll-linked swirl engages continuously
-    // and holds its position once you stop, instead of relaxing back.
-    readScroll();
   }, { passive: true });
 
   window.addEventListener('resize', function () {
