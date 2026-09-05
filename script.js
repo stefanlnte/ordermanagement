@@ -773,6 +773,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
           });
 
+          // Re-arm the row-reveal animation for the fresh rows we just
+          // injected — ScrollReveal doesn't auto-detect elements added
+          // to the DOM after its initial .reveal() call.
+          if (typeof window.__reRevealOrderRows === 'function')
+            window.__reRevealOrderRows();
+
           tagElementsForTransition();
           bindOrderClickEvents();
           if (typeof window.initTippy === 'function') window.initTippy();
@@ -1148,7 +1154,21 @@ document.addEventListener('DOMContentLoaded', function () {
     //  defaults to true (reversible); defs may opt out with
     //  (sticky header family: intro-only).
     var instanceOpts = Object.assign({}, BASE, { reset: def.reset !== false });
-    ScrollReveal(instanceOpts).reveal(def.selector, def.opts);
+    var sr = ScrollReveal(instanceOpts);
+    sr.reveal(def.selector, def.opts);
+
+    // The order rows are the one animation whose target elements get
+    // replaced wholesale after a filter/sort/page AJAX refresh (see
+    // quietRefresh()'s tbody.innerHTML swap). ScrollReveal only wires up
+    // the elements that existed at the time .reveal() was first called,
+    // so brand-new <tr> rows from that swap are invisible to it and never
+    // animate. Expose a re-reveal hook quietRefresh can call after it
+    // swaps the tbody, so the fresh rows get registered too.
+    if (key === 'order-rows') {
+      window.__reRevealOrderRows = function () {
+        sr.reveal(def.selector, def.opts);
+      };
+    }
   });
 });
 
