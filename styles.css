@@ -2473,20 +2473,54 @@ textarea {
   border: 1px solid rgba(255, 255, 255, 0.05); /* Margine fină, aproape invizibilă */
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  /* The hover lift animates the independent `translate` property, which
+     gets its own springy timing (the later entry wins for `translate`)
+     so the lift overshoots a touch and settles instead of easing flat. */
+  transition:
+    all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+    translate 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Efect de plutire la hover — slight lift + deepening shadow */
+/* Lift-up hover — the card floats up while its shadow deepens.
+   NOTE: this animates the independent `translate` property, NOT
+   `transform`. ScrollReveal (reset: true) leaves an inline
+   `transform: matrix3d(...)` on every revealed card, and an inline
+   transform would silently override any CSS :hover transform — the
+   old translateY(-6px) lift never actually played. `translate`
+   composes with the inline transform, so the lift always plays,
+   even while a card is still mid-reveal. */
 .stat-card:hover {
-  transform: translateY(-6px);
+  translate: 0 -8px;
   border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.38);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.42);
 }
 
-/* The active filter state pins its own transform; keep the hover
-   lift working there too. */
+/* Gentle icon pop while the card is lifted */
+.stat-card:hover .stat-icon {
+  transform: scale(1.08);
+}
+
+/* The active filter state sits slightly raised on its own (see its
+   rule below); hover brings it to the same lifted height as the rest. */
 .stat-card.stat-filter-active:hover {
-  transform: translateY(-7px);
+  translate: 0 -8px;
+}
+
+/* Reduced motion: keep the shadow/border feedback, drop the lift and
+   the icon pop entirely (no non-essential movement). */
+@media (prefers-reduced-motion: reduce) {
+  .stat-card,
+  .stat-card:hover,
+  .stat-card.stat-filter-active,
+  .stat-card.stat-filter-active:hover {
+    translate: none;
+  }
+  .stat-card:hover .stat-icon {
+    transform: none;
+  }
+  .stat-card {
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
 }
 
 /* Stat cards double as filter shortcuts */
@@ -2514,7 +2548,9 @@ textarea {
     0 0 22px rgba(110, 125, 150, 0.38),
     0 0 48px rgba(90, 105, 130, 0.18),
     0 12px 26px rgba(0, 0, 0, 0.45);
-  transform: translateY(-4px);
+  /* Raised resting position for the active card — via `translate` so it
+     survives ScrollReveal's inline transform (see the hover note above). */
+  translate: 0 -4px;
   animation: statFilterPulse 2.4s ease-in-out infinite;
 }
 
