@@ -436,9 +436,11 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
         <div class="hero-logo-wrapper">
 
             <!-- Logo-ul care gestionează EXCLUSIV animația de scroll -->
-            <img data-gsap="hero-logo"
-                 src="https://color-print.ro/magazincp/comenzi.svg"
-                 class="hero-logo-object">
+            <object data-gsap="hero-logo"
+                type="image/svg+xml"
+                data="https://color-print.ro/magazincp/comenzi.svg"
+                class="hero-logo-object">
+            </object>
 
         </div>
 
