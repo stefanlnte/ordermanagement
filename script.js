@@ -1086,14 +1086,28 @@ document.addEventListener('DOMContentLoaded', function () {
     search: {
       selector: "[data-gsap='search']",
       reset: false,
-      opts: { origin: 'bottom', distance: '20px', duration: 700, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', scale: 0.7, delay: 120 }
+      opts: {
+        origin: 'bottom',
+        distance: '20px',
+        duration: 700,
+        easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        scale: 0.7,
+        delay: 120,
+      },
     },
     'search-icon': {
       // Every header element animates: the magnifier icon pops and
       // twists in right after the search field lands.
       selector: '.header-search-icon',
       reset: false,
-      opts: { distance: '0px', duration: 600, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', scale: 0.3, rotate: { x: 0, y: 0, z: 90 }, delay: 350 }
+      opts: {
+        distance: '0px',
+        duration: 600,
+        easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        scale: 0.3,
+        rotate: { x: 0, y: 0, z: 90 },
+        delay: 350,
+      },
     },
     'header-buttons': {
       // EVERY button in the header actions area animates — currently
@@ -1103,50 +1117,107 @@ document.addEventListener('DOMContentLoaded', function () {
       selector: '.header-actions button',
       reset: false,
       opts: {
-        origin: 'right', distance: '90px', duration: 750,
+        origin: 'right',
+        distance: '90px',
+        duration: 750,
         easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-        scale: 0.85, rotate: { x: 0, y: 0, z: 8 },
-        interval: 160, delay: 420
-      }
+        scale: 0.85,
+        rotate: { x: 0, y: 0, z: 8 },
+        interval: 160,
+        delay: 420,
+      },
     },
     'hero-logo': {
       selector: "[data-gsap='hero-logo']",
-      opts: { distance: '0px', duration: 1100, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', scale: 0.4, rotate: { x: 0, y: 0, z: -25 }, delay: 100 }
+      opts: {
+        distance: '0px',
+        duration: 1100,
+        easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        scale: 0.4,
+        rotate: { x: 0, y: 0, z: -25 },
+        delay: 100,
+      },
     },
     'hero-greeting': {
       selector: "[data-gsap='hero-greeting']",
-      opts: { origin: 'bottom', distance: '60px', duration: 800, easing: 'cubic-bezier(0.5, 0, 0, 1)', delay: 200 }
+      opts: {
+        origin: 'bottom',
+        distance: '60px',
+        duration: 800,
+        easing: 'cubic-bezier(0.5, 0, 0, 1)',
+        delay: 200,
+      },
     },
     'stats-banner': {
       // Banner + its stat cards cascade as one staggered sequence.
       selector: "[data-gsap='stats-banner'], [data-gsap='stat-card']",
-      opts: { origin: 'bottom', distance: '90px', duration: 750, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)', scale: 0.85, interval: 110, delay: 100 }
+      opts: {
+        origin: 'bottom',
+        distance: '90px',
+        duration: 750,
+        easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        scale: 0.85,
+        interval: 110,
+        delay: 100,
+      },
     },
     'pinned-section': {
       selector: "[data-gsap='pinned-section']",
-      opts: { origin: 'bottom', distance: '40px', duration: 700, easing: 'cubic-bezier(0.5, 0, 0, 1)', delay: 150 }
+      opts: {
+        origin: 'bottom',
+        distance: '40px',
+        duration: 700,
+        easing: 'cubic-bezier(0.5, 0, 0, 1)',
+        delay: 150,
+      },
     },
     sidebar: {
       selector: "[data-gsap='sidebar']",
-      opts: { origin: 'left', distance: '100px', duration: 800, easing: 'cubic-bezier(0.5, 0, 0, 1)', delay: 150 }
+      opts: {
+        origin: 'left',
+        distance: '100px',
+        duration: 800,
+        easing: 'cubic-bezier(0.5, 0, 0, 1)',
+        delay: 150,
+      },
     },
     'main-content': {
       selector: "[data-gsap='main-content']",
-      opts: { origin: 'bottom', distance: '60px', duration: 800, easing: 'cubic-bezier(0.5, 0, 0, 1)', delay: 250 }
+      opts: {
+        origin: 'bottom',
+        distance: '60px',
+        duration: 800,
+        easing: 'cubic-bezier(0.5, 0, 0, 1)',
+        delay: 250,
+      },
     },
     'order-rows': {
       // Each order row cascades in as the table scrolls into view
       // (reversible — rows un-reveal when scrolled past, like the rest).
       selector: '.main-content tbody tr.order-row',
-      opts: { origin: 'bottom', distance: '34px', duration: 600, easing: 'cubic-bezier(0.5, 0, 0, 1)', interval: 70 }
+      opts: {
+        origin: 'bottom',
+        distance: '34px',
+        duration: 600,
+        easing: 'cubic-bezier(0.5, 0, 0, 1)',
+        interval: 70,
+      },
     },
     footer: {
       // EVERY footer element reveals individually — logo, operator
       // context and each action link — while the containers themselves
       // stay static (no nested-animation compounding, no layout flash).
-      selector: "[data-gsap='footer-logo'], .dashboard-footer .operator-context, .dashboard-footer .footer-link",
-      opts: { origin: 'bottom', distance: '40px', duration: 700, easing: 'cubic-bezier(0.5, 0, 0, 1)', interval: 130, delay: 100 }
-    }
+      selector:
+        "[data-gsap='footer-logo'], .dashboard-footer .operator-context, .dashboard-footer .footer-link",
+      opts: {
+        origin: 'bottom',
+        distance: '40px',
+        duration: 700,
+        easing: 'cubic-bezier(0.5, 0, 0, 1)',
+        interval: 130,
+        delay: 100,
+      },
+    },
   };
 
   Object.keys(SR_ANIMS).forEach(function (key) {
@@ -1199,7 +1270,11 @@ document.addEventListener('DOMContentLoaded', function () {
   document.documentElement.classList.add('has-bg-canvas');
 
   // ---------- Renderer / scene / camera ----------
-  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  var renderer = new THREE.WebGLRenderer({
+    canvas: canvas,
+    antialias: true,
+    alpha: true,
+  });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor(0x000000, 0); // transparent — the CSS gradient shows through
@@ -1207,7 +1282,12 @@ document.addEventListener('DOMContentLoaded', function () {
   var scene = new THREE.Scene();
   scene.fog = new THREE.FogExp2(0xeef1f7, 0.014); // light paper-tinted depth cue, matched to the CSS backdrop
 
-  var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 120);
+  var camera = new THREE.PerspectiveCamera(
+    60,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    120,
+  );
   camera.position.set(0, 0, 26);
 
   // ---------- Ink-dust particle field ----------
@@ -1215,8 +1295,10 @@ document.addEventListener('DOMContentLoaded', function () {
   var positions = new Float32Array(PARTICLE_COUNT * 3);
   var colors = new Float32Array(PARTICLE_COUNT * 3);
   var palette = [
-    new THREE.Color(0xd8a900), new THREE.Color(0x0086b3),
-    new THREE.Color(0xc9007a), new THREE.Color(0x33415c)
+    new THREE.Color(0xd8a900),
+    new THREE.Color(0x0086b3),
+    new THREE.Color(0xc9007a),
+    new THREE.Color(0x33415c),
   ];
   for (var p = 0; p < PARTICLE_COUNT; p++) {
     positions[p * 3] = (Math.random() - 0.5) * 70;
@@ -1231,16 +1313,22 @@ document.addEventListener('DOMContentLoaded', function () {
   pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   pGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   var pMat = new THREE.PointsMaterial({
-    size: 0.38, vertexColors: true, transparent: true, opacity: 0.75,
-    blending: THREE.NormalBlending, depthWrite: false, sizeAttenuation: true
+    size: 0.38,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.75,
+    blending: THREE.NormalBlending,
+    depthWrite: false,
+    sizeAttenuation: true,
   });
   var dust = new THREE.Points(pGeo, pMat);
   scene.add(dust);
 
   // The orders table is a keep-out zone: dots get pushed away from the
   // area the table occupies on screen (handled in the render loop).
-  var tableEl = document.querySelector('.main-content .table-responsive') ||
-                document.querySelector('.main-content');
+  var tableEl =
+    document.querySelector('.main-content .table-responsive') ||
+    document.querySelector('.main-content');
 
   // ---------- Print registration grid ----------
   var grid = new THREE.GridHelper(110, 55, 0xb9c3d6, 0xd4dbe8);
@@ -1251,7 +1339,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ---------- Scroll driving ----------
   var scrollProgress = 0; // 0..1 across the whole document
-  var velocityBoost = 0;  // temporary swirl from fast scrolling
+  var velocityBoost = 0; // temporary swirl from fast scrolling
 
   function readScroll() {
     var doc = document.documentElement;
@@ -1261,18 +1349,22 @@ document.addEventListener('DOMContentLoaded', function () {
   readScroll();
 
   var lastY = window.pageYOffset;
-  window.addEventListener('scroll', function () {
-    var dy = window.pageYOffset - lastY;
-    lastY = window.pageYOffset;
-    velocityBoost = Math.min(velocityBoost + Math.abs(dy) * 0.0025, 1.6);
-    // scrollProgress previously only got recalculated on load/resize, so
-    // the blobs/camera/grid never actually tracked real scroll position —
-    // only the transient velocityBoost kick moved anything, and that
-    // decays back to 0 the moment scrolling stops. Recompute it here on
-    // every scroll event so the scroll-linked swirl engages continuously
-    // and holds its position once you stop, instead of relaxing back.
-    readScroll();
-  }, { passive: true });
+  window.addEventListener(
+    'scroll',
+    function () {
+      var dy = window.pageYOffset - lastY;
+      lastY = window.pageYOffset;
+      velocityBoost = Math.min(velocityBoost + Math.abs(dy) * 0.0025, 1.6);
+      // scrollProgress previously only got recalculated on load/resize, so
+      // the blobs/camera/grid never actually tracked real scroll position —
+      // only the transient velocityBoost kick moved anything, and that
+      // decays back to 0 the moment scrolling stops. Recompute it here on
+      // every scroll event so the scroll-linked swirl engages continuously
+      // and holds its position once you stop, instead of relaxing back.
+      readScroll();
+    },
+    { passive: true },
+  );
 
   window.addEventListener('resize', function () {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -1316,8 +1408,10 @@ document.addEventListener('DOMContentLoaded', function () {
       if (rect.bottom > 0 && rect.top < window.innerHeight && rect.width > 0) {
         var visH = 2 * 26 * Math.tan((camera.fov * Math.PI) / 360);
         var visW = visH * camera.aspect;
-        var zx = (((rect.left + rect.width / 2) / window.innerWidth) - 0.5) * visW;
-        var zy = -(((rect.top + rect.height / 2) / window.innerHeight) - 0.5) * visH;
+        var zx =
+          ((rect.left + rect.width / 2) / window.innerWidth - 0.5) * visW;
+        var zy =
+          -((rect.top + rect.height / 2) / window.innerHeight - 0.5) * visH;
         var zhw = (rect.width / window.innerWidth) * visW * 0.5 + 2.5;
         var zhh = (rect.height / window.innerHeight) * visH * 0.5 + 2;
         for (var k = 0; k < PARTICLE_COUNT; k++) {
@@ -1816,7 +1910,14 @@ document.addEventListener('DOMContentLoaded', function () {
  * Accepts an optional onSuccess callback (fires only when the
  * request returns HTTP 200).
  * ============================================================ */
-window.sendSms = function (clientPhone, orderId, assignedTo, clientName, boss, onSuccess) {
+window.sendSms = function (
+  clientPhone,
+  orderId,
+  assignedTo,
+  clientName,
+  boss,
+  onSuccess,
+) {
   let xhr = new XMLHttpRequest();
   xhr.open('POST', 'send_sms.php', true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -1826,7 +1927,13 @@ window.sendSms = function (clientPhone, orderId, assignedTo, clientName, boss, o
         console.log('SMS SENT for order ' + orderId);
         if (typeof onSuccess === 'function') onSuccess();
       } else {
-        console.error('Nu s-a putut trimite SMS pentru comanda ' + orderId + ' (status ' + xhr.status + ')');
+        console.error(
+          'Nu s-a putut trimite SMS pentru comanda ' +
+            orderId +
+            ' (status ' +
+            xhr.status +
+            ')',
+        );
       }
     }
   };
@@ -1882,20 +1989,26 @@ document.addEventListener('DOMContentLoaded', function () {
           cancelButtonText: 'Anulează',
         }).then((result) => {
           if (result.isConfirmed) {
-            quickUpdateOrderStatus(orderId, 'completed', {}, instance, function () {
-              // Mirror view_order.php's finish flow: after the order is
-              // marked completed, notify the client via SMS.
-              const content = root.querySelector('.order-preview-content');
-              if (content) {
-                window.sendSms(
-                  content.dataset.clientPhone || '',
-                  orderId,
-                  content.dataset.assignedTo || '',
-                  content.dataset.clientName || '',
-                  content.dataset.boss || '',
-                );
-              }
-            });
+            quickUpdateOrderStatus(
+              orderId,
+              'completed',
+              {},
+              instance,
+              function () {
+                // Mirror view_order.php's finish flow: after the order is
+                // marked completed, notify the client via SMS.
+                const content = root.querySelector('.order-preview-content');
+                if (content) {
+                  window.sendSms(
+                    content.dataset.clientPhone || '',
+                    orderId,
+                    content.dataset.assignedTo || '',
+                    content.dataset.clientName || '',
+                    content.dataset.boss || '',
+                  );
+                }
+              },
+            );
           }
         });
       };
@@ -2125,7 +2238,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // reads the form, so without this we'd LOSE the filter when sorting/filtering
     // (the select is empty for smart buckets and the param drops out). Keep the
     // current smart filter here so buildFilterUrl() re-applies it.
-    const SMART_STATUS_FILTERS = ['overdue', 'deliver_today', 'delivered_today'];
+    const SMART_STATUS_FILTERS = [
+      'overdue',
+      'deliver_today',
+      'delivered_today',
+    ];
     let smartFilterStatus = '';
 
     // If the page loaded with a smart filter already active (e.g. ?status_filter=
@@ -2264,14 +2381,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function syncStatCardHighlight(statusValue) {
-      document.querySelectorAll('.stat-card[data-status-filter]').forEach(
-        (card) => {
+      document
+        .querySelectorAll('.stat-card[data-status-filter]')
+        .forEach((card) => {
           const active =
             statusValue !== '' && card.dataset.statusFilter === statusValue;
           card.classList.toggle('stat-filter-active', active);
           card.setAttribute('aria-pressed', active ? 'true' : 'false');
-        },
-      );
+        });
     }
 
     document
@@ -2554,19 +2671,26 @@ $(document).ready(function () {
   // (same one the order-preview Tippy popup uses), then shows the success
   // modal only after send_sms.php answered with HTTP 200.
   function sendSMS(clientPhone, orderId, assignedTo, clientName, boss) {
-    window.sendSms(clientPhone, orderId, assignedTo, clientName, boss, function () {
-      Swal.fire({
-        icon: 'success',
-        title: 'Felicitări!',
-        text: 'Comanda a fost terminată cu succes 🎉',
-        position: 'center',
-        showConfirmButton: false,
-        timer: 2000,
-        timerProgressBar: true,
-      }).then(() => {
-        console.log('SMS SENT');
-      });
-    });
+    window.sendSms(
+      clientPhone,
+      orderId,
+      assignedTo,
+      clientName,
+      boss,
+      function () {
+        Swal.fire({
+          icon: 'success',
+          title: 'Felicitări!',
+          text: 'Comanda a fost terminată cu succes 🎉',
+          position: 'center',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true,
+        }).then(() => {
+          console.log('SMS SENT');
+        });
+      },
+    );
   }
 
   window.deliverOrder = function () {
@@ -3180,7 +3304,8 @@ $(document).ready(function () {
 
     // Format: days = 24h blocks; last day runs until dueMs (may be 18:00)
     function formatWithSeconds(totalSec) {
-      if (totalSec <= 0) return isCompleted ? 'Livrare în așteptare' : 'Termen depășit';
+      if (totalSec <= 0)
+        return isCompleted ? 'Livrare în așteptare' : 'Termen depășit';
       let days = Math.floor(totalSec / 86400);
       let rem = totalSec - days * 86400;
       let hours = Math.floor(rem / 3600);
@@ -3328,8 +3453,8 @@ document.addEventListener('DOMContentLoaded', function () {
     return window.location.search;
   }
 
-  let lastKey = null;     // view key we have a baseline for
-  let knownPageSig = null;  // hash of the table/pagination/pinned for lastKey
+  let lastKey = null; // view key we have a baseline for
+  let knownPageSig = null; // hash of the table/pagination/pinned for lastKey
   let knownStatsSig = null; // hash of the stat cards currently on screen
   let checkInFlight = false;
 

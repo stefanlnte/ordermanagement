@@ -30,7 +30,9 @@ body {
    so body must stay transparent — any opaque body background would
    completely cover the canvas. */
 html.has-bg-canvas {
-  background: #f2f4f9 radial-gradient(ellipse at 20% 15%, #ffffff 0%, #eef1f7 45%, #e3e8f2 100%) no-repeat fixed;
+  background: #f2f4f9
+    radial-gradient(ellipse at 20% 15%, #ffffff 0%, #eef1f7 45%, #e3e8f2 100%)
+    no-repeat fixed;
 }
 
 body {
@@ -53,12 +55,19 @@ body {
   z-index: -1;
   display: block;
   pointer-events: none;
-  background: radial-gradient(ellipse at 20% 15%, #ffffff 0%, #eef1f7 45%, #e3e8f2 100%);
+  background: radial-gradient(
+    ellipse at 20% 15%,
+    #ffffff 0%,
+    #eef1f7 45%,
+    #e3e8f2 100%
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {
   /* JS skips the animation loop; the light root background stands in. */
-  #bg-canvas { display: none; }
+  #bg-canvas {
+    display: none;
+  }
 }
 
 /* ================================================================
@@ -485,12 +494,12 @@ textarea {
      wrapper, and the negative margin keeps the layout unchanged. */
   padding-bottom: 40px;
   margin-bottom: -40px;
-  scrollbar-width: none;            /* Firefox */
-  -ms-overflow-style: none;         /* legacy Edge / IE */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* legacy Edge / IE */
 }
 
 .table-responsive::-webkit-scrollbar {
-  display: none;                    /* Chrome / Safari / Edge */
+  display: none; /* Chrome / Safari / Edge */
 }
 
 .main-content {
@@ -592,11 +601,7 @@ tbody tr:hover {
 
 /* Yellow (În lucru) */
 .heavy-row.theme-yellow {
-  background: linear-gradient(
-    135deg,
-    #f7e5c2 0%,
-    #fdf7ec 100%
-  );
+  background: linear-gradient(135deg, #f7e5c2 0%, #fdf7ec 100%);
 }
 .theme-yellow td:first-child {
   border-left-color: #ffde00;
@@ -604,11 +609,7 @@ tbody tr:hover {
 
 /* Cyan (Atribuită) */
 .heavy-row.theme-cyan {
-  background: linear-gradient(
-    135deg,
-    #99e1fa 0%,
-    #d9eaf7 100%
-  );
+  background: linear-gradient(135deg, #99e1fa 0%, #d9eaf7 100%);
 }
 .theme-cyan td:first-child {
   border-left-color: #00aeef;
@@ -616,11 +617,7 @@ tbody tr:hover {
 
 /* Magenta (Întârziată / Urgent) */
 .heavy-row.theme-magenta {
-  background: linear-gradient(
-    135deg,
-    #f86675 0%,
-    #f3d9db 100%
-  );
+  background: linear-gradient(135deg, #f86675 0%, #f3d9db 100%);
 }
 .theme-magenta td:first-child {
   border-left-color: red;
@@ -628,11 +625,7 @@ tbody tr:hover {
 
 /* Green (Finalizată) */
 .heavy-row.theme-green {
-  background: linear-gradient(
-    135deg,
-    #99ebcb 0%,
-    #d9f0e5 100%
-  );
+  background: linear-gradient(135deg, #99ebcb 0%, #d9f0e5 100%);
 }
 .theme-green td:first-child {
   border-left-color: #00c371;
@@ -640,11 +633,7 @@ tbody tr:hover {
 
 /* Key / Neutral (Livrată) */
 .heavy-row.theme-key {
-  background: linear-gradient(
-    135deg,
-    #d9e0e7 0%,
-    #eaecef 100%
-  );
+  background: linear-gradient(135deg, #d9e0e7 0%, #eaecef 100%);
 }
 .theme-key td:first-child {
   border-left-color: #a0aec0;

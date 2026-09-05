@@ -485,12 +485,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <div class="stats-banner" data-gsap="stats-banner">
         <!-- Card Termen Depășit -->
         <div class="stat-card card-overdue<?= $status_filter === 'overdue' ? ' stat-filter-active' : '' ?>"
-             data-gsap="stat-card"
-             data-status-filter="overdue"
-             title="Filtrează: Termen Depășit"
-             tabindex="0"
-             role="button"
-             aria-pressed="<?= $status_filter === 'overdue' ? 'true' : 'false' ?>">
+            data-gsap="stat-card"
+            data-status-filter="overdue"
+            title="Filtrează: Termen Depășit"
+            tabindex="0"
+            role="button"
+            aria-pressed="<?= $status_filter === 'overdue' ? 'true' : 'false' ?>">
             <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_overdue; ?></h3>
@@ -500,12 +500,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
         <!-- Card În Lucru -->
         <div class="stat-card card-active<?= $status_filter === 'assigned' ? ' stat-filter-active' : '' ?>"
-             data-gsap="stat-card"
-             data-status-filter="assigned"
-             title="Filtrează: Atribuite"
-             tabindex="0"
-             role="button"
-             aria-pressed="<?= $status_filter === 'assigned' ? 'true' : 'false' ?>">
+            data-gsap="stat-card"
+            data-status-filter="assigned"
+            title="Filtrează: Atribuite"
+            tabindex="0"
+            role="button"
+            aria-pressed="<?= $status_filter === 'assigned' ? 'true' : 'false' ?>">
             <div class="stat-icon"><i class="fa-solid fa-person-digging"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_active; ?></h3>
@@ -515,12 +515,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
         <!-- Card Finalizate -->
         <div class="stat-card card-completed<?= $status_filter === 'completed' ? ' stat-filter-active' : '' ?>"
-             data-gsap="stat-card"
-             data-status-filter="completed"
-             title="Filtrează: Finalizate"
-             tabindex="0"
-             role="button"
-             aria-pressed="<?= $status_filter === 'completed' ? 'true' : 'false' ?>">
+            data-gsap="stat-card"
+            data-status-filter="completed"
+            title="Filtrează: Finalizate"
+            tabindex="0"
+            role="button"
+            aria-pressed="<?= $status_filter === 'completed' ? 'true' : 'false' ?>">
             <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_completed; ?></h3>
@@ -530,12 +530,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
         <!-- Card De livrat azi (finalizate cu delivery_date = azi) -->
         <div class="stat-card card-deliver-today<?= $status_filter === 'deliver_today' ? ' stat-filter-active' : '' ?>"
-             data-gsap="stat-card"
-             data-status-filter="deliver_today"
-             title="Filtrează: De livrat azi"
-             tabindex="0"
-             role="button"
-             aria-pressed="<?= $status_filter === 'deliver_today' ? 'true' : 'false' ?>">
+            data-gsap="stat-card"
+            data-status-filter="deliver_today"
+            title="Filtrează: De livrat azi"
+            tabindex="0"
+            role="button"
+            aria-pressed="<?= $status_filter === 'deliver_today' ? 'true' : 'false' ?>">
             <div class="stat-icon"><i class="fa-solid fa-truck-fast"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_deliver_today; ?></h3>
@@ -545,12 +545,12 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
 
         <!-- Card Livrate azi -->
         <div class="stat-card card-delivered-today<?= $status_filter === 'delivered_today' ? ' stat-filter-active' : '' ?>"
-             data-gsap="stat-card"
-             data-status-filter="delivered_today"
-             title="Filtrează: Livrate azi"
-             tabindex="0"
-             role="button"
-             aria-pressed="<?= $status_filter === 'delivered_today' ? 'true' : 'false' ?>">
+            data-gsap="stat-card"
+            data-status-filter="delivered_today"
+            title="Filtrează: Livrate azi"
+            tabindex="0"
+            role="button"
+            aria-pressed="<?= $status_filter === 'delivered_today' ? 'true' : 'false' ?>">
             <div class="stat-icon"><i class="fa-solid fa-flag-checkered"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_delivered_today; ?></h3>
