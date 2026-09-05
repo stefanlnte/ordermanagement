@@ -1177,14 +1177,15 @@ document.addEventListener('DOMContentLoaded', function () {
  * ------------------------------------------------------------
  * A fixed full-viewport canvas (#bg-canvas, styled in styles.css)
  * renders a print-shop themed scene:
+ *   - 5 big translucent CMYK ink blobs (glowing, wobbly spheres)
  *   - ~180 soft ink-dust particles (light-theme palette)
  *   - a print registration grid that feeds like paper
  * The scene is SCROLL-DRIVEN: the camera arcs across the page and
- * the grid/dust drift with scroll progress. Progress spans the FULL
+ * the blobs swirl with scroll progress. Progress spans the FULL
  * document height, so even a short page drives the whole motion,
  * and it reverses automatically when scrolling up. A gentle
  * perpetual drift keeps it alive when idle, and fast scrolling
- * adds a temporary velocity kick.
+ * adds a temporary velocity swirl + emissive glow boost.
  * Paused entirely for prefers-reduced-motion users.
  * ============================================================ */
 document.addEventListener('DOMContentLoaded', function () {
@@ -1209,6 +1210,71 @@ document.addEventListener('DOMContentLoaded', function () {
 
   var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 120);
   camera.position.set(0, 0, 26);
+
+  // ---------- Lights ----------
+  scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xc9d4e8, 0.55));
+  var keyLight = new THREE.PointLight(0xffffff, 0.7, 0, 2);
+  keyLight.position.set(12, 16, 18);
+  scene.add(keyLight);
+
+  // ---------- CMYK ink blobs ----------
+  var INK_COLORS = [
+    { c: 0xffd400, o: 0.5 },  // Yellow
+    { c: 0x00aee6, o: 0.46 }, // Cyan
+    { c: 0xec008c, o: 0.42 }, // Magenta
+    { c: 0x39b54a, o: 0.36 }, // Green (CMY overprint)
+    { c: 0x7b61ff, o: 0.4 }   // Violet (registration tint)
+  ];
+  // Asymmetric anchors with depth spread so blobs never clump.
+  var ANCHORS = [
+    [-17,  4,  -5],
+    [ -6, -7, -10],
+    [  1,  6,  -3],
+    [ 10, -5, -12],
+    [ 17,  3,  -7]
+  ];
+  var inkBlobs = [];
+  var inkGroup = new THREE.Group();
+  scene.add(inkGroup);
+
+  INK_COLORS.forEach(function (ink, i) {
+    var mat = new THREE.MeshStandardMaterial({
+      color: ink.c,
+      transparent: true,
+      opacity: ink.o,
+      roughness: 0.35,
+      metalness: 0.05,
+      emissive: ink.c,
+      emissiveIntensity: 0.14
+    });
+    // High-detail sphere whose vertices are morphed every frame, so
+    // each blob visibly changes shape like real ink in water.
+    var geo = new THREE.SphereGeometry(4.6 + Math.random() * 2.2, 64, 64);
+    var mesh = new THREE.Mesh(geo, mat);
+    mesh.userData.base = geo.attributes.position.array.slice();
+    mesh.scale.y = 0.78;
+    mesh.position.set(ANCHORS[i][0], ANCHORS[i][1], ANCHORS[i][2]);
+    mesh.userData.baseX = ANCHORS[i][0];
+    mesh.userData.baseY = ANCHORS[i][1];
+    mesh.userData.baseZ = ANCHORS[i][2];
+    // Lissajous orbit + breathing params (unique per blob).
+    mesh.userData.orbR1 = 3 + Math.random() * 2.5;
+    mesh.userData.orbR2 = 2 + Math.random() * 1.6;
+    mesh.userData.orbW1 = 0.14 + Math.random() * 0.14;
+    mesh.userData.orbW2 = 0.1 + Math.random() * 0.12;
+    mesh.userData.phase1 = Math.random() * Math.PI * 2;
+    mesh.userData.phase2 = Math.random() * Math.PI * 2;
+    mesh.userData.breatheW = 0.5 + Math.random() * 0.4;
+    mesh.userData.breathePhase = Math.random() * Math.PI * 2;
+    // Vertex-morph field params (unique per blob).
+    mesh.userData.morphW1 = 0.5 + Math.random() * 0.5;
+    mesh.userData.morphW2 = 0.35 + Math.random() * 0.45;
+    mesh.userData.morphAmp = 0.55 + Math.random() * 0.45;
+    mesh.userData.swirl = 0.9 + Math.random() * 1.4;
+    inkGroup.add(mesh);
+    inkBlobs.push(mesh);
+  });
 
   // ---------- Ink-dust particle field ----------
   var PARTICLE_COUNT = 180;
@@ -1294,6 +1360,53 @@ document.addEventListener('DOMContentLoaded', function () {
     camera.position.y = 4 - scrollProgress * 9;
     camera.position.x = Math.sin(scrollProgress * Math.PI) * 3.5;
     camera.lookAt(0, scrollProgress * 2 - 1, -4);
+
+    // Ink blobs: every blob follows its own Lissajous orbit around
+    // its anchor, breathes with a jelly wobble AND morphs at the
+    // vertex level, so each one visibly changes shape — never static,
+    // never clumped, each clearly distinct.
+    inkBlobs.forEach(function (blob, i) {
+      var u = blob.userData;
+      var dir = i % 2 === 0 ? 1 : -1;
+      blob.position.x = u.baseX
+        + Math.sin(t * u.orbW1 + u.phase1) * u.orbR1
+        + Math.cos(t * u.orbW2 + u.phase2) * u.orbR2 * 0.6
+        + scrollProgress * u.swirl * 9 * dir
+        + velocityBoost * 1.8 * dir;
+      blob.position.y = u.baseY
+        + Math.cos(t * u.orbW2 + u.phase2) * u.orbR2
+        + Math.sin(t * u.orbW1 * 0.7 + u.phase2) * u.orbR1 * 0.4
+        - scrollProgress * 5
+        + velocityBoost * 0.9;
+      blob.position.z = u.baseZ + Math.sin(t * u.orbW2 * 0.8 + u.phase1) * 1.2;
+      // Jelly breathing: inverse y-wobble keeps it organic.
+      var b = 1 + 0.09 * Math.sin(t * u.breatheW + u.breathePhase);
+      blob.scale.set(b, 0.78 * (2 - b), b);
+      blob.rotation.z = t * 0.05 + scrollProgress * Math.PI * (i + 1) * 0.35;
+      blob.rotation.x = t * 0.04 * dir;
+
+      // Vertex morphing: displace every vertex along its rest position
+      // with a 2-frequency pseudo-noise field that evolves over time —
+      // the blob surface ripples like real ink dropped in water.
+      var pos = blob.geometry.attributes.position;
+      var arr = pos.array;
+      var base = u.base;
+      var amp = u.morphAmp;
+      for (var v = 0; v < arr.length; v += 3) {
+        var bx = base[v], by = base[v + 1], bz = base[v + 2];
+        var n = Math.sin(bx * 0.55 + t * u.morphW1 + i) *
+                Math.cos(by * 0.5 + t * u.morphW2 - i) +
+                Math.sin((by + bz) * 0.35 + t * u.morphW1 * 0.7);
+        var d = 1 + n * 0.16 * amp;
+        arr[v] = bx * d;
+        arr[v + 1] = by * d;
+        arr[v + 2] = bz * d;
+      }
+      pos.needsUpdate = true;
+      blob.geometry.computeVertexNormals();
+
+      blob.material.emissiveIntensity = 0.14 + 0.08 * Math.sin(t * 0.9 + i) + velocityBoost * 0.22;
+    });
 
     // Dust: slow rise + scroll parallax (wraps so it never runs out).
     var posAttr = dust.geometry.attributes.position;
