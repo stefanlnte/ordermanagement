@@ -1096,45 +1096,56 @@ document.addEventListener('DOMContentLoaded', function () {
       },
     },
     'search-icon': {
-      // Every header element animates: the magnifier icon pops and
-      // twists in right after the search field lands.
+      // Every header element animates: the magnifier icon simply pops
+      // (scale + fade) in right after the search field lands — no twist.
       selector: '.header-search-icon',
       reset: false,
       opts: {
         distance: '0px',
-        duration: 600,
+        duration: 550,
         easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
         scale: 0.3,
-        rotate: { x: 0, y: 0, z: 90 },
         delay: 350,
       },
     },
-    'header-buttons': {
-      // EVERY button in the header actions area animates — currently
-      // Statistici + Deconectare, staggered as one sequence (any button
-      // added to .header-actions later is picked up automatically).
-      // Big 90px slide with overshoot + tilt so it clearly reads.
-      selector: '.header-actions button',
+    'header-button-stats': {
+      // Statistici button: slide-in from the right with a soft
+      // overshoot, same as before.
+      selector: '.header-actions button:first-child',
       reset: false,
       opts: {
         origin: 'right',
         distance: '90px',
-        duration: 750,
+        duration: 700,
         easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-        scale: 0.85,
-        rotate: { x: 0, y: 0, z: 8 },
-        interval: 160,
+        scale: 0.9,
         delay: 420,
       },
     },
+    'header-button-logout': {
+      // Deconectare button: same slide-in, but WITHOUT the overshoot —
+      // the bounce was landing past its resting spot and slamming into
+      // the Statistici button next to it. Delay is offset by the same
+      // 160ms the old `interval` used, so the stagger is unchanged.
+      selector: '.header-actions button:last-child',
+      reset: false,
+      opts: {
+        origin: 'right',
+        distance: '90px',
+        duration: 700,
+        easing: 'cubic-bezier(0.5, 0, 0, 1)',
+        scale: 0.9,
+        delay: 580,
+      },
+    },
     'hero-logo': {
+      // Header logo: a clean scale + fade pop-in, no rotation.
       selector: "[data-gsap='hero-logo']",
       opts: {
         distance: '0px',
-        duration: 1100,
+        duration: 900,
         easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-        scale: 0.4,
-        rotate: { x: 0, y: 0, z: -25 },
+        scale: 0.5,
         delay: 100,
       },
     },
@@ -1149,14 +1160,15 @@ document.addEventListener('DOMContentLoaded', function () {
       },
     },
     'stats-banner': {
-      // Banner + its stat cards cascade as one staggered sequence.
+      // Banner + its stat cards cascade as one staggered sequence — a
+      // straight rise + fade + scale, no rotation on any card.
       selector: "[data-gsap='stats-banner'], [data-gsap='stat-card']",
       opts: {
         origin: 'bottom',
-        distance: '90px',
-        duration: 750,
+        distance: '70px',
+        duration: 700,
         easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
-        scale: 0.85,
+        scale: 0.9,
         interval: 110,
         delay: 100,
       },
