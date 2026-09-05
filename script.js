@@ -671,6 +671,12 @@ document.addEventListener('DOMContentLoaded', function () {
   // Grouped into a function so it can be re-run after fetching new HTML
   function bindOrderClickEvents() {
     document.querySelectorAll('.order-row').forEach((row) => {
+      // The quiet-refresh DOM diff REUSES untouched row elements, so this
+      // runs many times over the page's life — guard with a flag so the
+      // click handler never stacks on an already-bound row.
+      if (row.dataset.orderClickBound) return;
+      row.dataset.orderClickBound = '1';
+
       // Inline onclick from the PHP markup has already been parsed into
       // a property listener; removeAttribute() wouldn't touch it. Setting
       // onclick = null detaches the inline handler so this JS handler is
@@ -686,6 +692,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.querySelectorAll('.pinned-section a').forEach((link) => {
+      // Same reuse story as the rows above: after a no-change quiet refresh
+      // the pinned links survive, so don't stack handlers on them either.
+      if (link.dataset.pinnedClickBound) return;
+      link.dataset.pinnedClickBound = '1';
+
       link.addEventListener('click', function (e) {
         e.preventDefault();
         const href = this.getAttribute('href');
@@ -746,11 +757,50 @@ document.addEventListener('DOMContentLoaded', function () {
           console.error('Stat animation failed:', err);
         }
 
+        // ---- tbody DOM diff ------------------------------------------------
+        // Diff the live tbody against the freshly fetched one, keyed by
+        // data-order-id, BEFORE the view transition starts. Untouched rows
+        // keep their very same DOM nodes (no re-animation, no tippy churn);
+        // only rows whose server markup changed get swapped, only brand-new
+        // rows get inserted (and animated). Built once here so the
+        // "nothing changed" short-circuit below can reuse the verdict.
+        const tbodyDiff = buildTbodyDiffPlan(
+          document.querySelector('.main-content tbody'),
+          doc.querySelector('.main-content tbody'),
+        );
+
+        // Would this update visibly change anything? When not — the common
+        // slider-close case on an unchanged table — skip the view transition
+        // entirely so nothing flashes, moves or re-animates.
+        const sectionsChanged = sectionsToUpdate.some((selector) => {
+          const currentSection = document.querySelector(selector);
+          const updatedSection = doc.querySelector(selector);
+          if (!currentSection || !updatedSection) return false;
+          if (selector === '.main-content tbody' && tbodyDiff) {
+            return tbodyDiff.changed;
+          }
+          return currentSection.innerHTML !== updatedSection.innerHTML;
+        });
+
         const applyUpdate = () => {
+          let freshRows = [];
+
           sectionsToUpdate.forEach((selector) => {
             const currentSection = document.querySelector(selector);
             const updatedSection = doc.querySelector(selector);
-            if (currentSection && updatedSection) {
+            if (!currentSection || !updatedSection) return;
+
+            if (selector === '.main-content tbody' && tbodyDiff) {
+              // Diff apply — reuse kept rows, swap changed ones, insert new
+              // ones, drop removed ones. Only what actually changed moves.
+              applyTbodyDiffPlan(currentSection, tbodyDiff);
+              freshRows = tbodyDiff.fresh;
+              return;
+            }
+
+            // Wholesale swap fallback (tbody diff not applicable) — but only
+            // when the section's content actually differs.
+            if (currentSection.innerHTML !== updatedSection.innerHTML) {
               currentSection.innerHTML = updatedSection.innerHTML;
             }
           });
@@ -773,11 +823,15 @@ document.addEventListener('DOMContentLoaded', function () {
             }
           });
 
-          // Re-arm the row-reveal animation for the fresh rows we just
-          // injected — ScrollReveal doesn't auto-detect elements added
-          // to the DOM after its initial .reveal() call.
-          if (typeof window.__reRevealOrderRows === 'function')
-            window.__reRevealOrderRows();
+          // Register ONLY the genuinely-new rows with ScrollReveal so they
+          // cascade in individually — rows kept in place by the diff above
+          // must never re-animate as a full table.
+          if (
+            freshRows.length &&
+            typeof window.__revealOrderRowElements === 'function'
+          ) {
+            window.__revealOrderRowElements(freshRows);
+          }
 
           tagElementsForTransition();
           bindOrderClickEvents();
@@ -790,14 +844,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
           if (document.startViewTransition) {
-            tagElementsForTransition();
-            const transition = document.startViewTransition(applyUpdate);
-            transition.finished
-              .catch(() => {}) // an interrupted transition isn't an error worth surfacing
-              .finally(() => {
-                clearTransitionNames();
-                refreshInProgress = false;
-              });
+            if (!sectionsChanged) {
+              // Nothing changed server-side: run the (idempotent) event
+              // bookkeeping only — no DOM writes, no transition, no
+              // animations anywhere.
+              applyUpdate();
+              refreshInProgress = false;
+            } else {
+              tagElementsForTransition();
+              const transition = document.startViewTransition(applyUpdate);
+              transition.finished
+                .catch(() => {}) // an interrupted transition isn't an error worth surfacing
+                .finally(() => {
+                  clearTransitionNames();
+                  refreshInProgress = false;
+                });
+            }
           } else {
             applyUpdate();
             refreshInProgress = false;
@@ -882,6 +944,123 @@ document.addEventListener('DOMContentLoaded', function () {
       .forEach((el) => {
         el.style.viewTransitionName = '';
       });
+  }
+
+  /* ---- tbody diff helpers -------------------------------------------------
+   * quietRefresh() used to replace the whole <tbody> innerHTML, which threw
+   * away every row element and (together with the full re-reveal) made the
+   * entire table re-animate after every refresh. Instead, diff the rows by
+   * data-order-id and keep untouched rows in place: only rows whose server
+   * markup changed get swapped, only genuinely new rows get inserted (and
+   * animated), only removed rows get dropped.
+   * ------------------------------------------------------------------------ */
+
+  // Live rows carry runtime-only attributes JS added after render (inline
+  // reveal/cursor/transition styles, tippy's aria-describedby/aria-expanded,
+  // our click-binding flag). Strip them on a throwaway clone so two rows the
+  // server rendered identically compare equal.
+  function serverPristineHtml(row) {
+    const clone = row.cloneNode(true);
+    clone.removeAttribute('style');
+    clone.removeAttribute('aria-describedby');
+    clone.removeAttribute('aria-expanded');
+    clone.removeAttribute('data-order-click-bound');
+    clone
+      .querySelectorAll('[style], [aria-describedby], [aria-expanded]')
+      .forEach((el) => {
+        el.removeAttribute('style');
+        el.removeAttribute('aria-describedby');
+        el.removeAttribute('aria-expanded');
+      });
+    return clone.outerHTML;
+  }
+
+  function buildTbodyDiffPlan(currentTbody, newTbody) {
+    if (!currentTbody || !newTbody) return null;
+
+    const currentRows = Array.from(currentTbody.children).filter((tr) =>
+      tr.matches('tr.order-row[data-order-id]'),
+    );
+    const newRows = Array.from(newTbody.children).filter((tr) =>
+      tr.matches('tr.order-row[data-order-id]'),
+    );
+
+    // The tbody only ever holds order rows or the "Nu există comenzi."
+    // empty-state <tr>. If either side is in the empty state (or anything
+    // unexpected ended up in there), fall back to the wholesale swap.
+    if (
+      currentRows.length !== currentTbody.children.length ||
+      newRows.length !== newTbody.children.length
+    ) {
+      return null;
+    }
+
+    const currentById = new Map(
+      currentRows.map((row) => [row.dataset.orderId, row]),
+    );
+    const newIds = new Set(newRows.map((row) => row.dataset.orderId));
+
+    let changed = currentRows.length !== newRows.length;
+    const fresh = [];
+    const entries = [];
+
+    newRows.forEach((newRow) => {
+      const oldRow = currentById.get(newRow.dataset.orderId);
+      if (!oldRow) {
+        // Genuinely new order — insert it (and let it cascade in).
+        entries.push(newRow);
+        fresh.push(newRow);
+        changed = true;
+      } else if (serverPristineHtml(oldRow) === newRow.outerHTML) {
+        // Untouched — keep the very same DOM node: no re-animation, no
+        // tippy/view-transition churn.
+        entries.push(oldRow);
+      } else {
+        // Same order, changed content — swap in the fresh element.
+        entries.push(newRow);
+        changed = true;
+      }
+    });
+
+    currentRows.forEach((oldRow) => {
+      if (!newIds.has(oldRow.dataset.orderId)) changed = true; // deleted
+    });
+
+    // Pure reorder: same rows, same markup, different sequence (the server's
+    // implicit sort shifted ranks while nothing was edited).
+    if (!changed) {
+      changed = currentRows.some((row, i) => row !== entries[i]);
+    }
+
+    return { changed, entries, fresh };
+  }
+
+  function applyTbodyDiffPlan(tbody, plan) {
+    // Nothing changed → entries are exactly the live rows in their current
+    // order, so return without touching the DOM at all (no no-op churn).
+    if (!plan.changed) return;
+
+    // 1. Drop every live order-row that the plan doesn't keep: rows whose
+    //    order was deleted server-side AND rows whose content changed (the
+    //    plan holds their fresh replacement instead of the stale element).
+    const wanted = new Set(plan.entries);
+    Array.from(tbody.children).forEach((tr) => {
+      if (tr.matches('tr.order-row[data-order-id]') && !wanted.has(tr)) {
+        tr.remove();
+      }
+    });
+
+    // 2. Walk the desired sequence: a node already at the cursor stays put,
+    //    anything else is moved/inserted before the cursor (minimal DOM ops;
+    //    nodes coming from the parsed doc are auto-adopted into this one).
+    let cursor = tbody.firstChild;
+    plan.entries.forEach((node) => {
+      if (node === cursor) {
+        cursor = cursor.nextSibling;
+      } else {
+        tbody.insertBefore(node, cursor);
+      }
+    });
   }
 
   function computeRowDirections(currentSection, updatedSection) {
@@ -1240,16 +1419,17 @@ document.addEventListener('DOMContentLoaded', function () {
     var sr = ScrollReveal(instanceOpts);
     sr.reveal(def.selector, def.opts);
 
-    // The order rows are the one animation whose target elements get
-    // replaced wholesale after a filter/sort/page AJAX refresh (see
-    // quietRefresh()'s tbody.innerHTML swap). ScrollReveal only wires up
-    // the elements that existed at the time .reveal() was first called,
-    // so brand-new <tr> rows from that swap are invisible to it and never
-    // animate. Expose a re-reveal hook quietRefresh can call after it
-    // swaps the tbody, so the fresh rows get registered too.
+    // The order rows are the one animation whose target elements can appear
+    // after the initial .reveal() call — quietRefresh()'s tbody diff inserts
+    // genuinely-new rows and asks THIS hook to register just those elements
+    // (ScrollReveal only wires up the elements that existed when .reveal()
+    // was first called). Re-revealing the whole selector here instead would
+    // re-animate the entire table after every refresh — exactly what the
+    // diff exists to avoid — so only the passed-in elements are registered.
     if (key === 'order-rows') {
-      window.__reRevealOrderRows = function () {
-        sr.reveal(def.selector, def.opts);
+      window.__revealOrderRowElements = function (elements) {
+        if (!elements || !elements.length) return;
+        sr.reveal(elements, def.opts);
       };
     }
   });
@@ -2154,9 +2334,17 @@ document.addEventListener('DOMContentLoaded', function () {
     document.body.appendChild(iframe);
   }
 
-  // Wrap Tippy init in a global function
+  // Wrap Tippy init in a global function. The quiet-refresh DOM diff REUSES
+  // untouched row elements, so only create instances for rows that don't have
+  // one yet — calling tippy() again on an already-bound row would stack a
+  // duplicate instance on it.
   window.initTippy = function () {
-    tippy('.order-row', {
+    const unboundRows = Array.from(
+      document.querySelectorAll('.order-row'),
+    ).filter((row) => !row._tippy);
+    if (!unboundRows.length) return;
+
+    tippy(unboundRows, {
       allowHTML: true,
       interactive: true,
       theme: 'order-preview',
@@ -2451,6 +2639,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // hook quietRefresh() calls (window.bindPaginationClickEvents).
     function bindPaginationClickEvents() {
       document.querySelectorAll('.pagination a').forEach((link) => {
+        // The diff-based quiet refresh keeps the .pagination block untouched
+        // when nothing changed, so this can run again over the same links —
+        // guard with a flag so click handlers never stack.
+        if (link.dataset.paginationBound) return;
+        link.dataset.paginationBound = '1';
         link.addEventListener('click', function (e) {
           e.preventDefault();
           goQuietly(this.getAttribute('href'));
