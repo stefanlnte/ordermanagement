@@ -2123,6 +2123,7 @@ $(document).ready(function () {
     serverNowIso: bridge.getAttribute('data-server-now-iso') || null,
     warnThresholdSeconds: 24 * 3600,
     isCompleted: bridge.getAttribute('data-order-completed') === '1',
+    isDelivered: bridge.getAttribute('data-order-delivered') === '1',
   };
 
   // ---- Flash messages (replaces inline PHP flash scripts) ----
@@ -2865,6 +2866,7 @@ $(document).ready(function () {
     let serverNowIso = SLA.serverNowIso;
     let warnThreshold = SLA.warnThresholdSeconds || 24 * 3600;
     let isCompleted = !!SLA.isCompleted;
+    let isDelivered = !!SLA.isDelivered;
 
     let timerEl = document.getElementById('slaTimer');
     let badgeEl = document.getElementById('slaBadge');
@@ -2915,6 +2917,13 @@ $(document).ready(function () {
     }
 
     function updateSlaTimer() {
+      // Delivered orders: no countdown, no "Livrare în așteptare"
+      if (isDelivered) {
+        if (timerEl) timerEl.innerText = 'Comandă livrată';
+        if (badgeEl) badgeEl.style.background = '#2ecc71';
+        return;
+      }
+
       let rem = remainingSeconds();
       if (rem <= 0) {
         if (isCompleted) {
