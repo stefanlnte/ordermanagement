@@ -2446,45 +2446,22 @@ textarea {
     /* slate grey outer */ 0 10px 25px rgba(0, 0, 0, 0.3);
 }
 
-/* Active (filter applied) — polished slate halo */
+/* Active (filter applied) — light-mode version of the card's own dark style:
+   same idea as .stat-card's dark gradient, just flipped light and tinted
+   with that card's own secondary/accent color (--accent, set per .card-*
+   variant below) instead of one neutral tone shared by every card. */
 .stat-card.stat-filter-active {
-  border-color: rgba(110, 125, 150, 0.85); /* cool slate border */
-  background: linear-gradient(165deg, #0f172b 0%, #09090b 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(180, 190, 205, 0.45),
-    /* soft blue-grey sheen */ inset 0 0 0 1px rgba(110, 125, 150, 0.35),
-    0 0 0 1px rgba(110, 125, 150, 0.75),
-    0 0 22px rgba(110, 125, 150, 0.38),
-    0 0 48px rgba(90, 105, 130, 0.18),
-    0 12px 26px rgba(0, 0, 0, 0.45);
+  border-color: rgba(var(--accent, 110, 125, 150), 0.9);
+  background: linear-gradient(
+    165deg,
+    #ffffff 0%,
+    rgba(var(--accent, 110, 125, 150), 0.14) 55%,
+    rgba(var(--accent, 110, 125, 150), 0.22) 100%
+  );
   transform: translateY(-4px);
-  animation: statFilterPulse 2.4s ease-in-out infinite;
 }
 
-/* Pulsing outer glow — slate blue pulse */
-@keyframes statFilterPulse {
-  0%,
-  100% {
-    box-shadow:
-      inset 0 1px 0 rgba(180, 190, 205, 0.55),
-      inset 0 0 0 1px rgba(110, 125, 150, 0.35),
-      0 0 0 1px rgba(110, 125, 150, 0.75),
-      0 0 22px rgba(110, 125, 150, 0.38),
-      0 0 48px rgba(90, 105, 130, 0.18),
-      0 12px 26px rgba(0, 0, 0, 0.4);
-  }
-  50% {
-    box-shadow:
-      inset 0 1px 0 rgba(200, 210, 225, 0.7),
-      inset 0 0 0 1px rgba(110, 125, 150, 0.48),
-      0 0 0 1px rgba(130, 145, 170, 0.9),
-      0 0 32px rgba(110, 125, 150, 0.55),
-      0 0 64px rgba(90, 105, 130, 0.25),
-      0 14px 30px rgba(0, 0, 0, 0.45);
-  }
-}
-
-/* Glossy top-edge highlight — cool slate blue shimmer */
+/* Glossy top-edge highlight — shimmer in the card's own accent color */
 .stat-card.stat-filter-active::before {
   content: '';
   position: absolute;
@@ -2495,28 +2472,39 @@ textarea {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(120, 145, 180, 0.9),
+    rgba(var(--accent, 110, 125, 150), 0.9),
     transparent
   );
   pointer-events: none;
 }
 
-/* Icon halo — slate blue glow */
+/* Icon halo — keeps the card's own accent color instead of turning slate */
 .stat-card.stat-filter-active .stat-icon {
   background: linear-gradient(
     160deg,
-    rgba(120, 145, 180, 0.42),
-    rgba(120, 145, 180, 0.08)
+    rgba(var(--accent, 110, 125, 150), 0.3),
+    rgba(var(--accent, 110, 125, 150), 0.08)
   );
-  color: #ffffff;
+  color: rgb(var(--accent, 110, 125, 150));
   box-shadow:
-    0 0 0 3px rgba(120, 145, 180, 0.32),
-    0 0 18px rgba(120, 145, 180, 0.55);
+    0 0 0 3px rgba(var(--accent, 110, 125, 150), 0.28),
+    0 0 18px rgba(var(--accent, 110, 125, 150), 0.42);
 }
 
 /* Hover on active card */
 .stat-card.stat-filter-active:hover {
-  border-color: #7891b4; /* brighter slate blue */
+  border-color: rgb(
+    var(--accent, 110, 125, 150)
+  ); /* fully saturated accent on hover */
+}
+
+/* Text needs to flip to dark now that the active card has a light background */
+.stat-card.stat-filter-active .stat-info h3 {
+  color: #1a1a1a;
+}
+
+.stat-card.stat-filter-active .stat-info p {
+  color: #555555;
 }
 
 /* Aliniere text interior */
@@ -2561,56 +2549,69 @@ textarea {
 
 /* --- Detaliile de Culoare și Efectele Glow pe Fundalul Specific --- */
 
-/* 🔴 Card Termen Depășit */
+/* 🔴 Overdue — deeper, clearer red (less orange-ish) */
 .card-overdue {
-  border-left: 4px solid #ff4444; /* Linie verticală fină în stânga pentru structură */
+  --accent: 220, 38, 38; /* #dc2626 */
+  border-left: 4px solid #dc2626;
 }
+
 .card-overdue .stat-icon {
-  background: rgba(255, 68, 68, 0.15);
-  color: #ff4444;
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
 }
+
 .card-overdue:hover {
-  box-shadow: 0 15px 30px rgba(255, 68, 68, 0.25); /* Glow roșu pe fundalul închis */
+  box-shadow: 0 15px 30px rgba(220, 38, 38, 0.22);
 }
 
-/* 🟡 Card În Lucru */
+/* 🟡 In Progress — warmer amber that sits between red & orange */
 .card-active {
-  border-left: 4px solid #ffcc00;
+  --accent: 217, 119, 6; /* #d97706 */
+  border-left: 4px solid #d97706;
 }
+
 .card-active .stat-icon {
-  background: rgba(255, 204, 0, 0.15);
-  color: #ffcc00;
+  background: rgba(217, 119, 6, 0.12);
+  color: #d97706;
 }
+
 .card-active:hover {
-  box-shadow: 0 15px 30px rgba(255, 204, 0, 0.25); /* Glow galben */
+  box-shadow: 0 15px 30px rgba(217, 119, 6, 0.22);
 }
 
-/* 🟢 Card Finalizate */
+/* 🟢 Completed — slightly softer, more premium emerald */
 .card-completed {
-  border-left: 4px solid #00c851;
+  --accent: 5, 150, 105; /* #059669 */
+  border-left: 4px solid #059669;
 }
+
 .card-completed .stat-icon {
-  background: rgba(0, 200, 81, 0.15);
-  color: #00c851;
+  background: rgba(5, 150, 105, 0.12);
+  color: #059669;
 }
+
 .card-completed:hover {
-  box-shadow: 0 15px 30px rgba(0, 200, 81, 0.25); /* Glow verde */
+  box-shadow: 0 15px 30px rgba(5, 150, 105, 0.22);
 }
 
-/* 🟠 Card De livrat azi (finalizate cu livrare programată azi) */
+/* 🟠 Deliver Today — pure, vivid orange (clearly separated from amber) */
 .card-deliver-today {
-  border-left: 4px solid #ff8800;
-}
-.card-deliver-today .stat-icon {
-  background: rgba(255, 136, 0, 0.15);
-  color: #ff8800;
-}
-.card-deliver-today:hover {
-  box-shadow: 0 15px 30px rgba(255, 136, 0, 0.25);
+  --accent: 234, 88, 12; /* #ea580c */
+  border-left: 4px solid #ea580c;
 }
 
-/* 🔵 Card Livrate azi */
+.card-deliver-today .stat-icon {
+  background: rgba(234, 88, 12, 0.12);
+  color: #ea580c;
+}
+
+.card-deliver-today:hover {
+  box-shadow: 0 15px 30px rgba(234, 88, 12, 0.22);
+}
+
+/* 🔵 Delivered Today — slightly deeper, more confident blue */
 .card-delivered-today {
+  --accent: 51, 181, 229;
   border-left: 4px solid #33b5e5;
 }
 .card-delivered-today .stat-icon {
