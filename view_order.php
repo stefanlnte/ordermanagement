@@ -249,6 +249,11 @@ $stepDeliveredDone = $isDelivered;
                 <?php if (!empty($client_email) && $client_email !== 'Unknown'): ?>
                     <p><?= htmlspecialchars($client_email) ?></p>
                 <?php endif; ?>
+                <!-- Șabloane (WhatsApp templates): moved here from the footer -->
+                <div id="templateMsgWidget" title="Trimite mesaj">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    <span>Șabloane</span>
+                </div>
             </section>
             <section class="vo-card">
                 <p class="vo-label">Termen</p>
@@ -382,10 +387,6 @@ $stepDeliveredDone = $isDelivered;
             <?php else: ?>
                 <button type="button" class="vo-btn" onclick="togglePin(<?= (int)$order['order_id'] ?>, 1)"><i class="fa-solid fa-thumbtack"></i> Fixează</button>
             <?php endif; ?>
-            <div id="templateMsgWidget" title="Trimite mesaj">
-                <i class="fa-brands fa-whatsapp"></i>
-                <span>Șabloane</span>
-            </div>
             <button type="button" id="toggleComandaLucruButton" class="vo-btn" onclick="toggleComandaLucru()"><i class="fa-solid fa-spinner"></i> În lucru</button>
         </div>
         <div class="vo-footer-row">
