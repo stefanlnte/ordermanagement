@@ -582,6 +582,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // --- 1. SLIDER LOGIC FOR ORDERS ---
   function openOrderSlider(orderId) {
+    sliderPanel.classList.remove('is-stats');
     if (sliderTitle) {
       sliderTitle.innerHTML =
         '<i class="fa-solid fa-file-invoice"></i> Detalii Comandă';
@@ -599,6 +600,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // --- NEW: SLIDER LOGIC FOR STATISTICS ---
   function openStatsSlider() {
+    sliderPanel.classList.add('is-stats');
     if (sliderTitle) {
       sliderTitle.innerHTML =
         '<i class="fa-solid fa-chart-line"></i> Statistici Comenzi';
@@ -626,10 +628,11 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(() => {
       sliderIframe.src = '';
       sliderBackdrop.style.display = 'none';
+      sliderPanel.classList.remove('is-stats');
 
       // Trigger the quiet refresh instead of a full page reload
       quietRefresh();
-    }, 1400);
+    }, 420);
   }
 
   closeSliderBtn.addEventListener('click', closeOrderSlider);
@@ -2383,6 +2386,38 @@ $(document).ready(function () {
   };
 
   window.printOrder = function () {
+    const liveBody = document.getElementById('bonTableBody');
+    const ticketBody = document.getElementById('printBonBody');
+    const ticketTable = document.getElementById('printBonTable');
+    if (liveBody && ticketBody) {
+      ticketBody.innerHTML = '';
+      liveBody.querySelectorAll('tr').forEach((tr) => {
+        const cells = tr.querySelectorAll('td');
+        if (cells.length < 3) return;
+        const row = document.createElement('tr');
+        for (let i = 0; i < 3; i++) {
+          const td = document.createElement('td');
+          td.textContent = (cells[i].textContent || '').trim();
+          row.appendChild(td);
+        }
+        ticketBody.appendChild(row);
+      });
+      if (ticketTable) {
+        ticketTable.style.display = ticketBody.children.length ? '' : 'none';
+      }
+    }
+    const avans = document.getElementById('avans_text');
+    const printAvans = document.getElementById('printAvans');
+    if (avans && printAvans) {
+      printAvans.textContent = (avans.textContent || '').trim();
+    }
+    const total = document.getElementById('totalPrice');
+    const printTotal = document.getElementById('printTotal');
+    if (total && printTotal) {
+      printTotal.textContent = (total.textContent || '')
+        .replace(/lei/gi, '')
+        .trim();
+    }
     window.print();
   };
 
@@ -2440,7 +2475,13 @@ $(document).ready(function () {
       let h2Element = document.createElement('h2');
       h2Element.id = 'comandaLucruElement';
       h2Element.textContent = 'Comandă în lucru';
-      document.querySelector('h2').insertAdjacentElement('afterend', h2Element);
+      const badges = document.querySelector('.vo-badges');
+      const title = document.querySelector('.vo-title-row h2') || document.querySelector('h2');
+      if (badges) {
+        badges.appendChild(h2Element);
+      } else if (title) {
+        title.insertAdjacentElement('afterend', h2Element);
+      }
     }
   };
 

@@ -966,10 +966,10 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
     <div id="orderSliderPanel">
         <div class="order-slider-header">
             <h3><i class="fa-solid fa-file-invoice"></i> Detalii Comandă</h3>
-            <button class="order-slider-close" id="closeOrderSlider">&times;</button>
+            <button class="order-slider-close" id="closeOrderSlider" type="button" aria-label="Închide">&times;</button>
         </div>
         <div class="order-slider-body">
-            <iframe id="orderSliderIframe" src=""></iframe>
+            <iframe id="orderSliderIframe" src="" title="Detalii comandă"></iframe>
         </div>
     </div>
 

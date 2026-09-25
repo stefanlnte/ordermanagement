@@ -3,7 +3,7 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-include 'db.php'; // Include the database connection file
+include 'db.php';
 
 $order_id = $_GET['order_id'] ?? null;
 if (!$order_id) {
@@ -11,7 +11,6 @@ if (!$order_id) {
     exit();
 }
 
-// Handle form submission for updating the attributed user
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_user'])) {
     $assigned_to = $_POST['assigned_to'];
     $update_sql = "UPDATE orders SET assigned_to = ? WHERE order_id = ?";
@@ -38,7 +37,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_due_date'])) {
     $stmt->bind_param("si", $new_due_date, $order_id);
 
     if ($stmt->execute()) {
-        // ✅ Save a flash message in session
         $_SESSION['flash_success'] = "Data scadentă a fost actualizată!";
         $return = $_GET['return'] ?? ($_POST['return'] ?? '');
         $returnParam = $return ? "&return=" . urlencode($return) : '';
@@ -55,7 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_due_date'])) {
     $stmt->close();
 }
 
-// Fetch order + client details in a single query
 $order_sql = "SELECT o.*,
                    u.username as assigned_user,
                    cu.username as created_user,
@@ -74,891 +71,412 @@ $order_result = $stmt->get_result();
 $order = $order_result->fetch_assoc();
 $stmt->close();
 
+if (!$order) {
+    echo "Comanda nu a fost găsită.";
+    exit();
+}
+
 $client_name  = $order['client_name']  ?? 'Unknown';
 $client_phone = $order['client_phone'] ?? 'Unknown';
 $client_email = $order['client_email'] ?? 'Unknown';
 
-// Fetch operators for the "assigned to" dropdown — query partajat cu dashboard.php
 include 'get_operators.php';
-?>
 
-<?php $returnUrl = $_GET['return'] ?? 'dashboard.php'; ?>
+$returnUrl = $_GET['return'] ?? 'dashboard.php';
+$returnHidden = htmlspecialchars($_GET['return'] ?? '', ENT_QUOTES);
+$isEmbedded = isset($_GET['embedded']);
+$isCancelled = ($order['status'] === 'cancelled');
+$isCompleted = ($order['status'] === 'completed' || $order['status'] === 'delivered');
+$isDelivered = ($order['status'] === 'delivered');
+$isLocked = $isDelivered || $isCancelled;
+$inProgress = !$isCancelled;
+$orderIdPad = str_pad((string)$order['order_id'], 3, '0', STR_PAD_LEFT);
 
-<!-- Countdown -->
-<?php
-// raw value from DB
 $rawDue = $order['due_date'] ?? null;
 $dueDateIso = null;
-
 if ($rawDue) {
-    // Dacă DB stochează doar DATE (YYYY-MM-DD) -> deadline la 18:00 acelei zile
     if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $rawDue)) {
         $normalized = $rawDue . ' 18:00:00';
     } else {
-        // Dacă e DATETIME, păstrăm ora exactă din DB
         $normalized = $rawDue;
     }
-
     try {
-        $tz = new DateTimeZone(date_default_timezone_get()); // sau 'UTC' dacă folosești UTC
+        $tz = new DateTimeZone(date_default_timezone_get());
         $dt = new DateTimeImmutable($normalized, $tz);
-        $dueDateIso = $dt->format(DateTime::ATOM); // ISO 8601 cu offset
+        $dueDateIso = $dt->format(DateTime::ATOM);
     } catch (Exception $e) {
         error_log('Invalid due_date: ' . $rawDue . ' — ' . $e->getMessage());
         $dueDateIso = null;
     }
 }
-
 $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_timezone_get())))->format(DateTime::ATOM);
-?>
-<!DOCTYPE html>
-<html>
 
-<head>
-    <title>View Order</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <link rel="stylesheet" type="text/css" href="styles.css">
-    <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
-    <!-- SweetAlert2 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- Include Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Include Select2 CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-    <!-- Dropzone CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.css">
-    <!-- Include jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Dropzone JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
-    <!-- Include Select2 JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    <style>
-        /* Ascunde scrollbar-ul*/
-        html,
-        body {
-            -ms-overflow-style: none;
-            /* IE and Edge */
-            scrollbar-width: none;
-            /* Firefox */
-        }
+$countryCode = "+4";
+$waNumber = $countryCode . preg_replace('/\D/', '', $client_phone);
+$waLink = "https://wa.me/" . urlencode($waNumber);
 
-        html::-webkit-scrollbar,
-        body::-webkit-scrollbar {
-            display: none;
-            /* Chrome, Safari and Opera */
-        }
-    </style>
-
-    <!-- Sweet alert -->
-    <style>
-        /* Butoane */
-        .swal2-styled.swal2-confirm {
-            background: yellow !important;
-            /* gold */
-            color: #000 !important;
-            border: none !important;
-            border-radius: 4px;
-            font-weight: 600;
-        }
-
-        .swal2-styled.swal2-cancel {
-            background: #555 !important;
-            /* gri neutru */
-            color: #fff !important;
-            border: none !important;
-            border-radius: 4px;
-        }
-
-        /* Acțiuni */
-        .swal2-actions {
-            gap: 10px;
-        }
-
-        /* Buton de închidere */
-        .swal2-popup .swal2-close {
-            color: #555;
-        }
-    </style>
-
-    <!-- Custom CSS for Select2 golden theme -->
-    <style>
-        /* Yellow theme for Select2 */
-        .select2-container--default .select2-selection--single {
-            background-color: #fff;
-            border: 1px solid #a9a9a9;
-            /* Dark grey color for border */
-            border-radius: 4px;
-            /* Rounded border */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            font-size: 16px;
-            /* Increase font size for better visibility */
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: #333;
-            padding-left: 12px;
-            font-size: 14px;
-            /* Adjust font size for the selected item */
-            text-align: left;
-            /* Align text to the left */
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            background-color: #fff;
-            /* White background for the arrow */
-            border: none;
-            /* Remove border around the arrow */
-            border-radius: 0 4px 4px 0;
-            /* Rounded right side */
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__arrow b {
-            border-color: #a9a9a9 transparent transparent transparent;
-            /* Dark grey arrow */
-            border-width: 5px 4px 0 4px;
-        }
-
-        .select2-container--default .select2-results__option {
-            padding: 12px;
-            color: #333;
-            font-size: 14px;
-            /* Adjust font size for the dropdown options */
-            white-space: nowrap;
-            /* Prevent text from wrapping */
-            text-align: left;
-            /* Align text to the left */
-        }
-
-        .select2-container--default .select2-results__option--highlighted[aria-selected] {
-            background-color: #FFFF00;
-            /* Yellow color */
-            color: #000;
-            text-align: left;
-            /* Align text to the left */
-        }
-
-        .select2-container--default .select2-search--dropdown .select2-search__field {
-            border: 1px solid #a9a9a9;
-            /* Dark grey color */
-            outline: none;
-            padding: 8px;
-            border-radius: 4px;
-            /* Rounded border */
-            width: 100%;
-            box-sizing: border-box;
-            font-size: 14px;
-            /* Adjust font size for the search field */
-            text-align: left;
-            /* Align text to the left */
-        }
-
-        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
-            border-color: #708090;
-            /* Light grey color for focus */
-            box-shadow: 0 0 5px rgba(169, 169, 169, 0.5);
-        }
-
-        .select2-container--default .select2-selection--multiple .select2-selection__choice {
-            background-color: #FFFF00;
-            /* Yellow color */
-            border: 1px solid #a9a9a9;
-            /* Dark grey color */
-            color: #000;
-            padding: 5px 10px;
-            border-radius: 4px;
-            /* Rounded border */
-            margin-top: 5px;
-            margin-right: 5px;
-            white-space: nowrap;
-            /* Prevent text from wrapping */
-            font-size: 14px;
-            /* Adjust font size for multiple selection choices */
-            text-align: left;
-            /* Align text to the left */
-        }
-
-        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-            color: #000;
-            font-weight: bold;
-            margin-right: 5px;
-        }
-
-        /* Remove scrollbar */
-        .select2-container--default .select2-results {
-            overflow-y: hidden !important;
-            /* Remove vertical scrollbar */
-            max-width: 100% !important;
-            /* Ensure dropdown is wide enough */
-        }
-
-        .select2-container--default .select2-results__options {
-            max-width: 100% !important;
-            /* Ensure options are wide enough */
-        }
-    </style>
-
-    <!--  View Order options  -->
-    <style>
-        .order-options {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            max-width: 700px;
-            margin: 20px auto;
-            padding: 20px;
-            background: linear-gradient(135deg, #1a1a1aff, gray);
-            color: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px yellow;
-            text-align: center;
-            box-sizing: border-box;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        /* Rotating gradient border */
-        .order-options::before {
-            content: '';
-            position: absolute;
-            width: 150%;
-            height: 150%;
-            background: linear-gradient(45deg, orange, yellow, rgb(140, 255, 0), yellow);
-            background-size: 300% 300%;
-            z-index: -1;
-            animation: rotateGradient 6s linear infinite;
-            transform-origin: center;
-            border-radius: 15px;
-        }
-
-        /* Inner mask to preserve layout */
-        .order-options::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            right: 3px;
-            bottom: 3px;
-            background: linear-gradient(135deg, #1a1a1aff, gray);
-            border-radius: 8px;
-            z-index: -1;
-        }
-
-        @keyframes rotateGradient {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .order-options form {
-            display: flex;
-            justify-content: center;
-            /* center the whole form */
-            align-items: center;
-            gap: 10px;
-            width: auto;
-        }
-
-        .order-options .form-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-    </style>
-
-    <style>
-        table {
-            width: 100%;
-            max-width: 80mm;
-            /* Standard 80mm receipt width */
-            border-collapse: collapse;
-            border-spacing: 2px !important;
-            color: #000;
-            margin: 10px 0;
-            table-layout: fixed;
-        }
-
-        tbody tr:hover {
-            background-color: transparent !important;
-        }
-
-        /* Make column widths predictable */
-        #bonTable {
-            border-collapse: collapse;
-            table-layout: fixed;
-            width: auto;
-            /* allow the 4th column to extend beyond 80mm */
-            vertical-align: middle;
-            text-align: left;
-            max-width: none;
-        }
-
-        #bonTable th,
-        #bonTable td {
-            padding: 0;
-            /* keep the first 3 columns totaling exactly 80mm */
-            white-space: nowrap;
-            vertical-align: middle;
-            text-align: left;
-        }
-
-        /* Qty column: >= 4 characters wide */
-        #bonTable thead th:nth-child(2),
-        #bonTable tbody td:nth-child(2) {
-            width: 4.5ch;
-            /* room for 4 chars comfortably */
-            text-align: center;
-        }
-
-        /* Price column: >= 4 characters wide */
-        #bonTable thead th:nth-child(3),
-        #bonTable tbody td:nth-child(3) {
-            width: 4.5ch;
-            /* room for 4 chars comfortably */
-            text-align: center;
-        }
-
-        #bonTableBody>tr>td:nth-child(4) {
-            text-align: center;
-            /* horizontal centering */
-            vertical-align: middle;
-            /* vertical centering (works for table cells) */
-            padding: 3px;
-        }
-
-        #bonTable>thead>tr>th:nth-child(4) {
-            padding: 3px;
-        }
-
-        #bonTableBody>tr>td:nth-child(4)>button {
-            display: block;
-            margin: auto;
-        }
-
-        /* Article column takes the remainder so 1+2+3 = 80mm total */
-        #bonTable thead th:nth-child(1),
-        #bonTable tbody td:nth-child(1) {
-            width: calc(80mm - 9ch);
-            /* 9ch = 4.5ch + 4.5ch for Qty+Price */
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* 4th column (delete) – no fixed width; sits after the 80mm block */
-        #bonTable thead th:nth-child(4),
-        #bonTable tbody td:nth-child(4) {
-            width: auto;
-            text-align: left;
-        }
-
-        .removeArticle {
-            font-size: 1em;
-            font-weight: bold;
-            color: #fff;
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            padding: 2px 6px;
-            cursor: pointer;
-            transition: transform 0.15s ease, background 0.3s ease;
-        }
-
-        .removeArticle:hover {
-            background: linear-gradient(135deg, #ff6f61, #e74c3c);
-            transform: scale(1.05);
-        }
-
-        /* Material Design Gray & Yellow Theme */
-        .add-article-form {
-            background: linear-gradient(135deg, #1a1a1aff, gray);
-            /* light gray background */
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px yellow;
-            max-width: 400px;
-        }
-
-        .add-article-form form {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .add-article-form select,
-        .add-article-form input[type="text"],
-        .add-article-form input[type="number"] {
-            padding: 10px;
-            border: none;
-            border-radius: 4px;
-            background-color: #e0e0e0;
-            /* medium gray */
-            font-size: 14px;
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .add-article-form select:focus,
-        .add-article-form input:focus {
-            background-color: #fffde7;
-            /* pale yellow focus */
-            box-shadow: 0 0 0 2px yellow;
-            /* vibrant yellow outline */
-            outline: none;
-        }
-
-        .add-article-form button {
-            padding: 12px;
-            background-color: yellow;
-            /* material yellow */
-            color: #212121;
-            /* dark gray text */
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 100 ms;
-        }
-
-        .add-article-form button:hover {
-            background-color: MediumSeaGreen;
-            color: yellow;
-            transition: 100 ms;
-        }
-
-        /* Hide delete controls when printing */
-        @media print {
-
-            #bonTable td:nth-child(4),
-            #bonTable th:nth-child(4),
-            #bonTable .removeArticle,
-            #bonTable .no-print {
-                display: none !important;
-                visibility: hidden !important;
-            }
-        }
-
-        @media print {
-            #printArea {
-                margin-left: 0 !important;
-                min-height: auto !important;
-                height: auto !important;
-                padding: 0 !important;
-            }
-        }
-    </style>
-
-    <!-- Print styles -->
-    <style>
-        @media print {
-            .no-print {
-                display: none !important;
-                visibility: hidden !important;
-            }
-
-            html,
-            body {
-                overflow: hidden !important;
-                position: relative !important;
-                line-height: 1.2;
-                font-size: 12px;
-            }
-
-            table {
-                font-size: 12px;
-            }
-
-            p {
-                margin-top: 0;
-                margin-bottom: 0.25em !important;
-                line-height: 1.2;
-            }
-
-            /* Remove box shadow and other non-print styles */
-            header {
-                display: none !important;
-                visibility: hidden !important;
-            }
-
-            /* Add these new styles to target the specific elements */
-            .order-options {
-                display: none !important;
-                visibility: hidden !important;
-            }
-
-            /* Reset background colors to prevent shadows */
-            .order-options * {
-                background-color: transparent !important;
-            }
-        }
-
-        p {
-            margin-top: 0;
-            margin-bottom: 10px;
-        }
-    </style>
-
-    <!-- Whatsapp Icon -->
-    <style>
-        .whatsapp-icon {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #25D366;
-            /* Verde oficial WhatsApp */
-            color: white;
-            border-radius: 50%;
-            /* Face iconița rotundă */
-            width: 32px;
-            /* Dimensiune */
-            height: 32px;
-            font-size: 18px;
-            text-decoration: none;
-        }
-
-        .whatsapp-icon:hover {
-            background-color: #20b85d;
-            /* Ușor mai închis la hover */
-        }
-    </style>
-</head>
-
-<body>
-    <header class="no-print" id="header">
-        <?php if ($order['is_pinned'] == 1): ?>
-            <button class="no-print" onclick="togglePin(<?= $order['order_id'] ?>, 0)">Unpin Order 📌</button>
-        <?php else: ?>
-            <button class="no-print" onclick="togglePin(<?= $order['order_id'] ?>, 1)">Pin Order 📌</button>
-        <?php endif; ?>
-        <?php if ($order['status'] != 'completed' && $order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
-            <button id="finishButton" class="no-print" onclick="finishOrder()"><i class="fa-solid fa-flag-checkered"></i> Comandă terminată</button>
-        <?php endif; ?>
-
-        <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
-            <button id="deliverButton" class="no-print" onclick="deliverOrder()"><i class="fa-solid fa-truck-ramp-box"></i> Comandă livrată</button>
-        <?php endif; ?>
-
-        <button id="cancelButton" class="no-print" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>><i class="fa-solid fa-ban"></i> Anulează comanda</button>
-    </header>
-    <!-- Visual Progress Stepper -->
-    <div class="status-stepper no-print" style="display: flex; justify-content: space-between; align-items: center; max-width: 600px; margin: 20px auto; padding: 10px 0; position: relative;">
-        <div class="step-line" style="position: absolute; top: 25px; left: 5%; right: 5%; height: 4px; background: #ddd; z-index: 1;"></div>
-
-        <!-- Step 1: Created (Blue Theme) -->
-        <div class="step" style="z-index: 2; text-align: center; width: 20%;">
-            <div id="step-created-circle" style="width: 34px; height: 34px; border-radius: 50%; background: #3498db; color: white; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; font-size: 14px; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">✓</div>
-            <span style="font-size: 11px; font-weight: bold; color: #333;">Creată</span>
-        </div>
-
-        <!-- Step 2: In Progress (Yellow Theme) -->
-        <?php
-        $inProgress = ($order['status'] !== 'cancelled'); // Assumed active if not cancelled
-        $bgColor = $inProgress ? '#f1c40f' : '#ddd';
-        $textColor = $inProgress ? '#000' : '#888';
-        ?>
-        <div class="step" style="z-index: 2; text-align: center; width: 20%;">
-            <div id="step-inprogress-circle" style="width: 34px; height: 34px; border-radius: 50%; background: <?= $bgColor ?>; color: <?= $textColor ?>; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; font-size: 14px; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <?= $inProgress ? '<i class="fa-solid fa-digging"></i>' : '2' ?>
-            </div>
-            <span style="font-size: 11px; font-weight: bold; color: #333;">În lucru</span>
-        </div>
-
-        <!-- Step 3: Completed (Green Theme) -->
-        <?php
-        $isCompleted = ($order['status'] === 'completed' || $order['status'] === 'delivered');
-        $bgColor = $isCompleted ? '#2ecc71' : '#ddd';
-        $textColor = $isCompleted ? '#fff' : '#888';
-        ?>
-        <div class="step" style="z-index: 2; text-align: center; width: 20%;">
-            <div id="step-completed-circle" style="width: 34px; height: 34px; border-radius: 50%; background: <?= $bgColor ?>; color: <?= $textColor ?>; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; font-size: 14px; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                <?= $isCompleted ? '<i class="fa-solid fa-flag"></i>' : '3' ?>
-            </div>
-            <span style="font-size: 11px; font-weight: bold; color: #333;">Terminată</span>
-        </div>
-
-        <!-- Step 4: Delivered (Blue-Green Gradient Theme) -->
-        <?php
-        $isDelivered = ($order['status'] === 'delivered');
-        $bgColor = $isDelivered ? 'linear-gradient(135deg, #3498db, #2ecc71)' : '#ddd';
-        $iconColor = $isDelivered ? '#fff' : '#888';
-        $icon = $isDelivered ? '<i class="fa-solid fa-sack-dollar"></i>' : '4';
-        ?>
-        <div class="step" style="z-index: 2; text-align: center; width: 20%;">
-            <div id="step-delivered-circle" style="width: 34px; height: 34px; border-radius: 50%; background: <?= $bgColor ?>; color: <?= $iconColor ?>; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; font-size: 14px; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><?= $icon ?></div>
-            <span style="font-size: 11px; font-weight: bold; color: #333;">Livrată</span>
-        </div>
-    </div>
-    <div class="order-options">
-        <h1 style="font-size: larger;">Opțiuni suplimentare</h1>
-        <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled')  ?>
-        <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
-            <input type="hidden" name="return" value="<?= htmlspecialchars($_GET['return'] ?? '') ?>">
-            <div class="form-group">
-                <label for="new_due_date_select">Extinde termenul:</label>
-                <select id="new_due_date_select" name="new_due_date"></select>
-                <button type="submit" name="update_due_date"><i class="fa-solid fa-clock-rotate-left"></i> Actualizează data</button>
-            </div>
-        </form>
-
-        <form method="post" action="view_order.php?order_id=<?php echo $order['order_id']; ?>">
-            <input type="hidden" name="return" value="<?= htmlspecialchars($_GET['return'] ?? '') ?>">
-            <div class="form-group no-print">
-                <label for="assigned_to">Atribuie comanda lui:</label>
-                <select id="assigned_to" name="assigned_to">
-                    <?php
-                    // Folosim lista de operatori calculată o singură dată în dashboard.php
-                    foreach ($operators as $user) {
-                        $selected = ((int)$order['assigned_to'] === (int)$user['user_id']) ? 'selected' : '';
-                        echo "<option value='" . $user['user_id'] . "' $selected>" . $user['username'] . "</option>";
-                    }
-                    ?>
-                </select>
-                <button type="submit" name="update_user" class="no-print"><i class="fa-solid fa-people-arrows"></i> Reatribuire</button>
-            </div>
-        </form>
-        <?php if ($order['status'] != 'livrata') ?>
-        <div class="no-print">
-            <button class="no-print" onclick="editOrderDetails()"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
-            <button class="no-print" onclick="saveOrderDetails()" style="display:none;"><i class="fa-solid fa-floppy-disk"></i> Salvează modificările</button>
-            <button
-                id="toggleAchitatButton"
-                class="no-print"
-                data-order-id="<?= $order['order_id'] ?>"
-                data-current-state="<?= (int)$order['is_achitat'] ?>">
-                <?= $order['is_achitat']
-                    ? '<i class="fa-solid fa-ban"></i> Neachitat'
-                    : '<i class="fa-solid fa-sack-dollar"></i> Comandă achitată' ?>
-            </button>
-
-
-            <button id="toggleComandaLucruButton" class="no-print" onclick="toggleComandaLucru()"><i class="fa-solid fa-spinner"></i> Comandă în lucru</button>
-            <button class="no-print" onclick="printOrder()"><i class="fa-solid fa-print"></i> Print Order</button><br>
-        </div>
-    </div>
-    <div id="printArea" style="min-height: 100vh; margin-left: 25px">
-        <h2>Comanda nr. <strong class=order_id_large> <?php echo $order['order_id']; ?></strong></h2>
-        <div id="achitatContainer-<?= $order['order_id'] ?>">
-            <?php if ($order['is_achitat'] == 1): ?>
-                <h2 class="achitatBadge">Comandă achitată</h2>
-            <?php endif; ?>
-        </div>
-
-        <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
-        <p><strong>Termen: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
-        <!-- SLA Countdown -->
-        <div id="slaContainer" class="no-print" style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-            <div id="slaBadge" aria-hidden="true" style="width:16px;height:16px;border-radius:50%;background:#999;"></div>
-            <div>
-                <div style="font-size:14px;color:#333;">
-                    <div id="slaTimer" aria-live="polite" style="font-weight:600;font-size:20px;">—</div>
-                </div>
-            </div>
-        </div>
-        <p><strong>Operator: </strong><?php echo ucwords($order['assigned_user']); ?></p>
-        <p><strong>Creată de: </strong><?php echo ucwords($order['created_user']); ?></p>
-        <p><strong>Nume client: </strong><?php echo $client_name; ?></p>
-        <?php
-        $countryCode = "+4";
-        $waNumber = $countryCode . preg_replace('/\D/', '', $client_phone); // Remove non-digits
-        $waLink = "https://wa.me/" . urlencode($waNumber);
-        ?>
-        <p><strong>Contact client: </strong>
-            <?php echo htmlspecialchars($client_phone); ?>
-            <a href="<?php echo $waLink; ?>" target="_blank" class="no-print whatsapp-icon">
-                <i class="fab fa-whatsapp"></i>
-            </a>
-        </p>
-        <p><strong>Comanda initiala: </strong><br><span id="order_details_text"><?php echo nl2br(htmlspecialchars($order['order_details'])); ?></span></p>
-        <p><strong>Detalii suplimentare: </strong><br><span id="detalii_suplimentare_text"><?php echo nl2br(htmlspecialchars($order['detalii_suplimentare'])); ?></span></p>
-        <textarea id="detalii_suplimentare_edit" style="display:none;" rows="6" cols="60"><?php echo $order['detalii_suplimentare']; ?></textarea>
-
-        <!-- Articole -->
-        <?php
-        $stmt = $conn->prepare("
-    SELECT a.name, oa.quantity, oa.price_per_unit
+$stmt = $conn->prepare("
+    SELECT oa.id, a.name, oa.quantity, oa.price_per_unit
     FROM order_articles oa
     JOIN articles a ON oa.article_id = a.id
     WHERE oa.order_id = ?
 ");
-        $stmt->bind_param('i', $order_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
+$stmt->bind_param('i', $order_id);
+$stmt->execute();
+$articles_result = $stmt->get_result();
+$article_rows = [];
+$hasRows = false;
+$subtotal = 0;
+if ($articles_result) {
+    while ($row = $articles_result->fetch_assoc()) {
+        $hasRows = true;
+        $subtotal += $row['quantity'] * $row['price_per_unit'];
+        $article_rows[] = $row;
+    }
+}
+$stmt->close();
 
-        echo '<table id="bonTable">
-    <thead>
-        <tr>
-            <th>Articole</th>
-            <th>Cant</th>
-            <th>Preț</th>
-            <th>Șterge</th>
-        </tr>
-    </thead>
-    <tbody id="bonTableBody">';
+$stmt = $conn->prepare("SELECT * FROM order_attachments WHERE order_id = ?");
+$stmt->bind_param("i", $order_id);
+$stmt->execute();
+$attachments_result = $stmt->get_result();
+$attachments = [];
+while ($row = $attachments_result->fetch_assoc()) {
+    $attachments[] = $row;
+}
+$stmt->close();
 
-        $hasRows = false;
-        $total = 0;
-
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $hasRows = true;
-                $total += $row['quantity'] * $row['price_per_unit'];
-                echo '<tr>';
-                echo '<td>' . htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') . '</td>';
-                echo '<td>' . (int)$row['quantity'] . '</td>';
-                echo '<td>' . number_format((float)$row['price_per_unit'], 2) . '</td>';
-                echo '</tr>';
-            }
+$stepAssignedDone = $inProgress;
+$stepCompletedDone = $isCompleted;
+$stepDeliveredDone = $isDelivered;
+?>
+<!DOCTYPE html>
+<html class="view-order<?= $isEmbedded ? ' is-embedded' : '' ?>" lang="ro">
+<head>
+    <title>Comanda #<?= htmlspecialchars($orderIdPad) ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="view_order.css">
+    <link rel="icon" type="image/png" href="https://color-print.ro/magazincp/favicon.png" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <style>
+        .swal2-styled.swal2-confirm { background: #ffed00 !important; color: #141414 !important; border: none !important; font-weight: 600; }
+        .swal2-styled.swal2-cancel { background: #555 !important; color: #fff !important; border: none !important; }
+        .select2-container--default .select2-selection--single {
+            background: #fffcf6; border: 1px solid rgba(26,24,20,.12); border-radius: 8px; height: 40px;
         }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 40px; padding-left: 12px; color: #1a1814;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow { height: 38px; }
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #ffed00; color: #141414;
+        }
+    </style>
+</head>
+<body class="view-order<?= $isEmbedded ? ' is-embedded' : '' ?>">
 
-        echo '</tbody></table>';
-
-        $stmt->close();
-        ?>
-        <?php if (! $hasRows): ?>
-            <p
-                id="emptyNote"
-                class="no-print empty-note"
-                style="
-      width: 80mm;         /* same width as your columns block */
-      text-align: left;  /* center the text inside that 80 mm */
-    ">
-                Bate vântul pe-aici <i class="fa-solid fa-wind"></i>
-            </p>
-        <?php endif; ?>
-
-        <!-- Add article form -->
-        <div class="no-print add-article-form">
-            <form id="addArticleForm" method="post" action="add_article.php">
-                <input type="hidden" name="return" value="<?= htmlspecialchars($_GET['return'] ?? '') ?>">
-                <select id="articleSelect" name="article_id" style="width: 300px;">
-                    <option value="" disabled selected>Caută sau adaugă articol</option>
-                </select>
-
-                <div style="display:inline-flex; align-items:center; gap:5px;">
-                    <input type="text" id="price" name="price" placeholder="Preț" style="width:80px;">
-                    <button type="button" id="updateDefaultPriceBtn" title="Actualizează prețul implicit"><i class="fa-solid fa-pencil"></i> Actualizează preț</button>
+<div class="vo-shell no-print">
+    <header class="vo-header">
+        <p class="vo-kicker">Comanda</p>
+        <div class="vo-title-row">
+            <div>
+                <h2>Comanda nr. <strong class="order_id_large">#<?= htmlspecialchars($orderIdPad) ?></strong></h2>
+                <div class="vo-badges">
+                    <div id="achitatContainer-<?= (int)$order['order_id'] ?>">
+                        <?php if ((int)$order['is_achitat'] === 1): ?>
+                            <h2 class="achitatBadge">Achitată</h2>
+                        <?php endif; ?>
+                    </div>
+                    <?php if ((int)$order['is_pinned'] === 1): ?>
+                        <span class="vo-chip vo-chip-muted">Fixată</span>
+                    <?php endif; ?>
                 </div>
-
-                <input required type="number" id="quantity" name="quantity" min="1" value="" placeholder="Cantitate">
-                <input type="hidden" name="order_id" value="<?= (int)$order_id ?>">
-                <button type="submit"><i class="fa-solid fa-circle-plus"></i> Adaugă Articol</button>
-            </form>
-        </div>
-        <br>
-        <p>
-            <strong>Avans: </strong> <span id="avans_text"><?php echo htmlspecialchars($order['avans']); ?></span> lei
-            <!-- Hidden input for editing -->
-            <input type="number"
-                id="avans_edit"
-                style="display:none;"
-                value="<?php echo $order['avans']; ?>"
-                step="0.01">
-        </p>
-
-        <p id="totalWrapper">
-            <strong>Sumă de achitat:</strong> <span id="totalPrice">0.00</span>
-        </p>
-
-        <br>
-        <div>
-            <svg height="80px" clip-rule="evenodd" fill-rule="evenodd" image-rendering="optimizeQuality" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" version="1.1" viewBox="0 0 386 148.1" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <style>
-                        .fil0,
-                        .fil1 {
-                            fill: #373435
-                        }
-
-                        .fil1 {
-                            fill-rule: nonzero
-                        }
-                    </style>
-                </defs>
-                <g transform="matrix(8.1831 0 0 8.1831 -1033 -1535.6)">
-                    <path class="fil0" d="m148.35 188.2 0.01 5.13 2.33 1.91 0.01-5.38h3.73c1.11 0 1.29 1.62-0.12 1.62l-3.21 0.01c0.24 0.42 1.82 1.79 2.33 1.78 1.95-0.03 3.56 0.24 4.05-1.61 0.35-1.33 0.19-2.85-0.74-3.43-0.27-0.17-0.92-0.34-1.76-0.35l-6.63-0.03z" />
-                    <path class="fil0" d="m150.7 195.8-2.34-1.92-3.36-0.01c-0.4 0-0.67 0.02-0.68-0.39l-0.02-3.16c0-0.3 0.32-0.46 0.57-0.46l2.89 0.01 0.01-2.02-3.7-0.01c-1.26 0-1.85 0.5-1.86 1.58l-0.02 4.49c-0.01 1.64 1.04 1.91 2.96 1.9z" />
-                    <path class="fil1" d="m127.11 197.27h2.9c0.24 0 0.36 0.12 0.36 0.36s-0.12 0.36-0.36 0.36h-2.9v3h3.02c0.23 0 0.35 0.12 0.35 0.36s-0.12 0.36-0.35 0.36h-3.02c-0.26 0-0.45-0.07-0.59-0.21-0.14-0.13-0.21-0.33-0.21-0.59v-2.84c0-0.26 0.07-0.46 0.21-0.59 0.14-0.14 0.33-0.21 0.59-0.21zm4.56 1.5c0-0.23 0.07-0.41 0.19-0.53 0.13-0.13 0.31-0.2 0.54-0.2h2.23c0.23 0 0.41 0.07 0.54 0.2 0.12 0.12 0.19 0.3 0.19 0.53v2.2c0 0.24-0.07 0.42-0.19 0.55-0.13 0.13-0.31 0.19-0.54 0.19h-2.23c-0.23 0-0.41-0.06-0.54-0.19-0.12-0.13-0.19-0.31-0.19-0.55zm0.73-0.07v2.35h2.23v-2.35zm4.67-0.7h0.02c0.23 0 0.35 0.12 0.35 0.36v2.69h2.12c0.22 0 0.33 0.11 0.33 0.33s-0.11 0.33-0.33 0.33h-2.49c-0.24 0-0.36-0.12-0.36-0.36v-2.99c0-0.24 0.12-0.36 0.36-0.36zm3.6 0.77c0-0.23 0.07-0.41 0.19-0.53 0.13-0.13 0.31-0.2 0.54-0.2h2.22c0.24 0 0.42 0.07 0.55 0.2 0.12 0.12 0.18 0.3 0.18 0.53v2.2c0 0.24-0.06 0.42-0.18 0.55-0.13 0.13-0.31 0.19-0.55 0.19h-2.22c-0.23 0-0.41-0.06-0.54-0.19-0.12-0.13-0.19-0.31-0.19-0.55zm0.73-0.07v2.35h2.22v-2.35zm4.31-0.31c0-0.23 0.12-0.35 0.36-0.35h1.88c0.36 0 0.64 0.1 0.84 0.29s0.3 0.46 0.3 0.8c0 0.29-0.07 0.53-0.21 0.72s-0.33 0.32-0.57 0.39l0.87 1.19c0.06 0.07 0.07 0.14 0.04 0.19-0.02 0.06-0.09 0.09-0.18 0.09h-0.24c-0.1 0-0.18-0.02-0.25-0.06-0.06-0.03-0.13-0.11-0.22-0.22l-0.81-1.12h-0.28c-0.22 0-0.33-0.11-0.33-0.33 0-0.21 0.11-0.32 0.33-0.32h0.63c0.15 0 0.27-0.04 0.36-0.13 0.08-0.08 0.13-0.21 0.13-0.37 0-0.18-0.03-0.3-0.1-0.37-0.06-0.06-0.19-0.09-0.39-0.09h-1.43v2.69c0 0.24-0.12 0.36-0.37 0.36-0.24 0-0.36-0.12-0.36-0.36zm12.78 0c0-0.23 0.12-0.35 0.36-0.35h1.88c0.36 0 0.64 0.1 0.84 0.29 0.19 0.19 0.29 0.46 0.29 0.8 0 0.29-0.07 0.53-0.2 0.72-0.14 0.19-0.33 0.32-0.58 0.39l0.88 1.19c0.06 0.07 0.07 0.14 0.04 0.19-0.03 0.06-0.09 0.09-0.19 0.09h-0.23c-0.1 0-0.19-0.02-0.25-0.06a0.747 0.747 0 0 1-0.22-0.22l-0.82-1.12h-0.27c-0.22 0-0.33-0.11-0.33-0.33 0-0.21 0.11-0.32 0.33-0.32h0.62c0.16 0 0.28-0.04 0.36-0.13 0.09-0.08 0.13-0.21 0.13-0.37 0-0.18-0.03-0.3-0.09-0.37-0.06-0.06-0.2-0.09-0.4-0.09h-1.42v2.69c0 0.24-0.12 0.36-0.37 0.36-0.24 0-0.36-0.12-0.36-0.36zm4.93-0.38h0.01c0.24 0 0.36 0.12 0.36 0.35v3.03c0 0.24-0.13 0.36-0.37 0.36s-0.36-0.12-0.36-0.36v-3.03c0-0.23 0.12-0.35 0.36-0.35zm1.99 0.04h0.23c0.1 0 0.18 0.04 0.25 0.1l2.36 2.43v-2.21c0-0.24 0.13-0.36 0.37-0.36s0.36 0.12 0.36 0.36v3.12c0 0.18-0.09 0.26-0.26 0.26s-0.32-0.06-0.44-0.19l-2.96-3.05a0.332 0.332 0 0 1-0.12-0.25c0-0.14 0.07-0.21 0.21-0.21zm-0.02 1.18 0.44 0.44c0.07 0.07 0.1 0.16 0.1 0.25v1.46c0 0.25-0.12 0.37-0.36 0.37s-0.37-0.12-0.37-0.37v-2.08c0-0.1 0.03-0.15 0.07-0.15 0.03 0 0.07 0.03 0.12 0.08zm4.44-0.86c0-0.22 0.11-0.33 0.33-0.33h3.04c0.22 0 0.33 0.11 0.33 0.34 0 0.22-0.11 0.32-0.33 0.32h-3.04c-0.22 0-0.33-0.11-0.33-0.33zm1.48 3.02v-1.92c0-0.24 0.12-0.35 0.36-0.35h0.02c0.23 0 0.35 0.11 0.35 0.35v1.92c0 0.24-0.12 0.36-0.37 0.36-0.24 0-0.36-0.12-0.36-0.36zm-17.94-4.12h2.49c0.45 0 0.8 0.12 1.04 0.35 0.24 0.24 0.36 0.58 0.36 1.03 0 0.46-0.12 0.81-0.36 1.06-0.24 0.24-0.59 0.37-1.04 0.37h-1.23c-0.23 0-0.35-0.13-0.35-0.37s0.12-0.35 0.35-0.35h1.15c0.26 0 0.44-0.05 0.54-0.15 0.09-0.1 0.14-0.28 0.14-0.54 0-0.13-0.01-0.24-0.03-0.33s-0.05-0.16-0.11-0.21a0.422 0.422 0 0 0-0.21-0.11c-0.08-0.02-0.19-0.03-0.33-0.03h-2.01v3.38c0 0.25-0.14 0.38-0.42 0.38-0.25 0-0.38-0.13-0.38-0.38v-3.7c0-0.27 0.13-0.4 0.4-0.4zm-17.74 6.72c0 0.22-0.08 0.42-0.23 0.57-0.16 0.16-0.35 0.24-0.58 0.24-0.14 0-0.28-0.04-0.4-0.11v0.94h-0.41v-1.64c0-0.23 0.08-0.42 0.23-0.58 0.16-0.16 0.35-0.23 0.58-0.23s0.42 0.07 0.58 0.23c0.15 0.16 0.23 0.35 0.23 0.58zm-0.41 0c0-0.11-0.04-0.21-0.11-0.29a0.391 0.391 0 0 0-0.29-0.11c-0.11 0-0.2 0.03-0.28 0.11a0.4 0.4 0 0 0 0 0.57 0.4 0.4 0 0 0 0.57 0 0.41 0.41 0 0 0 0.11-0.28zm2.58 0.76h-0.44l-0.08-0.23c-0.16 0.19-0.37 0.28-0.62 0.28-0.23 0-0.42-0.08-0.58-0.24a0.74 0.74 0 0 1-0.23-0.57c0-0.17 0.04-0.33 0.14-0.47s0.23-0.23 0.39-0.29c0.1-0.04 0.19-0.05 0.28-0.05 0.17 0 0.33 0.04 0.47 0.14s0.23 0.23 0.29 0.39zm-0.74-0.76a0.39 0.39 0 0 0-0.17-0.33 0.39 0.39 0 0 0-0.23-0.07c-0.14 0-0.25 0.05-0.33 0.17a0.39 0.39 0 0 0-0.07 0.23c0 0.14 0.05 0.25 0.17 0.33 0.07 0.05 0.15 0.07 0.23 0.07 0.11 0 0.2-0.04 0.28-0.12 0.08-0.07 0.12-0.17 0.12-0.28zm2.19 0.3c0 0.09-0.04 0.18-0.1 0.26-0.13 0.16-0.31 0.24-0.55 0.23-0.1 0-0.2-0.02-0.32-0.06a0.718 0.718 0 0 1-0.27-0.16l0.23-0.29c0.11 0.1 0.22 0.15 0.35 0.15h0.01c0.05 0 0.09 0 0.13-0.02 0.06-0.03 0.08-0.06 0.08-0.11v-0.01c0-0.04-0.04-0.08-0.09-0.1-0.02 0-0.07-0.01-0.14-0.03-0.1-0.01-0.17-0.04-0.24-0.06a0.425 0.425 0 0 1-0.27-0.42c0-0.19 0.09-0.33 0.28-0.43 0.08-0.04 0.17-0.06 0.27-0.06 0.1-0.01 0.21 0.01 0.32 0.05 0.12 0.04 0.21 0.1 0.26 0.16l-0.27 0.25a0.333 0.333 0 0 0-0.23-0.11c-0.13 0-0.19 0.04-0.19 0.13v0.01c0 0.04 0.05 0.07 0.15 0.1 0.01 0 0.08 0.01 0.2 0.04 0.26 0.05 0.39 0.2 0.39 0.47zm0.66-1.46c0 0.07-0.03 0.12-0.07 0.17-0.05 0.05-0.11 0.07-0.18 0.07a0.22 0.22 0 0 1-0.17-0.07 0.22 0.22 0 0 1-0.07-0.17c0-0.07 0.02-0.13 0.07-0.18 0.05-0.04 0.1-0.07 0.17-0.07s0.13 0.03 0.17 0.07c0.05 0.05 0.08 0.11 0.08 0.18zm-0.04 1.92h-0.41v-1.57h0.41zm1.84-0.76a0.8 0.8 0 0 1-0.82 0.81c-0.22 0-0.42-0.08-0.57-0.24a0.763 0.763 0 0 1-0.24-0.57v-0.81h0.41v0.81c0 0.11 0.04 0.2 0.12 0.28a0.4 0.4 0 0 0 0.57 0c0.08-0.08 0.12-0.17 0.12-0.28v-0.81h0.41zm1.84 0.76h-0.41v-0.76a0.4 0.4 0 0 0-0.12-0.29 0.436 0.436 0 0 0-0.29-0.11c-0.11 0-0.2 0.03-0.28 0.11s-0.12 0.17-0.12 0.29v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58 0.15-0.16 0.35-0.23 0.57-0.23 0.23 0 0.42 0.07 0.58 0.23s0.24 0.35 0.24 0.58zm1.83-0.77c0 0.04 0 0.09-0.01 0.13h-1.18c0.02 0.08 0.07 0.15 0.14 0.2a0.407 0.407 0 0 0 0.55-0.06l0.25 0.33c-0.16 0.14-0.34 0.22-0.56 0.22-0.23 0-0.42-0.08-0.58-0.24a0.793 0.793 0 0 1-0.23-0.57c0-0.23 0.08-0.42 0.23-0.58 0.16-0.16 0.35-0.23 0.58-0.23s0.42 0.07 0.58 0.23c0.15 0.16 0.23 0.35 0.23 0.57zm-0.46-0.18a0.365 0.365 0 0 0-0.35-0.21c-0.16 0-0.28 0.07-0.35 0.21zm3.63 0.19c0 0.22-0.08 0.42-0.23 0.57-0.16 0.16-0.35 0.24-0.58 0.24-0.14 0-0.28-0.04-0.4-0.11v0.94h-0.41v-1.64c0-0.23 0.08-0.42 0.23-0.58 0.16-0.16 0.35-0.23 0.58-0.23s0.42 0.07 0.58 0.23c0.15 0.16 0.23 0.35 0.23 0.58zm-0.41 0c0-0.11-0.04-0.21-0.11-0.29a0.391 0.391 0 0 0-0.29-0.11c-0.11 0-0.21 0.03-0.28 0.11a0.4 0.4 0 0 0 0 0.57c0.07 0.08 0.17 0.12 0.28 0.12a0.4 0.4 0 0 0 0.29-0.12 0.41 0.41 0 0 0 0.11-0.28zm2.25-0.01c0 0.04 0 0.09-0.01 0.13h-1.19a0.426 0.426 0 0 0 0.39 0.28c0.12 0 0.22-0.05 0.3-0.14l0.25 0.33c-0.15 0.14-0.34 0.22-0.55 0.22a0.77 0.77 0 0 1-0.58-0.24 0.763 0.763 0 0 1-0.24-0.57c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23c0.22 0 0.42 0.07 0.57 0.23 0.16 0.16 0.24 0.35 0.24 0.57zm-0.46-0.18a0.375 0.375 0 0 0-0.35-0.21 0.38 0.38 0 0 0-0.36 0.21zm2.3 0.95h-0.41v-0.76a0.4 0.4 0 0 0-0.12-0.29 0.41 0.41 0 0 0-0.28-0.11c-0.12 0-0.21 0.03-0.29 0.11s-0.12 0.17-0.12 0.29v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23c0.22 0 0.41 0.07 0.57 0.23s0.24 0.35 0.24 0.58zm1.02 0c-0.22 0-0.42-0.08-0.57-0.23a0.785 0.785 0 0 1-0.24-0.58v-1.59h0.41v0.83h0.4v0.35h-0.4v0.41c0 0.11 0.04 0.21 0.12 0.29 0.08 0.07 0.17 0.11 0.28 0.11zm1.03-1.17c-0.12 0-0.21 0.04-0.29 0.12s-0.12 0.17-0.12 0.29v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23zm1.83 0.41a0.8 0.8 0 0 1-0.82 0.81c-0.22 0-0.42-0.08-0.57-0.24a0.763 0.763 0 0 1-0.24-0.57v-0.81h0.41v0.81c0 0.11 0.04 0.2 0.12 0.28 0.07 0.08 0.17 0.12 0.28 0.12a0.4 0.4 0 0 0 0.29-0.12c0.08-0.08 0.12-0.17 0.12-0.28v-0.81h0.41zm3.16 0c0 0.22-0.07 0.42-0.23 0.57-0.16 0.16-0.35 0.24-0.58 0.24-0.14 0-0.28-0.04-0.4-0.11v0.94h-0.41v-1.64c0-0.23 0.08-0.42 0.23-0.58 0.16-0.16 0.35-0.23 0.58-0.23s0.42 0.07 0.58 0.23 0.23 0.35 0.23 0.58zm-0.41 0c0-0.11-0.03-0.21-0.11-0.29a0.391 0.391 0 0 0-0.29-0.11c-0.11 0-0.2 0.03-0.28 0.11a0.4 0.4 0 0 0 0 0.57 0.4 0.4 0 0 0 0.57 0 0.37 0.37 0 0 0 0.11-0.28zm1.44-0.41a0.4 0.4 0 0 0-0.29 0.12c-0.08 0.08-0.12 0.17-0.12 0.29v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23zm0.65-0.75c0 0.07-0.02 0.12-0.07 0.17s-0.11 0.07-0.17 0.07c-0.07 0-0.13-0.02-0.18-0.07a0.22 0.22 0 0 1-0.07-0.17c0-0.07 0.02-0.13 0.07-0.18 0.05-0.04 0.11-0.07 0.18-0.07 0.06 0 0.12 0.03 0.17 0.07 0.05 0.05 0.07 0.11 0.07 0.18zm-0.04 1.92h-0.41v-1.57h0.41zm1.84 0h-0.41v-0.76a0.4 0.4 0 0 0-0.12-0.29 0.41 0.41 0 0 0-0.28-0.11 0.391 0.391 0 0 0-0.41 0.4v0.76h-0.41v-0.76c0-0.23 0.08-0.42 0.24-0.58s0.35-0.23 0.58-0.23c0.22 0 0.42 0.07 0.57 0.23 0.16 0.16 0.24 0.35 0.24 0.58zm1.03 0c-0.23 0-0.42-0.08-0.58-0.23a0.785 0.785 0 0 1-0.24-0.58v-1.59h0.41v0.83h0.41v0.35h-0.41v0.41c0 0.11 0.04 0.21 0.12 0.29 0.08 0.07 0.17 0.11 0.29 0.11z" />
-                </g>
-            </svg>
-        </div>
-        <br>
-        <div class="contact-info small-text">
-            <p><i class="fa-solid fa-location-dot"></i> Str. Roman Mușat, Nr. 21, Roman</p>
-            <p>(lângă Biblioteca Municipală și Farm. 32)</p>
-            <p><i class="fa-solid fa-phone"></i> 0753 581 170 </p>
-            <p><i class="fa-solid fa-envelope"></i> colorprint_roman@yahoo.com</p>
-            <p>Program: Luni - Vineri: 08:00 – 18:00</p>
-            <p>Sâmbătă: 09:00 – 12:00 Duminică: ÎNCHIS</p>
-            <p>-------------VĂ MULŢUMIM!------------</p>
-
+                <p class="vo-summary"><?= htmlspecialchars($order['order_details']) ?></p>
+            </div>
+            <div id="slaContainer" class="vo-sla">
+                <div id="slaBadge" aria-hidden="true"></div>
+                <div id="slaTimer" aria-live="polite">—</div>
+            </div>
         </div>
 
-    </div>
-    <h3 class="no-print" style="padding-left: 25px">Atașamente</h3>
-    <div class="no-print attachments-section">
-        <form action="upload_attachment.php"
-            class="dropzone"
-            id="orderDropzone">
-            <input type="hidden" name="order_id" value="<?= $order_id ?>">
-            <input type="hidden" name="return" value="<?= htmlspecialchars($_GET['return'] ?? '') ?>">
-        </form>
-    </div>
-    <div class="no-print">
-        <?php
-        $stmt = $conn->prepare("SELECT * FROM order_attachments WHERE order_id = ?");
-        $stmt->bind_param("i", $order_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        <ol class="vo-stepper status-stepper" aria-label="Status comandă">
+            <li class="vo-step is-done">
+                <div id="step-created-circle" class="vo-step-circle"><i class="fa-solid fa-check"></i></div>
+                <span>Creată</span>
+            </li>
+            <li class="vo-step<?= $stepAssignedDone ? ' is-done' : '' ?><?= !$isCompleted && $inProgress ? ' is-current' : '' ?>">
+                <div id="step-inprogress-circle" class="vo-step-circle">
+                    <?= $stepAssignedDone ? '<i class="fa-solid fa-hammer"></i>' : '2' ?>
+                </div>
+                <span>În lucru</span>
+            </li>
+            <li class="vo-step<?= $stepCompletedDone ? ' is-done' : '' ?><?= $order['status'] === 'completed' ? ' is-current' : '' ?>">
+                <div id="step-completed-circle" class="vo-step-circle">
+                    <?= $stepCompletedDone ? '<i class="fa-solid fa-flag"></i>' : '3' ?>
+                </div>
+                <span>Terminată</span>
+            </li>
+            <li class="vo-step<?= $stepDeliveredDone ? ' is-done' : '' ?><?= $isDelivered ? ' is-current' : '' ?>">
+                <div id="step-delivered-circle" class="vo-step-circle">
+                    <?= $stepDeliveredDone ? '<i class="fa-solid fa-truck"></i>' : '4' ?>
+                </div>
+                <span>Livrată</span>
+            </li>
+        </ol>
+    </header>
 
-        echo "<ul id='attachmentsList'>";
-        while ($row = $result->fetch_assoc()) {
-            echo "<li id='attachment-{$row['id']}'>
-            <a href='download_attachment.php?id={$row['id']}'>{$row['filename']}</a>
-            <button class='deleteAttachment' data-id='{$row['id']}'>
-                <i class='fa fa-trash'></i>
-            </button>
-          </li>";
-        }
-        echo "</ul>";
-        ?>
-    </div>
+    <div class="vo-body">
+        <div class="vo-grid-2">
+            <section class="vo-card">
+                <p class="vo-label">Client</p>
+                <p class="vo-name"><?= htmlspecialchars($client_name) ?></p>
+                <div class="vo-phone">
+                    <span><?= htmlspecialchars($client_phone) ?></span>
+                    <a href="<?= htmlspecialchars($waLink) ?>" target="_blank" rel="noreferrer" class="whatsapp-icon" aria-label="WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                </div>
+                <?php if (!empty($client_email) && $client_email !== 'Unknown'): ?>
+                    <p><?= htmlspecialchars($client_email) ?></p>
+                <?php endif; ?>
+            </section>
+            <section class="vo-card">
+                <p class="vo-label">Termen</p>
+                <p class="vo-name"><?= date('d-m-Y', strtotime($order['due_date'])) ?> · 18:00</p>
+                <p>Înregistrată <?= date('d-m-Y', strtotime($order['order_date'])) ?></p>
+                <p>Operator <strong><?= htmlspecialchars(ucwords($order['assigned_user'] ?? '')) ?></strong>
+                    · creată de <?= htmlspecialchars(ucwords($order['created_user'] ?? '')) ?></p>
+            </section>
+        </div>
 
-    <!-- Floating Template Message Button -->
-    <div id="templateMsgWidget" class="no-print" title="Trimite mesaj">
-        <i class="fa-brands fa-whatsapp"></i>
-        <span>Șabloane</span>
-    </div>
+        <section class="vo-card">
+            <div class="vo-card-head">
+                <h3>Detalii comandă</h3>
+                <?php if (!$isLocked): ?>
+                    <button type="button" class="vo-btn" onclick="editOrderDetails()"><i class="fa-solid fa-pen-to-square"></i> Editează</button>
+                    <button type="button" class="vo-btn vo-btn-ink" onclick="saveOrderDetails()" style="display:none;"><i class="fa-solid fa-floppy-disk"></i> Salvează</button>
+                <?php endif; ?>
+            </div>
+            <p class="vo-details-text" id="order_details_text"><?= nl2br(htmlspecialchars($order['order_details'])) ?></p>
+            <p class="vo-label" style="margin-top:12px">Detalii suplimentare</p>
+            <p class="vo-details-text" id="detalii_suplimentare_text"><?= nl2br(htmlspecialchars($order['detalii_suplimentare'] ?? '')) ?></p>
+            <textarea id="detalii_suplimentare_edit" style="display:none;" rows="5"><?= htmlspecialchars($order['detalii_suplimentare'] ?? '') ?></textarea>
+        </section>
 
-    <!-- Template Message Modal -->
-    <div id="templateMsgModal" class="modal">
-        <div class="whatsapp-modal">
+        <section class="vo-card">
+            <h3>Bon</h3>
+            <table id="bonTable">
+                <thead>
+                    <tr>
+                        <th>Articol</th>
+                        <th>Cant</th>
+                        <th>Preț</th>
+                        <th class="no-print">Șterge</th>
+                    </tr>
+                </thead>
+                <tbody id="bonTableBody">
+                <?php foreach ($article_rows as $row): ?>
+                    <tr data-id="<?= (int)$row['id'] ?>">
+                        <td><?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?></td>
+                        <td><?= (int)$row['quantity'] ?></td>
+                        <td><?= number_format((float)$row['price_per_unit'], 2) ?></td>
+                        <td class="no-print"><button type="button" class="removeArticle">✖</button></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+            <p id="emptyNote" class="empty-note" <?= $hasRows ? 'style="display:none;"' : '' ?>>
+                Bonul e gol — adaugă primul articol.
+            </p>
 
-            <!-- Header -->
-            <div class="whatsapp-header">
-                <h4><i class="fa-brands fa-whatsapp"></i> Mesaj Template</h4>
-                <button class="whatsapp-close-btn" id="closeTemplateMsg">&times;</button>
+            <div class="add-article-form">
+                <form id="addArticleForm" method="post" action="add_article.php">
+                    <input type="hidden" name="return" value="<?= $returnHidden ?>">
+                    <select id="articleSelect" name="article_id" style="width:100%">
+                        <option value="" disabled selected>Caută sau adaugă articol</option>
+                    </select>
+                    <div class="vo-price-row">
+                        <input type="text" id="price" name="price" placeholder="Preț">
+                        <button type="button" id="updateDefaultPriceBtn" title="Actualizează prețul implicit"><i class="fa-solid fa-pencil"></i></button>
+                    </div>
+                    <input required type="number" id="quantity" name="quantity" min="1" value="" placeholder="Cant">
+                    <input type="hidden" name="order_id" value="<?= (int)$order_id ?>">
+                    <button type="submit"><i class="fa-solid fa-circle-plus"></i> Adaugă</button>
+                </form>
             </div>
 
-            <!-- Body -->
-            <div class="whatsapp-body">
+            <div class="vo-totals">
+                <div>
+                    <span>Avans</span>
+                    <span><span id="avans_text"><?= htmlspecialchars($order['avans']) ?></span> lei</span>
+                </div>
+                <input type="number" id="avans_edit" style="display:none;" value="<?= htmlspecialchars($order['avans']) ?>" step="0.01">
+                <div class="vo-due" id="totalWrapper">
+                    <span>De achitat</span>
+                    <span id="totalPrice">0.00</span>
+                </div>
+            </div>
+        </section>
 
-                <!-- Template Selector -->
-                <div class="form-group">
-                    <label for="templateSelect">Alege șablon:</label>
-                    <select id="templateSelect" class="form-control">
-                        <option value="">— Selectează —</option>
-                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este terminată. Vă așteptăm la Color Print pentru ridicarea comenzii.">Comandă terminată</option>
+        <section class="vo-card">
+            <div class="vo-card-head">
+                <h3>Atașamente</h3>
+            </div>
+            <div class="attachments-section">
+                <form action="upload_attachment.php" class="dropzone" id="orderDropzone">
+                    <input type="hidden" name="order_id" value="<?= (int)$order_id ?>">
+                    <input type="hidden" name="return" value="<?= $returnHidden ?>">
+                </form>
+            </div>
+            <ul id="attachmentsList">
+                <?php foreach ($attachments as $row): ?>
+                    <li id="attachment-<?= (int)$row['id'] ?>">
+                        <a href="download_attachment.php?id=<?= (int)$row['id'] ?>"><?= htmlspecialchars($row['filename']) ?></a>
+                        <button class="deleteAttachment" data-id="<?= (int)$row['id'] ?>" type="button">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </section>
 
-                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este pregătită pentru ridicare. Vă așteptăm la Color Print.">Reminder: Comandă pregătită pentru ridicare</option>
+        <?php if (!$isLocked): ?>
+        <section class="vo-card vo-options">
+            <div class="vo-grid-2">
+                <form method="post" action="view_order.php?order_id=<?= (int)$order['order_id'] ?>">
+                    <input type="hidden" name="return" value="<?= $returnHidden ?>">
+                    <label for="assigned_to">Atribuie operatorului</label>
+                    <select id="assigned_to" name="assigned_to">
+                        <?php foreach ($operators as $user):
+                            $selected = ((int)$order['assigned_to'] === (int)$user['user_id']) ? 'selected' : '';
+                            echo "<option value='" . (int)$user['user_id'] . "' $selected>" . htmlspecialchars($user['username']) . "</option>";
+                        endforeach; ?>
+                    </select>
+                    <button type="submit" name="update_user"><i class="fa-solid fa-people-arrows"></i> Reatribuire</button>
+                </form>
+                <form method="post" action="view_order.php?order_id=<?= (int)$order['order_id'] ?>">
+                    <input type="hidden" name="return" value="<?= $returnHidden ?>">
+                    <label for="new_due_date_select">Extinde termenul</label>
+                    <select id="new_due_date_select" name="new_due_date"></select>
+                    <button type="submit" name="update_due_date"><i class="fa-solid fa-clock-rotate-left"></i> Actualizează data</button>
+                </form>
+            </div>
+        </section>
+        <?php endif; ?>
+    </div>
 
-                        <option value="Bună ziua {{client}}, comanda dumneavoastră #{{order}} este pregătită pentru ridicare la Color Print. Vă rugăm să o ridicați cât mai curând. Vă mulțumim.">Reminder: Comandă neridicată 2</option>
+    <footer class="vo-footer">
+        <div class="vo-footer-row">
+            <?php if ((int)$order['is_pinned'] === 1): ?>
+                <button type="button" class="vo-btn" onclick="togglePin(<?= (int)$order['order_id'] ?>, 0)"><i class="fa-solid fa-thumbtack"></i> Anulează pin</button>
+            <?php else: ?>
+                <button type="button" class="vo-btn" onclick="togglePin(<?= (int)$order['order_id'] ?>, 1)"><i class="fa-solid fa-thumbtack"></i> Fixează</button>
+            <?php endif; ?>
+            <div id="templateMsgWidget" title="Trimite mesaj">
+                <i class="fa-brands fa-whatsapp"></i>
+                <span>Șabloane</span>
+            </div>
+            <button type="button" id="printBtn" class="vo-btn print-button" onclick="printOrder()"><i class="fa-solid fa-print"></i> Print</button>
+            <button type="button" id="toggleComandaLucruButton" class="vo-btn" onclick="toggleComandaLucru()"><i class="fa-solid fa-spinner"></i> În lucru</button>
+        </div>
+        <div class="vo-footer-row">
+            <?php if (!$isLocked): ?>
+                <button
+                    type="button"
+                    id="toggleAchitatButton"
+                    class="vo-btn vo-btn-ink"
+                    data-order-id="<?= (int)$order['order_id'] ?>"
+                    data-current-state="<?= (int)$order['is_achitat'] ?>">
+                    <?= (int)$order['is_achitat']
+                        ? '<i class="fa-solid fa-ban"></i> Neachitat'
+                        : '<i class="fa-solid fa-sack-dollar"></i> Achitată' ?>
+                </button>
+            <?php endif; ?>
+            <?php if ($order['status'] != 'completed' && $order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
+                <button type="button" id="finishButton" class="vo-btn vo-btn-ink" onclick="finishOrder()"><i class="fa-solid fa-flag"></i> Termină</button>
+            <?php endif; ?>
+            <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
+                <button type="button" id="deliverButton" class="vo-btn vo-btn-yellow" onclick="deliverOrder()"><i class="fa-solid fa-truck"></i> Livrare</button>
+            <?php endif; ?>
+            <button type="button" id="cancelButton" class="vo-btn vo-btn-danger" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>><i class="fa-solid fa-ban"></i> Anulează</button>
+        </div>
+    </footer>
+</div>
 
-                        <option value="Bună ziua, înainte să începem comanda dvs. #{{order}}, vă rugăm să analizați cu atenție simularea grafică.
+<!-- Thermal ticket: hidden on screen, used by window.print() -->
+<div id="printArea">
+    <h2>Comanda nr. <strong class="order_id_large"><?php echo (int)$order['order_id']; ?></strong></h2>
+    <?php if ((int)$order['is_achitat'] === 1): ?>
+        <h2 class="achitatBadge">Comandă achitată</h2>
+    <?php endif; ?>
+    <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
+    <p><strong>Termen: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
+    <p><strong>Operator: </strong><?php echo htmlspecialchars(ucwords($order['assigned_user'] ?? '')); ?></p>
+    <p><strong>Creată de: </strong><?php echo htmlspecialchars(ucwords($order['created_user'] ?? '')); ?></p>
+    <p><strong>Nume client: </strong><?php echo htmlspecialchars($client_name); ?></p>
+    <p><strong>Contact client: </strong><?php echo htmlspecialchars($client_phone); ?></p>
+    <p><strong>Comanda initiala: </strong><br><?php echo nl2br(htmlspecialchars($order['order_details'])); ?></p>
+    <p><strong>Detalii suplimentare: </strong><br><?php echo nl2br(htmlspecialchars($order['detalii_suplimentare'] ?? '')); ?></p>
+    <?php if ($hasRows): ?>
+        <table id="printBonTable">
+            <thead>
+                <tr><th>Articole</th><th>Cant</th><th>Preț</th></tr>
+            </thead>
+            <tbody id="printBonBody">
+            <?php foreach ($article_rows as $row): ?>
+                <tr>
+                    <td><?= htmlspecialchars($row['name'], ENT_QUOTES, 'UTF-8') ?></td>
+                    <td><?= (int)$row['quantity'] ?></td>
+                    <td><?= number_format((float)$row['price_per_unit'], 2) ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <table id="printBonTable" style="display:none;">
+            <thead>
+                <tr><th>Articole</th><th>Cant</th><th>Preț</th></tr>
+            </thead>
+            <tbody id="printBonBody"></tbody>
+        </table>
+    <?php endif; ?>
+    <p><strong>Avans: </strong><span id="printAvans"><?php echo htmlspecialchars($order['avans']); ?></span> lei</p>
+    <p><strong>Sumă de achitat:</strong> <span id="printTotal"><?= number_format(max(0, $subtotal - (float)$order['avans']), 2) ?></span> lei</p>
+    <p><img src="comenzi.svg" alt="Color Print" height="48"></p>
+    <div class="contact-info small-text">
+        <p>Str. Roman Mușat, Nr. 21, Roman</p>
+        <p>(lângă Biblioteca Municipală și Farm. 32)</p>
+        <p>0753 581 170</p>
+        <p>colorprint_roman@yahoo.com</p>
+        <p>Program: Luni - Vineri: 08:00 – 18:00</p>
+        <p>Sâmbătă: 09:00 – 12:00 Duminică: ÎNCHIS</p>
+        <p>-------------VĂ MULŢUMIM!------------</p>
+    </div>
+</div>
+
+<div id="templateMsgModal" class="modal">
+    <div class="whatsapp-modal">
+        <div class="whatsapp-header">
+            <h4><i class="fa-brands fa-whatsapp"></i> Mesaj Template</h4>
+            <button class="whatsapp-close-btn" id="closeTemplateMsg" type="button">&times;</button>
+        </div>
+        <div class="whatsapp-body">
+            <div class="form-group">
+                <label for="templateSelect">Alege șablon:</label>
+                <select id="templateSelect" class="form-control">
+                    <option value="">— Selectează —</option>
+                    <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este terminată. Vă așteptăm la Color Print pentru ridicarea comenzii.">Comandă terminată</option>
+                    <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este pregătită pentru ridicare. Vă așteptăm la Color Print.">Reminder: Comandă pregătită pentru ridicare</option>
+                    <option value="Bună ziua {{client}}, comanda dumneavoastră #{{order}} este pregătită pentru ridicare la Color Print. Vă rugăm să o ridicați cât mai curând. Vă mulțumim.">Reminder: Comandă neridicată 2</option>
+                    <option value="Bună ziua, înainte să începem comanda dvs. #{{order}}, vă rugăm să analizați cu atenție simularea grafică.
 
 După confirmarea acestora prin transmiterea bunului de tipar (BT), vom considera că toate informațiile (dimensiuni, grafici, texte, culori, poziționări) au fost verificate și aprobate de Dumneavoastră.
 
@@ -967,61 +485,43 @@ După primirea bunului de tipar, firma noastră este absolvită de orice respons
 Orice greșeală omisă sau nerevizuită de client înainte de aprobare intră exclusiv în sarcina acestuia.
 
 Vă mulțumim pentru colaborare și încredere!">Confirmare bun de tipar</option>
-
-                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este în lucru. Vă anunțăm imediat ce este gata.">Comandă în lucru</option>
-
-                        <option value="Bună ziua {{client}}, comanda dvs. #{{order}} necesită puțin timp suplimentar. Revenim cu un mesaj imediat ce este gata.">Comandă întârziată</option>
-
-                        <option value="Bună ziua {{client}}, o parte din comanda dvs. #{{order}} este gata. Vă anunțăm imediat ce finalizăm și restul.">Comandă finalizată parțial</option>
-                    </select>
-                </div>
-
-                <!-- Textarea -->
-                <div class="form-group text-center">
-                    <label for="templateMessage">
-                        Mesaj
-                    </label>
-                    <textarea id="templateMessage"
-                        rows="5"
-                        placeholder="Selectează un șablon sau scrie text"
-                        style="max-width: 500px; width: 100%;"></textarea>
-                </div>
-
-                <!-- Send Button -->
-                <button id="sendTemplateMsgBtn">
-                    <i class="fa-brands fa-whatsapp"></i> Trimite mesaj
-                </button>
-
+                    <option value="Bună ziua {{client}}, comanda dvs. #{{order}} este în lucru. Vă anunțăm imediat ce este gata.">Comandă în lucru</option>
+                    <option value="Bună ziua {{client}}, comanda dvs. #{{order}} necesită puțin timp suplimentar. Revenim cu un mesaj imediat ce este gata.">Comandă întârziată</option>
+                    <option value="Bună ziua {{client}}, o parte din comanda dvs. #{{order}} este gata. Vă anunțăm imediat ce finalizăm și restul.">Comandă finalizată parțial</option>
+                </select>
             </div>
+            <div class="form-group text-center">
+                <label for="templateMessage">Mesaj</label>
+                <textarea id="templateMessage" rows="5" placeholder="Selectează un șablon sau scrie text" style="max-width:500px;width:100%;"></textarea>
+            </div>
+            <button type="button" id="sendTemplateMsgBtn">
+                <i class="fa-brands fa-whatsapp"></i> Trimite mesaj
+            </button>
         </div>
     </div>
+</div>
 
-    <!-- Data bridge: PHP values consumed by script.js -->
-    <div id="viewOrderDataBridge"
-        data-order-id="<?= $order_id ?>"
-        data-assigned-to="<?= htmlspecialchars($order['assigned_user'] ?? '', ENT_QUOTES) ?>"
-        data-client-name="<?= htmlspecialchars($client_name ?? '', ENT_QUOTES) ?>"
-        data-boss="<?= htmlspecialchars($order['created_user'] ?? '', ENT_QUOTES) ?>"
-        data-client-phone="<?= htmlspecialchars($client_phone ?? '', ENT_QUOTES) ?>"
-        data-wa-link="<?= htmlspecialchars($waLink ?? '', ENT_QUOTES) ?>"
-        data-due-date-iso="<?= htmlspecialchars($dueDateIso ?? '', ENT_QUOTES) ?>"
-        data-server-now-iso="<?= htmlspecialchars($serverNowIso ?? '', ENT_QUOTES) ?>"
-        data-order-completed="<?= $isCompleted ? '1' : '0' ?>"
-        data-order-delivered="<?= $order['status'] === 'delivered' ? '1' : '0' ?>"
-        <?php if (!empty($_SESSION['flash_success'])):
-            echo 'data-flash-success="' . htmlspecialchars($_SESSION['flash_success'], ENT_QUOTES) . '"';
-            unset($_SESSION['flash_success']);
-        endif; ?>
-        <?php if (!empty($_SESSION['flash_error'])):
-            echo 'data-flash-error="' . htmlspecialchars($_SESSION['flash_error'], ENT_QUOTES) . '"';
-            unset($_SESSION['flash_error']);
-        endif; ?>
-        style="display: none;"></div>
+<div id="viewOrderDataBridge"
+    data-order-id="<?= (int)$order_id ?>"
+    data-assigned-to="<?= htmlspecialchars($order['assigned_user'] ?? '', ENT_QUOTES) ?>"
+    data-client-name="<?= htmlspecialchars($client_name ?? '', ENT_QUOTES) ?>"
+    data-boss="<?= htmlspecialchars($order['created_user'] ?? '', ENT_QUOTES) ?>"
+    data-client-phone="<?= htmlspecialchars($client_phone ?? '', ENT_QUOTES) ?>"
+    data-wa-link="<?= htmlspecialchars($waLink ?? '', ENT_QUOTES) ?>"
+    data-due-date-iso="<?= htmlspecialchars($dueDateIso ?? '', ENT_QUOTES) ?>"
+    data-server-now-iso="<?= htmlspecialchars($serverNowIso ?? '', ENT_QUOTES) ?>"
+    data-order-completed="<?= $isCompleted ? '1' : '0' ?>"
+    data-order-delivered="<?= $order['status'] === 'delivered' ? '1' : '0' ?>"
+    <?php if (!empty($_SESSION['flash_success'])):
+        echo 'data-flash-success="' . htmlspecialchars($_SESSION['flash_success'], ENT_QUOTES) . '"';
+        unset($_SESSION['flash_success']);
+    endif; ?>
+    <?php if (!empty($_SESSION['flash_error'])):
+        echo 'data-flash-error="' . htmlspecialchars($_SESSION['flash_error'], ENT_QUOTES) . '"';
+        unset($_SESSION['flash_error']);
+    endif; ?>
+    style="display:none;"></div>
 
-    <br>
-
-    <script src="script.js"></script>
-
+<script src="script.js"></script>
 </body>
-
 </html>

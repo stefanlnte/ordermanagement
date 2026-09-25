@@ -2624,42 +2624,50 @@ textarea {
 
 /* ================================
    OFF-CANVAS ORDER SLIDER PANEL
-   ================================ */
-/* ================================
-   SLOW AOS-STYLE SLIDER PANEL
+   Ticket-jacket panel for view_order.php (and statistics.php).
+   Order mode: floating close over the iframe header.
+   Stats mode (.is-stats): full title bar.
    ================================ */
 #orderSliderPanel {
   position: fixed;
   top: 0;
-  right: -100%;
-  width: 85%;
-  max-width: 950px;
-  height: 100vh;
-  background: #fefefe;
-  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3);
+  right: 0;
+  width: min(720px, 100%);
+  height: 100%;
+  height: 100dvh;
+  background: #fffcf6;
+  box-shadow: -18px 0 40px rgba(20, 20, 20, 0.22);
   z-index: 10000;
-  transition: right 750ms ease-in-out;
   display: flex;
   flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  visibility: hidden;
+  will-change: transform;
 }
 
 #orderSliderPanel.open {
-  right: 0;
+  transform: translateX(0);
+  pointer-events: auto;
+  visibility: visible;
 }
 
 .order-slider-header {
-  background: #3c3c3c;
+  background: #141414;
   color: #fff;
-  padding: 16px 20px;
+  padding: 12px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #444;
+  flex-shrink: 0;
+  border-bottom: 1px solid #2a2a2a;
 }
 
 .order-slider-header h3 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
   font-family: 'Poppins', sans-serif;
   display: flex;
   align-items: center;
@@ -2667,51 +2675,89 @@ textarea {
 }
 
 .order-slider-close {
-  background: #e53935;
-  border: none;
-  color: white;
-  font-size: 1.4rem;
-  font-weight: bold;
-  width: 38px;
-  height: 38px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 500;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: 0.2s ease;
+  line-height: 1;
+  transition: background 0.15s ease;
 }
 
 .order-slider-close:hover {
-  background: #b71c1c;
-  transform: scale(1.1);
+  background: #c0362c;
+  transform: none;
+}
+
+/* Order view: hide the title bar, float the close over the iframe */
+#orderSliderPanel:not(.is-stats) .order-slider-header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 5;
+  background: transparent;
+  border: 0;
+  padding: 12px 12px 0 0;
+  width: auto;
+  pointer-events: none;
+}
+
+#orderSliderPanel:not(.is-stats) .order-slider-header h3 {
+  display: none;
+}
+
+#orderSliderPanel:not(.is-stats) .order-slider-close {
+  pointer-events: auto;
 }
 
 .order-slider-body {
   flex: 1;
-  overflow-y: auto;
-  background: #f5f5f5;
+  min-height: 0;
+  overflow: hidden;
+  background: #fffcf6;
 }
 
 .order-slider-body iframe {
   width: 100%;
   height: 100%;
   border: none;
+  display: block;
+  background: #fffcf6;
 }
 
 #orderSliderBackdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(20, 20, 20, 0.48);
   z-index: 9999;
   display: none;
   opacity: 0;
-  transition: opacity 750ms ease-in-out;
+  transition: opacity 400ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 #orderSliderBackdrop.open {
   display: block;
   opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #orderSliderPanel,
+  #orderSliderBackdrop {
+    transition: none;
+  }
+}
+
+@media (max-width: 720px) {
+  #orderSliderPanel {
+    width: 100%;
+  }
 }
 
 /* ================================================================
