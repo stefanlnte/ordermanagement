@@ -103,20 +103,21 @@ body.view-order.is-embedded .vo-header {
 .vo-chip-muted { background: rgba(255, 255, 255, 0.1); color: var(--vo-yellow); }
 .vo-chip-cyan { background: rgba(26, 163, 196, 0.2); color: #7ad3ea; }
 
-.vo-summary {
-  margin: 8px 0 0;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Header quick-action: Print (moved out of the footer into the top-right,
+   where the SLA pill used to sit) */
+.vo-title-row .print-button {
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-weight: 600;
 }
 
 #slaContainer.vo-sla {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin: 0;
+  margin: 8px 0 0;
   flex-shrink: 0;
 }
 

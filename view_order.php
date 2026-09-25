@@ -199,12 +199,14 @@ $stepDeliveredDone = $isDelivered;
                         <span class="vo-chip vo-chip-muted">Fixată</span>
                     <?php endif; ?>
                 </div>
-                <p class="vo-summary"><?= htmlspecialchars($order['order_details']) ?></p>
+                <!-- SLA countdown: moved up into the header's title column -->
+                <div id="slaContainer" class="vo-sla">
+                    <div id="slaBadge" aria-hidden="true"></div>
+                    <div id="slaTimer" aria-live="polite">—</div>
+                </div>
             </div>
-            <div id="slaContainer" class="vo-sla">
-                <div id="slaBadge" aria-hidden="true"></div>
-                <div id="slaTimer" aria-live="polite">—</div>
-            </div>
+            <!-- Print (id/class kept for the Ctrl+P handlers): moved out of the footer into the header's top-right corner -->
+            <button type="button" id="printBtn" class="vo-btn vo-btn-yellow print-button" onclick="printOrder()"><i class="fa-solid fa-print"></i> Print</button>
         </div>
 
         <ol class="vo-stepper status-stepper" aria-label="Status comandă">
@@ -384,7 +386,6 @@ $stepDeliveredDone = $isDelivered;
                 <i class="fa-brands fa-whatsapp"></i>
                 <span>Șabloane</span>
             </div>
-            <button type="button" id="printBtn" class="vo-btn print-button" onclick="printOrder()"><i class="fa-solid fa-print"></i> Print</button>
             <button type="button" id="toggleComandaLucruButton" class="vo-btn" onclick="toggleComandaLucru()"><i class="fa-solid fa-spinner"></i> În lucru</button>
         </div>
         <div class="vo-footer-row">
