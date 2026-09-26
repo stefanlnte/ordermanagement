@@ -544,7 +544,10 @@ body.view-order.is-embedded .vo-header {
 .vo-options form {
   display: grid;
   gap: 6px;
-  margin: 0 0 12px;
+  /* .vo-grid-2's own gap already separates the two forms (side by side on a
+     wide window, stacked on mobile), so the old 12px bottom margin was dead
+     space hanging under the buttons inside the card. */
+  margin: 0;
 }
 
 .vo-options label {
@@ -560,7 +563,19 @@ body.view-order.is-embedded .vo-header {
 }
 
 .vo-options button[type="submit"] {
-  margin-top: 6px;
+  /* styles.css ships a global `button { margin: 5px }` — the same leak the
+     .vo-btn reset further down fights. Without this reset the two card buttons
+     sat 5px to the right of the field above them and hung 5px past the card's
+     inner edge (measured: field at x=795, button at x=800). Pinning the margin
+     back to 0 lines up label + field + button on one left edge. The width cap
+     repeats the field cap above so the button is exactly as wide as the control
+     it submits: in the wide standalone view the "Extinde termenul" block reads
+     as one 320px column instead of a 733px black bar under a 320px field, while
+     in the embedded slider / mobile columns (narrower than 320px) the 100%
+     width still governs. */
+  margin: 6px 0 0;
+  width: 100%;
+  max-width: 320px;
   padding: 10px 14px;
   background: var(--vo-ink);
   color: var(--vo-yellow);

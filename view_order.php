@@ -111,6 +111,56 @@ if ($rawDue) {
 }
 $serverNowIso = (new DateTimeImmutable('now', new DateTimeZone(date_default_timezone_get())))->format(DateTime::ATOM);
 
+// PHP functions for formatting dates
+/**
+ * Formats a date as a full, human-readable Romanian label. It produces exactly
+ * the same output as formatTermenLabel() in script.js, which builds the option
+ * labels of the "termen" Select2 pickers (#new_due_date_select here and
+ * #datePickerSelect in dashboard.php).
+ * Example: "Sâmbătă, 26 septembrie 2026"
+ *
+ * The weekday/month names are hard-coded instead of going through
+ * setlocale()/IntlDateFormatter: those only return Romanian names when the
+ * locale data is installed on the server, otherwise they silently fall back to
+ * English. Keep the two arrays in sync with formatTermenLabel() in script.js.
+ *
+ * @param string|null $dateString Raw date from the DB (YYYY-MM-DD, or any
+ *                                strtotime()-parseable value).
+ * @return string e.g. "Sâmbătă, 26 septembrie 2026"; '' when $dateString is empty.
+ */
+function formatTermenLabel($dateString)
+{
+    if (empty($dateString)) {
+        return '';
+    }
+    // strtotime() (not new DateTime()) keeps the old graceful behaviour for
+    // unparseable values such as '0000-00-00': they are echoed back as-is
+    // instead of throwing.
+    $timestamp = strtotime($dateString);
+    if ($timestamp === false) {
+        return (string)$dateString;
+    }
+    $daysOfWeek = ['Duminică', 'Luni', 'Marți', 'Miercuri', 'Joi', 'Vineri', 'Sâmbătă'];
+    $monthsOfYear = [
+        'ianuarie',
+        'februarie',
+        'martie',
+        'aprilie',
+        'mai',
+        'iunie',
+        'iulie',
+        'august',
+        'septembrie',
+        'octombrie',
+        'noiembrie',
+        'decembrie',
+    ];
+    return $daysOfWeek[(int)date('w', $timestamp)]
+        . ', ' . (int)date('j', $timestamp)
+        . ' ' . $monthsOfYear[(int)date('n', $timestamp) - 1]
+        . ' ' . date('Y', $timestamp);
+}
+
 $countryCode = "+4";
 $waNumber = $countryCode . preg_replace('/\D/', '', $client_phone);
 $waLink = "https://wa.me/" . urlencode($waNumber);
@@ -291,8 +341,8 @@ $stepDeliveredDone = $isDelivered;
             </section>
             <section class="vo-card">
                 <p class="vo-label">Termen</p>
-                <p class="vo-name"><?= date('d-m-Y', strtotime($order['due_date'])) ?> · 18:00</p>
-                <p>Înregistrată <?= date('d-m-Y', strtotime($order['order_date'])) ?></p>
+                <p class="vo-name"><?= formatTermenLabel($order['due_date']) ?> · 18:00</p>
+                <p>Înregistrată <?= formatTermenLabel($order['order_date']) ?></p>
                 <p>Operator <strong><?= htmlspecialchars(ucwords($order['assigned_user'] ?? '')) ?></strong>
                     · creată de <?= htmlspecialchars(ucwords($order['created_user'] ?? '')) ?></p>
             </section>
@@ -420,8 +470,8 @@ $stepDeliveredDone = $isDelivered;
     <h2>Comanda nr. <strong class="order_id_large"><?php echo (int)$order['order_id']; ?></strong></h2>
     <h2 id="printAchitatBadge" class="ticket-badge"<?php if ((int)$order['is_achitat'] !== 1) echo ' style="display:none;"'; ?>>Comandă achitată</h2>
     <h2 id="printLucruBadge" class="ticket-badge ticket-badge--outline" style="display:none;">Comandă în lucru</h2>
-    <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
-    <p><strong>Termen: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
+    <p><strong>Din data: </strong><?php echo formatTermenLabel($order['order_date']); ?></p>
+    <p><strong>Termen: </strong><?php echo formatTermenLabel($order['due_date']); ?></p>
     <p><strong>Operator: </strong><?php echo htmlspecialchars(ucwords($order['assigned_user'] ?? '')); ?></p>
     <p><strong>Creată de: </strong><?php echo htmlspecialchars(ucwords($order['created_user'] ?? '')); ?></p>
     <p><strong>Nume client: </strong><?php echo htmlspecialchars($client_name); ?></p>
