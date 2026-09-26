@@ -805,6 +805,38 @@ body.view-order .select2-container {
   width: 100% !important;
 }
 
+/* ...but that selector is also caught by the element select2 uses to hold the
+   OPEN dropdown. When a dropdown opens, select2 detaches it from the form,
+   appends it to <body> and gives the wrapper the container's class list
+   (dropdown/attachBody.js -> position(): $dropdown.attr('class',
+   $container.attr('class'))). The wrapper therefore inherited the 100% width
+   above and, because dropdownAutoWidth leaves the inner .select2-dropdown at
+   width:auto + position:relative, the option list of "Atribuie operatorului" /
+   "Extinde termenul" stretched to the whole page width and pushed past the
+   right edge of the window (horizontal scrollbar). The wrapper is always a
+   direct child of <body> while the visible controls always live inside
+   .vo-body, so resetting it here hits only the open list and lets it shrink
+   around the dropdown it holds. The 320px cap mirrors the one for the controls
+   below, so the list always lines up with its field — change both together. */
+body.view-order > .select2-container {
+  width: auto !important;
+  max-width: 320px;
+}
+
+/* Cap for the in-form controls: the options card lays "Atribuie operatorului"
+   and "Extinde termenul" out side by side in .vo-grid-2 (1fr 1fr from 560px
+   up), so on a wide (non-embedded) window each control otherwise filled its
+   whole column and the pair read as stretched across the card. max-width only
+   trims that excess: when the column is narrower than the cap the 100% width
+   above still governs, so the ~300px columns of the embedded slider and the
+   single-column mobile layout are unchanged. The native <select> fallback gets
+   the same cap for when select2 fails to load; the source <select> itself is
+   hidden by select2, so this only ever affects the visible control. */
+.vo-options .select2-container,
+.vo-options select {
+  max-width: 320px;
+}
+
 .vo-options select {
   padding: 10px 12px;
   border: 0;

@@ -97,6 +97,55 @@ function formatRemainingDays(dueDate) {
 }
 
 /**
+ * Formats a Date as a full, human-readable Romanian label, used for the
+ * option labels of the "termen" pickers (#new_due_date_select in
+ * view_order.php and #datePickerSelect in dashboard.php).
+ * Example: "Sâmbătă, 26 septembrie 2026"
+ *
+ * The weekday/month names are hard-coded instead of going through
+ * toLocaleDateString('ro-RO', ...): that only returns Romanian names when the
+ * browser ships ICU data for the locale, otherwise it silently falls back to
+ * English ("Sat, 26 Sep 2026"). The weekday list mirrors the one already used
+ * by formatDateWithoutYearWithDay() above.
+ * @param {Date} date - The date to label.
+ * @returns {string} e.g. "Sâmbătă, 26 septembrie 2026".
+ */
+function formatTermenLabel(date) {
+  const daysOfWeek = [
+    'Duminică',
+    'Luni',
+    'Marți',
+    'Miercuri',
+    'Joi',
+    'Vineri',
+    'Sâmbătă',
+  ];
+  const monthsOfYear = [
+    'ianuarie',
+    'februarie',
+    'martie',
+    'aprilie',
+    'mai',
+    'iunie',
+    'iulie',
+    'august',
+    'septembrie',
+    'octombrie',
+    'noiembrie',
+    'decembrie',
+  ];
+  return (
+    daysOfWeek[date.getDay()] +
+    ', ' +
+    date.getDate() +
+    ' ' +
+    monthsOfYear[date.getMonth()] +
+    ' ' +
+    date.getFullYear()
+  );
+}
+
+/**
  * Shows either the "new client" fields or the "existing client"
  * details button, depending on whether a client is selected in the
  * #client_id dropdown. When an existing client is chosen, kicks off
@@ -527,12 +576,8 @@ document.addEventListener('DOMContentLoaded', function () {
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
 
-      const label = date.toLocaleDateString('ro-RO', {
-        weekday: 'short',
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
+      // Full Romanian label, e.g. "Sâmbătă, 26 septembrie 2026"
+      const label = formatTermenLabel(date);
 
       const option = new Option(label, `${year}-${month}-${day}`);
 
@@ -2652,12 +2697,8 @@ $(document).ready(function () {
         const year = d.getFullYear();
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const day = String(d.getDate()).padStart(2, '0');
-        const label = d.toLocaleDateString('ro-RO', {
-          weekday: 'short',
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
-        });
+        // Full Romanian label, e.g. "Sâmbătă, 26 septembrie 2026"
+        const label = formatTermenLabel(d);
         const option = new Option(label, `${year}-${month}-${day}`);
         if (i === 0) option.selected = true;
         dateSelect.add(option);
