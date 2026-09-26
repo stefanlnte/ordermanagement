@@ -2635,7 +2635,7 @@ textarea {
   width: min(720px, 100%);
   height: 100%;
   height: 100dvh;
-  background: #fffcf6;
+  background: #f8f9fa;
   box-shadow: -18px 0 40px rgba(20, 20, 20, 0.22);
   z-index: 10000;
   display: flex;
@@ -2724,7 +2724,7 @@ textarea {
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  background: #fffcf6;
+  background: #f8f9fa;
 }
 
 .order-slider-body iframe {
@@ -2732,7 +2732,7 @@ textarea {
   height: 100%;
   border: none;
   display: block;
-  background: #fffcf6;
+  background: #f8f9fa;
 }
 
 #orderSliderBackdrop {

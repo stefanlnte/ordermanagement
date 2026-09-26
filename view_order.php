@@ -170,10 +170,10 @@ $stepDeliveredDone = $isDelivered;
         .swal2-styled.swal2-confirm { background: #ffed00 !important; color: #141414 !important; border: none !important; font-weight: 600; }
         .swal2-styled.swal2-cancel { background: #555 !important; color: #fff !important; border: none !important; }
         .select2-container--default .select2-selection--single {
-            background: #fffcf6; border: 1px solid rgba(26,24,20,.12); border-radius: 8px; height: 40px;
+            background: #f8f9fa; border: 1px solid rgba(18,21,26,.12); border-radius: 8px; height: 40px;
         }
         .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: 40px; padding-left: 12px; color: #1a1814;
+            line-height: 40px; padding-left: 12px; color: #1b1d20;
         }
         .select2-container--default .select2-selection--single .select2-selection__arrow { height: 38px; }
         .select2-container--default .select2-results__option--highlighted[aria-selected] {
@@ -235,20 +235,23 @@ $stepDeliveredDone = $isDelivered;
 
     <div class="vo-body">
         <section class="vo-card vo-actions-card" aria-label="Acțiuni comandă">
+            <?php /* Row 1 holds the toggles (pin + achitat), row 2 the status
+                     transitions. The old "În lucru" button was removed — it only
+                     toggled a client-side badge, so no server state is lost.
+                     Colour schemes were swapped: green (vo-btn-ok) is now
+                     "Termină", ink + yellow (vo-btn-ink) is the
+                     "Achitată / Neachitat" toggle. */ ?>
             <div class="vo-actions-row">
                 <?php if ((int)$order['is_pinned'] === 1): ?>
                     <button type="button" class="vo-btn" onclick="togglePin(<?= (int)$order['order_id'] ?>, 0)"><i class="fa-solid fa-thumbtack"></i> Anulează pin</button>
                 <?php else: ?>
                     <button type="button" class="vo-btn" onclick="togglePin(<?= (int)$order['order_id'] ?>, 1)"><i class="fa-solid fa-thumbtack"></i> Fixează</button>
                 <?php endif; ?>
-                <button type="button" id="toggleComandaLucruButton" class="vo-btn vo-btn-yellow" onclick="toggleComandaLucru()"><i class="fa-solid fa-spinner"></i> În lucru</button>
-            </div>
-            <div class="vo-actions-row">
                 <?php if (!$isLocked): ?>
                     <button
                         type="button"
                         id="toggleAchitatButton"
-                        class="vo-btn vo-btn-yellow"
+                        class="vo-btn vo-btn-ink"
                         data-order-id="<?= (int)$order['order_id'] ?>"
                         data-current-state="<?= (int)$order['is_achitat'] ?>">
                         <?= (int)$order['is_achitat']
@@ -256,11 +259,13 @@ $stepDeliveredDone = $isDelivered;
                             : '<i class="fa-solid fa-sack-dollar"></i> Achitată' ?>
                     </button>
                 <?php endif; ?>
+            </div>
+            <div class="vo-actions-row">
                 <?php if ($order['status'] != 'completed' && $order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
-                    <button type="button" id="finishButton" class="vo-btn vo-btn-ink" onclick="finishOrder()"><i class="fa-solid fa-flag"></i> Termină</button>
+                    <button type="button" id="finishButton" class="vo-btn vo-btn-ok" onclick="finishOrder()"><i class="fa-solid fa-flag"></i> Termină</button>
                 <?php endif; ?>
                 <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
-                    <button type="button" id="deliverButton" class="vo-btn vo-btn-yellow" onclick="deliverOrder()"><i class="fa-solid fa-truck"></i> Livrare</button>
+                    <button type="button" id="deliverButton" class="vo-btn vo-btn-info" onclick="deliverOrder()"><i class="fa-solid fa-truck"></i> Livrare</button>
                 <?php endif; ?>
                 <button type="button" id="cancelButton" class="vo-btn vo-btn-danger" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>><i class="fa-solid fa-ban"></i> Anulează</button>
             </div>

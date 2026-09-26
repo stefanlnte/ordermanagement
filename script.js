@@ -2702,7 +2702,7 @@ $(document).ready(function () {
             .html(
               newState === 1
                 ? '<i class="fa-solid fa-ban"></i> Neachitat'
-                : '<i class="fa-solid fa-sack-dollar"></i> Comandă achitată',
+                : '<i class="fa-solid fa-sack-dollar"></i> Achitată',
             );
         },
         error: function (xhr) {

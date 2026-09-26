@@ -2,13 +2,16 @@
    Color Print: ink + paper + yellow accent. Does not change dashboard.php. */
 
 :root {
-  --vo-bg: #f3efe6;
-  --vo-surface: #fffcf6;
-  --vo-surface-2: #ebe6db;
+  /* Neutral light-grey ramp (no warm beige): the page is a hair lighter than
+     the cards, the cards a hair lighter than the secondary surfaces (chips,
+     default buttons, inputs). Ink + yellow stay as the only brand accents. */
+  --vo-bg: #eef0f2;
+  --vo-surface: #f8f9fa;
+  --vo-surface-2: #e3e6e9;
   --vo-ink: #141414;
-  --vo-fg: #1a1814;
-  --vo-muted: #6b655c;
-  --vo-subtle: #8a847a;
+  --vo-fg: #1b1d20;
+  --vo-muted: #6b7280;
+  --vo-subtle: #8a9199;
   --vo-yellow: #ffed00;
   --vo-cyan: #1aa3c4;
   --vo-magenta: #c41a6b;
@@ -16,7 +19,7 @@
   --vo-warn: #c47a12;
   --vo-danger: #c0362c;
   --vo-wa: #128c4a;
-  --vo-border: rgba(26, 24, 20, 0.12);
+  --vo-border: rgba(18, 21, 26, 0.12);
   --vo-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --vo-radius: 12px;
 }
@@ -101,6 +104,10 @@ body.view-order.is-embedded .vo-header {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  /* The SLA row below starts with an 8px status dot + an 8px gap, so the badge
+     labels are pushed right by that same amount to share one text column with
+     the timer instead of hugging the header's left edge. */
+  padding-left: 16px;
   margin-top: 6px;
 }
 
@@ -239,6 +246,9 @@ body.view-order.is-embedded .vo-header {
   background: var(--vo-bg);
   border-radius: var(--vo-radius);
   padding: 16px;
+  /* grey-on-grey is low contrast, so the panels get a hairline ring to keep
+     reading as cards instead of blending into the page */
+  box-shadow: 0 0 0 1px rgba(18, 21, 26, 0.06);
 }
 
 .vo-card h3,
@@ -304,6 +314,11 @@ body.view-order.is-embedded .vo-header {
 #detalii_suplimentare_edit,
 #avans_edit {
   width: 100%;
+  /* styles.css caps every textarea with `textarea { max-width: fit-content }`
+     (element selector, so nothing here out-specified it) — the "Detalii
+     suplimentare" edit box was therefore clamped to its intrinsic ~20-column
+     size and never reached the card's edge. Reset it explicitly. */
+  max-width: none;
   box-sizing: border-box;
   margin-top: 8px;
   padding: 10px 12px;
@@ -437,9 +452,22 @@ body.view-order.is-embedded .vo-header {
   color: var(--vo-yellow);
 }
 
+/* "Actualizează prețul implicit" wears the same ink-on-yellow accent pair as
+   the header Print pill (see .vo-btn-yellow) so it reads as a real action
+   instead of the grey, disabled-looking chip it used to be. */
 #updateDefaultPriceBtn {
-  background: var(--vo-surface-2);
-  color: var(--vo-fg);
+  background: var(--vo-yellow);
+  color: var(--vo-ink);
+}
+
+/* Both the global `button:hover { background-color: yellow }` from styles.css
+   and the form's own `.add-article-form button:hover` (ink + yellow) would
+   otherwise repaint this button, so re-state both properties — only the
+   brightness changes on hover. */
+#updateDefaultPriceBtn:hover {
+  background: var(--vo-yellow);
+  color: var(--vo-ink);
+  filter: brightness(0.92);
 }
 
 .vo-price-row {
@@ -480,7 +508,7 @@ body.view-order.is-embedded .vo-header {
 }
 
 .attachments-section .dropzone {
-  border: 1px dashed rgba(26, 24, 20, 0.25);
+  border: 1px dashed rgba(18, 21, 26, 0.25);
   background: var(--vo-surface);
   border-radius: 8px;
   min-height: 88px;
@@ -579,25 +607,45 @@ body.view-order.is-embedded .vo-header {
 .vo-btn:hover { filter: brightness(0.97); }
 .vo-btn:active { transform: scale(0.96); }
 
-.vo-btn-ink { background: var(--vo-ink); color: var(--vo-yellow); box-shadow: none; }
-.vo-btn-yellow { background: var(--vo-yellow); color: var(--vo-ink); box-shadow: none; }
-.vo-btn-danger { background: var(--vo-danger); color: #fff; box-shadow: none; }
+/* One explicit background + text colour per action, so every button in the
+   actions card is tellable apart at a glance and never inherits the global
+   `button { background-color: whitesmoke; color: #333 }` from styles.css.
+   The ratio in each comment is the text-on-background contrast. */
+.vo-btn-ink    { background: var(--vo-ink);    color: var(--vo-yellow); box-shadow: none; } /* ~17:1 – Achitată, Salvează */
+.vo-btn-yellow { background: var(--vo-yellow); color: #1b1d20;          box-shadow: none; } /* ~17:1 */
+.vo-btn-ok     { background: #1f7a42;          color: #ffffff;          box-shadow: none; } /* 5.4:1 – Termină */
+.vo-btn-info   { background: #0e7f9c;          color: #ffffff;          box-shadow: none; } /* 4.7:1 – Livrare */
+.vo-btn-danger { background: var(--vo-danger); color: #ffffff;          box-shadow: none; } /* 5.5:1 – Anulează */
 
 /* Hover states for the coloured variants.
    styles.css ships a global `button:hover { background-color: yellow }` whose
    specificity (0,1,1) outranks these plain class rules (0,1,0) — so on hover
-   "Achitată/Neachitat" turned yellow-on-yellow and "Anulează" white-on-yellow.
-   Re-stating background + color on :hover keeps the text legible against the
-   button's own background instead of the global yellow. */
+   every variant (Termină green, ink, Livrare blue, Anulează red) flipped to a
+   yellow background with its own text colour left on top. Re-stating
+   background + color on :hover keeps the text legible against the button's own
+   background instead of the global yellow. */
 .vo-btn-ink:hover {
-  background: var(--vo-yellow);
-  color: var(--vo-ink);
+  background: var(--vo-ink);
+  color: var(--vo-yellow);
+  filter: brightness(1.25);
 }
 
 .vo-btn-yellow:hover {
   background: var(--vo-yellow);
-  color: var(--vo-ink);
+  color: #1b1d20;
   filter: brightness(1.05);
+}
+
+.vo-btn-ok:hover {
+  background: #1f7a42;
+  color: #ffffff;
+  filter: brightness(1.10);
+}
+
+.vo-btn-info:hover {
+  background: #0e7f9c;
+  color: #ffffff;
+  filter: brightness(1.12);
 }
 
 .vo-btn-danger:hover {
@@ -649,6 +697,9 @@ body.view-order #templateMsgWidget i {
   justify-content: center;
 }
 
+/* Badge created by window.toggleComandaLucru() in script.js. The button that
+   called it was removed from the actions card, so this is currently inert —
+   kept so restoring the button restores the badge too. */
 #comandaLucruElement {
   display: inline-flex;
   margin: 8px 8px 0 0;
