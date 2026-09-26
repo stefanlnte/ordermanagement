@@ -587,8 +587,10 @@ document.addEventListener('DOMContentLoaded', function () {
       sliderTitle.innerHTML =
         '<i class="fa-solid fa-file-invoice"></i> Detalii Comandă';
     }
-    sliderBackdrop.style.display = 'block';
     sliderIframe.src = 'view_order.php?order_id=' + orderId + '&embedded=1';
+
+    // Force a reflow so the entry slide-in transition replays every time
+    void sliderPanel.offsetWidth;
 
     setTimeout(() => {
       sliderPanel.classList.add('open');
@@ -605,8 +607,10 @@ document.addEventListener('DOMContentLoaded', function () {
       sliderTitle.innerHTML =
         '<i class="fa-solid fa-chart-line"></i> Statistici Comenzi';
     }
-    sliderBackdrop.style.display = 'block';
     sliderIframe.src = 'statistics.php?embedded=1';
+
+    // Force a reflow so the entry slide-in transition replays every time
+    void sliderPanel.offsetWidth;
 
     setTimeout(() => {
       sliderPanel.classList.add('open');
@@ -621,13 +625,15 @@ document.addEventListener('DOMContentLoaded', function () {
   window.openStatsSlider = openStatsSlider;
 
   function closeOrderSlider() {
+    if (!sliderPanel.classList.contains('open')) return;
+    // Removing .open lets the CSS exit transition (slide-out + backdrop
+    // fade-out) play; content is cleared only after it finishes.
     sliderPanel.classList.remove('open');
     sliderBackdrop.classList.remove('open');
     document.body.style.overflow = '';
 
     setTimeout(() => {
       sliderIframe.src = '';
-      sliderBackdrop.style.display = 'none';
       sliderPanel.classList.remove('is-stats');
 
       // Trigger the quiet refresh instead of a full page reload

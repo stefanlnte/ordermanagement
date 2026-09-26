@@ -241,14 +241,14 @@ $stepDeliveredDone = $isDelivered;
                 <?php else: ?>
                     <button type="button" class="vo-btn" onclick="togglePin(<?= (int)$order['order_id'] ?>, 1)"><i class="fa-solid fa-thumbtack"></i> Fixează</button>
                 <?php endif; ?>
-                <button type="button" id="toggleComandaLucruButton" class="vo-btn" onclick="toggleComandaLucru()"><i class="fa-solid fa-spinner"></i> În lucru</button>
+                <button type="button" id="toggleComandaLucruButton" class="vo-btn vo-btn-yellow" onclick="toggleComandaLucru()"><i class="fa-solid fa-spinner"></i> În lucru</button>
             </div>
             <div class="vo-actions-row">
                 <?php if (!$isLocked): ?>
                     <button
                         type="button"
                         id="toggleAchitatButton"
-                        class="vo-btn vo-btn-ink"
+                        class="vo-btn vo-btn-yellow"
                         data-order-id="<?= (int)$order['order_id'] ?>"
                         data-current-state="<?= (int)$order['is_achitat'] ?>">
                         <?= (int)$order['is_achitat']

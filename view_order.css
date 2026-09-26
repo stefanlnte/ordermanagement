@@ -80,8 +80,12 @@ body.view-order.is-embedded .vo-header {
   margin-top: 2px;
 }
 
-.vo-title-row h2,
+/* Header title with inline Print action sitting right next to "Comanda nr. #" */
 .vo-title-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
   margin: 0;
   font-family: 'Poppins', sans-serif;
   font-size: 32px;
@@ -89,6 +93,7 @@ body.view-order.is-embedded .vo-header {
   letter-spacing: -0.03em;
   color: var(--vo-yellow);
   font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
 .vo-badges {
@@ -113,13 +118,7 @@ body.view-order.is-embedded .vo-header {
 .vo-chip-muted { background: rgba(255, 255, 255, 0.1); color: var(--vo-yellow); }
 .vo-chip-cyan { background: rgba(26, 163, 196, 0.2); color: #7ad3ea; }
 
-/* Header title with inline Print action sitting right next to "Comanda nr. #" */
-.vo-title-heading {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
+/* Print button inside the header title (inherits .vo-btn-yellow colors) */
 
 .vo-title-row .print-button.vo-print-inline {
   flex-shrink: 0;
@@ -560,6 +559,10 @@ body.view-order.is-embedded .vo-header {
   align-items: center;
   justify-content: center;
   gap: 6px;
+  /* styles.css sets a global `button { margin: 5px }` which stacked on top of
+     the flex `gap` in the actions rows and pushed the inline Print pill off the
+     title's baseline — reset it so spacing comes from the layout only. */
+  margin: 0;
   min-height: 40px;
   padding: 8px 12px;
   border-radius: 8px;
@@ -721,26 +724,25 @@ body.view-order #templateMsgWidget i {
 }
 
 html.view-order,
-body.view-order,
-body.view-order .vo-body {
-  scrollbar-width: thin !important;
-  scrollbar-color: rgba(26, 24, 20, 0.35) transparent !important;
-  -ms-overflow-style: auto !important;
+body.view-order {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html.view-order.is-embedded,
+html.view-order.is-embedded body.view-order,
+body.view-order.is-embedded,
+body.view-order.is-embedded .vo-body {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 html.view-order::-webkit-scrollbar,
 body.view-order::-webkit-scrollbar,
 body.view-order .vo-body::-webkit-scrollbar {
-  display: block !important;
-  width: 8px;
-  height: 8px;
-}
-
-html.view-order::-webkit-scrollbar-thumb,
-body.view-order::-webkit-scrollbar-thumb,
-body.view-order .vo-body::-webkit-scrollbar-thumb {
-  background: rgba(26, 24, 20, 0.28);
-  border-radius: 999px;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 body.view-order,
@@ -808,12 +810,20 @@ body.view-order .select2-container {
   margin: 0 0 0.3em;
 }
 
+/* styles.css ships `table { border-collapse: separate !important;
+   border-spacing: 0 12px !important }` for the dashboard's card rows. Without
+   !important here the ticket printed with a 12px gap above every article line
+   (wasting thermal paper and breaking the "bon" look), so these must be
+   force-overridden and pinned to the 72mm content box. */
 #printArea table {
-  width: 100%;
-  max-width: 100%;
+  width: 100% !important;
+  max-width: 100% !important;
   table-layout: fixed;
-  border-collapse: collapse;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
   margin: 8px 0;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
 }
 
 #printArea th,
@@ -821,9 +831,21 @@ body.view-order .select2-container {
   text-align: left;
   padding: 2px 4px;
   font-size: 12px;
+  letter-spacing: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
   vertical-align: top;
+}
+
+/* Header underline + per-row integrity (never split an article across pages) */
+#printArea thead th {
+  border-bottom: 1px solid #000 !important;
+  padding-bottom: 3px;
+}
+
+#printArea tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 /* Article name takes the room, Cant/Pret stay narrow so rows fit 80mm */
@@ -859,6 +881,26 @@ body.view-order .select2-container {
   filter: grayscale(1) brightness(0);
 }
 
+/* Footer block: centred, small, closed with a dashed cut line — the way a
+   thermal receipt reads. These classes have no styles anywhere else. */
+#printArea .contact-info {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed #000;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+#printArea .contact-info p {
+  margin: 0 0 2px;
+}
+
+#printArea .contact-info p:last-child {
+  margin-top: 4px;
+  font-weight: 700;
+}
+
 @media print {
   @page {
     size: 80mm auto;
@@ -881,6 +923,20 @@ body.view-order .select2-container {
   .vo-title-row h2,
   .vo-title-heading {
     font-size: 24px;
+  }
+
+  /* Tighten the title/Print pairing so the pill never overlaps the number
+     when "Comanda nr. #000123" wraps on narrow phones */
+  .vo-title-heading {
+    gap: 8px;
+    row-gap: 6px;
+  }
+
+  .vo-title-row .print-button.vo-print-inline {
+    min-height: 32px;
+    padding: 5px 12px;
+    font-size: 12px;
+    letter-spacing: 0;
   }
 
   .vo-header {
