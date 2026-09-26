@@ -188,7 +188,7 @@ $stepDeliveredDone = $isDelivered;
         <p class="vo-kicker">Comanda</p>
         <div class="vo-title-row">
             <div>
-                <h2>Comanda nr. <strong class="order_id_large">#<?= htmlspecialchars($orderIdPad) ?></strong></h2>
+                <div class="vo-title-heading">Comanda nr. <strong class="order_id_large">#<?= htmlspecialchars($orderIdPad) ?></strong> <button type="button" id="printBtn" class="vo-btn vo-btn-yellow print-button vo-print-inline" onclick="printOrder()"><i class="fa-solid fa-print"></i> Print</button></div>
                 <div class="vo-badges">
                     <div id="achitatContainer-<?= (int)$order['order_id'] ?>">
                         <?php if ((int)$order['is_achitat'] === 1): ?>
@@ -205,8 +205,6 @@ $stepDeliveredDone = $isDelivered;
                     <div id="slaTimer" aria-live="polite">—</div>
                 </div>
             </div>
-            <!-- Print (id/class kept for the Ctrl+P handlers): moved out of the footer into the header's top-right corner -->
-            <button type="button" id="printBtn" class="vo-btn vo-btn-yellow print-button" onclick="printOrder()"><i class="fa-solid fa-print"></i> Print</button>
         </div>
 
         <ol class="vo-stepper status-stepper" aria-label="Status comandă">
@@ -236,6 +234,37 @@ $stepDeliveredDone = $isDelivered;
     </header>
 
     <div class="vo-body">
+        <section class="vo-card vo-actions-card" aria-label="Acțiuni comandă">
+            <div class="vo-actions-row">
+                <?php if ((int)$order['is_pinned'] === 1): ?>
+                    <button type="button" class="vo-btn" onclick="togglePin(<?= (int)$order['order_id'] ?>, 0)"><i class="fa-solid fa-thumbtack"></i> Anulează pin</button>
+                <?php else: ?>
+                    <button type="button" class="vo-btn" onclick="togglePin(<?= (int)$order['order_id'] ?>, 1)"><i class="fa-solid fa-thumbtack"></i> Fixează</button>
+                <?php endif; ?>
+                <button type="button" id="toggleComandaLucruButton" class="vo-btn" onclick="toggleComandaLucru()"><i class="fa-solid fa-spinner"></i> În lucru</button>
+            </div>
+            <div class="vo-actions-row">
+                <?php if (!$isLocked): ?>
+                    <button
+                        type="button"
+                        id="toggleAchitatButton"
+                        class="vo-btn vo-btn-ink"
+                        data-order-id="<?= (int)$order['order_id'] ?>"
+                        data-current-state="<?= (int)$order['is_achitat'] ?>">
+                        <?= (int)$order['is_achitat']
+                            ? '<i class="fa-solid fa-ban"></i> Neachitat'
+                            : '<i class="fa-solid fa-sack-dollar"></i> Achitată' ?>
+                    </button>
+                <?php endif; ?>
+                <?php if ($order['status'] != 'completed' && $order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
+                    <button type="button" id="finishButton" class="vo-btn vo-btn-ink" onclick="finishOrder()"><i class="fa-solid fa-flag"></i> Termină</button>
+                <?php endif; ?>
+                <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
+                    <button type="button" id="deliverButton" class="vo-btn vo-btn-yellow" onclick="deliverOrder()"><i class="fa-solid fa-truck"></i> Livrare</button>
+                <?php endif; ?>
+                <button type="button" id="cancelButton" class="vo-btn vo-btn-danger" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>><i class="fa-solid fa-ban"></i> Anulează</button>
+            </div>
+        </section>
         <div class="vo-grid-2">
             <section class="vo-card">
                 <p class="vo-label">Client</p>
@@ -379,46 +408,13 @@ $stepDeliveredDone = $isDelivered;
         </section>
         <?php endif; ?>
     </div>
-
-    <footer class="vo-footer">
-        <div class="vo-footer-row">
-            <?php if ((int)$order['is_pinned'] === 1): ?>
-                <button type="button" class="vo-btn" onclick="togglePin(<?= (int)$order['order_id'] ?>, 0)"><i class="fa-solid fa-thumbtack"></i> Anulează pin</button>
-            <?php else: ?>
-                <button type="button" class="vo-btn" onclick="togglePin(<?= (int)$order['order_id'] ?>, 1)"><i class="fa-solid fa-thumbtack"></i> Fixează</button>
-            <?php endif; ?>
-            <button type="button" id="toggleComandaLucruButton" class="vo-btn" onclick="toggleComandaLucru()"><i class="fa-solid fa-spinner"></i> În lucru</button>
-        </div>
-        <div class="vo-footer-row">
-            <?php if (!$isLocked): ?>
-                <button
-                    type="button"
-                    id="toggleAchitatButton"
-                    class="vo-btn vo-btn-ink"
-                    data-order-id="<?= (int)$order['order_id'] ?>"
-                    data-current-state="<?= (int)$order['is_achitat'] ?>">
-                    <?= (int)$order['is_achitat']
-                        ? '<i class="fa-solid fa-ban"></i> Neachitat'
-                        : '<i class="fa-solid fa-sack-dollar"></i> Achitată' ?>
-                </button>
-            <?php endif; ?>
-            <?php if ($order['status'] != 'completed' && $order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
-                <button type="button" id="finishButton" class="vo-btn vo-btn-ink" onclick="finishOrder()"><i class="fa-solid fa-flag"></i> Termină</button>
-            <?php endif; ?>
-            <?php if ($order['status'] != 'delivered' && $order['status'] != 'cancelled'): ?>
-                <button type="button" id="deliverButton" class="vo-btn vo-btn-yellow" onclick="deliverOrder()"><i class="fa-solid fa-truck"></i> Livrare</button>
-            <?php endif; ?>
-            <button type="button" id="cancelButton" class="vo-btn vo-btn-danger" onclick="cancelOrder()" <?php if ($order['status'] == 'cancelled') echo 'style="display:none;"'; ?>><i class="fa-solid fa-ban"></i> Anulează</button>
-        </div>
-    </footer>
 </div>
 
 <!-- Thermal ticket: hidden on screen, used by window.print() -->
 <div id="printArea">
     <h2>Comanda nr. <strong class="order_id_large"><?php echo (int)$order['order_id']; ?></strong></h2>
-    <?php if ((int)$order['is_achitat'] === 1): ?>
-        <h2 class="achitatBadge">Comandă achitată</h2>
-    <?php endif; ?>
+    <h2 id="printAchitatBadge" class="ticket-badge"<?php if ((int)$order['is_achitat'] !== 1) echo ' style="display:none;"'; ?>>Comandă achitată</h2>
+    <h2 id="printLucruBadge" class="ticket-badge ticket-badge--outline" style="display:none;">Comandă în lucru</h2>
     <p><strong>Din data: </strong><?php echo date('d-m-Y', strtotime($order['order_date'])); ?></p>
     <p><strong>Termen: </strong><?php echo date('d-m-Y', strtotime($order['due_date'])); ?></p>
     <p><strong>Operator: </strong><?php echo htmlspecialchars(ucwords($order['assigned_user'] ?? '')); ?></p>
@@ -452,7 +448,7 @@ $stepDeliveredDone = $isDelivered;
     <?php endif; ?>
     <p><strong>Avans: </strong><span id="printAvans"><?php echo htmlspecialchars($order['avans']); ?></span> lei</p>
     <p><strong>Sumă de achitat:</strong> <span id="printTotal"><?= number_format(max(0, $subtotal - (float)$order['avans']), 2) ?></span> lei</p>
-    <p><img src="comenzi.svg" alt="Color Print" height="48"></p>
+    <p class="ticket-logo"><img src="comenzi.svg" alt="Color Print" height="48"></p>
     <div class="contact-info small-text">
         <p>Str. Roman Mușat, Nr. 21, Roman</p>
         <p>(lângă Biblioteca Municipală și Farm. 32)</p>

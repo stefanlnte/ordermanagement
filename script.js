@@ -2385,6 +2385,44 @@ $(document).ready(function () {
     });
   };
 
+  // Mirror the live status badges onto the thermal ticket so the printout
+  // always matches what the operator sees on screen. Shared by printOrder()
+  // and the raw Ctrl+P/beforeprint path.
+  function syncTicketBadges() {
+    const achitatBtn = document.getElementById('toggleAchitatButton');
+    const isAchitat =
+      (achitatBtn && Number(achitatBtn.getAttribute('data-current-state')) === 1) ||
+      !!document.querySelector('[id^="achitatContainer-"] .achitatBadge');
+    const printAchitat = document.getElementById('printAchitatBadge');
+    if (printAchitat) {
+      printAchitat.style.display = isAchitat ? '' : 'none';
+    }
+    const printLucru = document.getElementById('printLucruBadge');
+    if (printLucru) {
+      printLucru.style.display = document.getElementById('comandaLucruElement') ? '' : 'none';
+    }
+    const liveBody = document.getElementById('bonTableBody');
+    const ticketBody = document.getElementById('printBonBody');
+    const ticketTable = document.getElementById('printBonTable');
+    if (liveBody && ticketBody && !ticketBody.children.length) {
+      ticketBody.innerHTML = '';
+      liveBody.querySelectorAll('tr').forEach((tr) => {
+        const cells = tr.querySelectorAll('td');
+        if (cells.length < 3) return;
+        const row = document.createElement('tr');
+        for (let i = 0; i < 3; i++) {
+          const td = document.createElement('td');
+          td.textContent = (cells[i].textContent || '').trim();
+          row.appendChild(td);
+        }
+        ticketBody.appendChild(row);
+      });
+      if (ticketTable) {
+        ticketTable.style.display = ticketBody.children.length ? '' : 'none';
+      }
+    }
+  }
+
   window.printOrder = function () {
     const liveBody = document.getElementById('bonTableBody');
     const ticketBody = document.getElementById('printBonBody');
@@ -2406,6 +2444,9 @@ $(document).ready(function () {
         ticketTable.style.display = ticketBody.children.length ? '' : 'none';
       }
     }
+    // Mirror the live status badges onto the thermal ticket so the printout
+    // always matches what the operator sees on screen.
+    syncTicketBadges();
     const avans = document.getElementById('avans_text');
     const printAvans = document.getElementById('printAvans');
     if (avans && printAvans) {
@@ -2476,7 +2517,7 @@ $(document).ready(function () {
       h2Element.id = 'comandaLucruElement';
       h2Element.textContent = 'Comandă în lucru';
       const badges = document.querySelector('.vo-badges');
-      const title = document.querySelector('.vo-title-row h2') || document.querySelector('h2');
+      const title = document.querySelector('.vo-title-heading') || document.querySelector('.vo-title-row h2') || document.querySelector('h2');
       if (badges) {
         badges.appendChild(h2Element);
       } else if (title) {
@@ -2651,6 +2692,7 @@ $(document).ready(function () {
           }
           $('#toggleAchitatButton')
             .data('current-state', newState)
+            .attr('data-current-state', newState)
             .html(
               newState === 1
                 ? '<i class="fa-solid fa-ban"></i> Neachitat'
@@ -2842,14 +2884,18 @@ $(document).ready(function () {
   });
 
   // --- beforeprint / Ctrl+P handler ---
+  // Sync ticket badges + rows first so even a raw Ctrl+P shows the live state.
   window.addEventListener('beforeprint', () => {
     const table = document.getElementById('bonTable');
-    const hasRows = table.querySelectorAll('tbody tr').length > 0;
-    if (!hasRows) {
-      table.classList.add('no-print');
-    } else {
-      table.classList.remove('no-print');
+    if (table) {
+      const hasRows = table.querySelectorAll('tbody tr').length > 0;
+      if (!hasRows) {
+        table.classList.add('no-print');
+      } else {
+        table.classList.remove('no-print');
+      }
     }
+    syncTicketBadges();
   });
   document.addEventListener('keydown', function (e) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
