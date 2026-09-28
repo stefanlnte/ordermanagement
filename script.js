@@ -2200,6 +2200,15 @@ $(document).ready(function () {
     const avansText = document.getElementById('avans_text');
     if (avansText) avansText.style.display = 'none';
 
+    // Remember the server values before the fields are edited:
+    // cancelOrderDetailsEdit() puts them back, so an abandoned edit never
+    // leaves the typed text sitting in the inputs and a reopened editor shows
+    // what is actually stored.
+    ['detalii_suplimentare_edit', 'avans_edit'].forEach(function (id) {
+      const field = document.getElementById(id);
+      if (field) field.dataset.originalValue = field.value;
+    });
+
     // Show inputs
     const suplEdit = document.getElementById('detalii_suplimentare_edit');
     if (suplEdit) suplEdit.style.display = 'block';
@@ -2207,15 +2216,19 @@ $(document).ready(function () {
     const avansEdit = document.getElementById('avans_edit');
     if (avansEdit) avansEdit.style.display = 'inline';
 
-    // Toggle buttons
+    // Toggle buttons: Editează out, Salvează + Renunță in
     const btnEdit = document.querySelector(
       'button[onclick="editOrderDetails()"]',
     );
     const btnSave = document.querySelector(
       'button[onclick="saveOrderDetails()"]',
     );
+    const btnCancel = document.querySelector(
+      'button[onclick="cancelOrderDetailsEdit()"]',
+    );
     if (btnEdit) btnEdit.style.display = 'none';
     if (btnSave) btnSave.style.display = 'inline';
+    if (btnCancel) btnCancel.style.display = 'inline';
   };
 
   window.saveOrderDetails = function () {
@@ -2238,6 +2251,7 @@ $(document).ready(function () {
         $('#avans_edit').hide();
         $('button[onclick="editOrderDetails()"]').show();
         $('button[onclick="saveOrderDetails()"]').hide();
+        $('button[onclick="cancelOrderDetailsEdit()"]').hide();
         Toast.fire({
           icon: 'success',
           title: 'Detaliile comenzii au fost salvate!',
@@ -2255,6 +2269,82 @@ $(document).ready(function () {
         });
       },
     });
+  };
+
+  // Termen card: the "Editează" button reveals the editor panel that holds the
+  // two forms which used to sit in their own card at the bottom of the page
+  // ("Atribuie operatorului" + "Extinde termenul"). Each form still POSTs to
+  // view_order.php on its own, so this only toggles visibility — there is no
+  // save button to pair with the edit button, unlike editOrderDetails().
+  // The panel is revealed with .is-open (not an inline style) so view_order.css
+  // owns the layout; the button swaps icon + label and keeps aria-expanded in
+  // sync. Both selects are initialised with select2's width:'auto', which sets
+  // a literal inline `width: auto` instead of measuring the element — so
+  // initialising them while the panel is display:none does not bake in a 0px
+  // width (the visible control takes its width from the CSS 100% + 320px cap).
+  window.toggleTermenEdit = function () {
+    const panel = document.getElementById('termenEditPanel');
+    const toggle = document.getElementById('termenEditToggle');
+    if (!panel) return;
+
+    const isOpen = panel.classList.toggle('is-open');
+
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      const label = toggle.querySelector('.vo-btn-label');
+      if (label) label.textContent = isOpen ? 'Închide' : 'Editează';
+      const icon = toggle.querySelector('i');
+      if (icon) {
+        icon.className = isOpen
+          ? 'fa-solid fa-xmark'
+          : 'fa-solid fa-pen-to-square';
+      }
+    }
+  };
+
+  // Cancel ("Renunță") for the Detalii comandă editor: puts the two fields back
+  // to the values they had when Editează was clicked (data-original-value, set
+  // by editOrderDetails), re-hides them, restores the read-only texts and
+  // swaps the buttons back to Editează. Nothing is sent to the server, so the
+  // order keeps whatever is stored — unlike saveOrderDetails(), which POSTs to
+  // update_order_details.php and then reloads the page.
+  window.cancelOrderDetailsEdit = function () {
+    const suplEdit = document.getElementById('detalii_suplimentare_edit');
+    if (suplEdit) {
+      if (suplEdit.dataset.originalValue !== undefined) {
+        suplEdit.value = suplEdit.dataset.originalValue;
+      }
+      suplEdit.style.display = 'none';
+    }
+
+    const avansEdit = document.getElementById('avans_edit');
+    if (avansEdit) {
+      if (avansEdit.dataset.originalValue !== undefined) {
+        avansEdit.value = avansEdit.dataset.originalValue;
+      }
+      avansEdit.style.display = 'none';
+    }
+
+    // display = '' drops the inline style instead of replacing it, which is
+    // what jQuery's .show() does for these two elements in the save path.
+    const suplText = document.getElementById('detalii_suplimentare_text');
+    if (suplText) suplText.style.display = '';
+
+    const avansText = document.getElementById('avans_text');
+    if (avansText) avansText.style.display = '';
+
+    const btnEdit = document.querySelector(
+      'button[onclick="editOrderDetails()"]',
+    );
+    const btnSave = document.querySelector(
+      'button[onclick="saveOrderDetails()"]',
+    );
+    const btnCancel = document.querySelector(
+      'button[onclick="cancelOrderDetailsEdit()"]',
+    );
+    if (btnEdit) btnEdit.style.display = '';
+    if (btnSave) btnSave.style.display = 'none';
+    if (btnCancel) btnCancel.style.display = 'none';
   };
 
   window.togglePin = function (orderId, pinState) {

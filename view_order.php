@@ -340,11 +340,46 @@ $stepDeliveredDone = $isDelivered;
                 </div>
             </section>
             <section class="vo-card">
-                <p class="vo-label">Termen</p>
+                <?php /* The operator picker ("Atribuie operatorului") and the
+                         "Extinde termenul" picker used to live in their own
+                         "vo-options" card at the bottom of the body. They are
+                         now revealed in place by this card's own "Editează"
+                         button, right next to the termen they change, so the
+                         page has one card instead of three controls to hunt
+                         for. toggleTermenEdit() in script.js flips .is-open. */ ?>
+                <div class="vo-card-head">
+                    <h3>Termen</h3>
+                    <?php if (!$isLocked): ?>
+                        <button type="button" id="termenEditToggle" class="vo-btn" onclick="toggleTermenEdit()" aria-expanded="false" aria-controls="termenEditPanel">
+                            <i class="fa-solid fa-pen-to-square"></i> <span class="vo-btn-label">Editează</span>
+                        </button>
+                    <?php endif; ?>
+                </div>
                 <p class="vo-name"><?= formatTermenLabel($order['due_date']) ?> · 18:00</p>
                 <p>Înregistrată <?= formatTermenLabel($order['order_date']) ?></p>
                 <p>Operator <strong><?= htmlspecialchars(ucwords($order['assigned_user'] ?? '')) ?></strong>
                     · creată de <?= htmlspecialchars(ucwords($order['created_user'] ?? '')) ?></p>
+                <?php if (!$isLocked): ?>
+                    <div id="termenEditPanel" class="vo-termen-edit">
+                        <form method="post" action="view_order.php?order_id=<?= (int)$order['order_id'] ?>">
+                            <input type="hidden" name="return" value="<?= $returnHidden ?>">
+                            <label for="assigned_to">Atribuie operatorului</label>
+                            <select id="assigned_to" name="assigned_to">
+                                <?php foreach ($operators as $user):
+                                    $selected = ((int)$order['assigned_to'] === (int)$user['user_id']) ? 'selected' : '';
+                                    echo "<option value='" . (int)$user['user_id'] . "' $selected>" . htmlspecialchars($user['username']) . "</option>";
+                                endforeach; ?>
+                            </select>
+                            <button type="submit" name="update_user"><i class="fa-solid fa-people-arrows"></i> Reatribuire</button>
+                        </form>
+                        <form method="post" action="view_order.php?order_id=<?= (int)$order['order_id'] ?>">
+                            <input type="hidden" name="return" value="<?= $returnHidden ?>">
+                            <label for="new_due_date_select">Extinde termenul</label>
+                            <select id="new_due_date_select" name="new_due_date"></select>
+                            <button type="submit" name="update_due_date"><i class="fa-solid fa-clock-rotate-left"></i> Actualizează data</button>
+                        </form>
+                    </div>
+                <?php endif; ?>
             </section>
         </div>
 
@@ -352,8 +387,18 @@ $stepDeliveredDone = $isDelivered;
             <div class="vo-card-head">
                 <h3>Detalii comandă</h3>
                 <?php if (!$isLocked): ?>
-                    <button type="button" class="vo-btn" onclick="editOrderDetails()"><i class="fa-solid fa-pen-to-square"></i> Editează</button>
-                    <button type="button" class="vo-btn vo-btn-ink" onclick="saveOrderDetails()" style="display:none;"><i class="fa-solid fa-floppy-disk"></i> Salvează</button>
+                    <?php /* Editează → Salvează + Renunță. The buttons live in
+                             their own group because .vo-card-head is a
+                             space-between flex row: as three separate items,
+                             Salvează would drift to the middle of the card
+                             while editing. Renunță (cancelOrderDetailsEdit()
+                             in script.js) only puts the fields and the
+                             buttons back — nothing is POSTed. */ ?>
+                    <div class="vo-card-actions">
+                        <button type="button" class="vo-btn" onclick="editOrderDetails()"><i class="fa-solid fa-pen-to-square"></i> Editează</button>
+                        <button type="button" class="vo-btn vo-btn-ink" onclick="saveOrderDetails()" style="display:none;"><i class="fa-solid fa-floppy-disk"></i> Salvează</button>
+                        <button type="button" class="vo-btn" onclick="cancelOrderDetailsEdit()" style="display:none;"><i class="fa-solid fa-xmark"></i> Renunță</button>
+                    </div>
                 <?php endif; ?>
             </div>
             <p class="vo-details-text" id="order_details_text"><?= nl2br(htmlspecialchars($order['order_details'])) ?></p>
@@ -439,29 +484,6 @@ $stepDeliveredDone = $isDelivered;
             </ul>
         </section>
 
-        <?php if (!$isLocked): ?>
-        <section class="vo-card vo-options">
-            <div class="vo-grid-2">
-                <form method="post" action="view_order.php?order_id=<?= (int)$order['order_id'] ?>">
-                    <input type="hidden" name="return" value="<?= $returnHidden ?>">
-                    <label for="assigned_to">Atribuie operatorului</label>
-                    <select id="assigned_to" name="assigned_to">
-                        <?php foreach ($operators as $user):
-                            $selected = ((int)$order['assigned_to'] === (int)$user['user_id']) ? 'selected' : '';
-                            echo "<option value='" . (int)$user['user_id'] . "' $selected>" . htmlspecialchars($user['username']) . "</option>";
-                        endforeach; ?>
-                    </select>
-                    <button type="submit" name="update_user"><i class="fa-solid fa-people-arrows"></i> Reatribuire</button>
-                </form>
-                <form method="post" action="view_order.php?order_id=<?= (int)$order['order_id'] ?>">
-                    <input type="hidden" name="return" value="<?= $returnHidden ?>">
-                    <label for="new_due_date_select">Extinde termenul</label>
-                    <select id="new_due_date_select" name="new_due_date"></select>
-                    <button type="submit" name="update_due_date"><i class="fa-solid fa-clock-rotate-left"></i> Actualizează data</button>
-                </form>
-            </div>
-        </section>
-        <?php endif; ?>
     </div>
 </div>
 

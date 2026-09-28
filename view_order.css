@@ -311,6 +311,17 @@ body.view-order.is-embedded .vo-header {
   margin-bottom: 8px;
 }
 
+/* Right-hand group of card-head buttons. Keep the buttons together in one flex
+   item: .vo-card-head distributes its children with space-between, so the
+   "Detalii comandă" head (h3 + Salvează + Renunță) as three separate items
+   would leave Salvează floating in the middle of the card. */
+.vo-card-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 #detalii_suplimentare_edit,
 #avans_edit {
   width: 100%;
@@ -541,16 +552,37 @@ body.view-order.is-embedded .vo-header {
   padding: 8px;
 }
 
-.vo-options form {
+/* Termen card editor: the "Editează" button reveals the two forms that used to
+   live in their own .vo-options card at the bottom of the body ("Atribuie
+   operatorului" + "Extinde termenul"). The panel is hidden by this class alone
+   — no inline `style="display:none"` — so the layout stays in the stylesheet
+   and script.js only flips .is-open (toggleTermenEdit()).
+   The forms stack in one column instead of the side-by-side .vo-grid-2 they
+   had as a full-width card: the Termen card is itself half of .vo-grid-2 from
+   560px up, so two columns in here would leave ~325px per form. */
+.vo-termen-edit {
+  display: none;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--vo-border);
+}
+
+.vo-termen-edit.is-open {
+  display: grid;
+}
+
+/* Select2 wraps each control in its own .select2-container, which is 100% of
+   the form, so both inputs line up on the panel's left edge. */
+.vo-termen-edit form {
   display: grid;
   gap: 6px;
-  /* .vo-grid-2's own gap already separates the two forms (side by side on a
-     wide window, stacked on mobile), so the old 12px bottom margin was dead
-     space hanging under the buttons inside the card. */
+  /* The panel's own 12px gap already separates the two forms, so the old 12px
+     bottom margin would just be dead space under the buttons. */
   margin: 0;
 }
 
-.vo-options label {
+.vo-termen-edit label {
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.08em;
@@ -558,21 +590,21 @@ body.view-order.is-embedded .vo-header {
   color: var(--vo-muted);
 }
 
-.vo-options select {
+.vo-termen-edit select {
   width: 100%;
 }
 
-.vo-options button[type="submit"] {
+.vo-termen-edit button[type="submit"] {
   /* styles.css ships a global `button { margin: 5px }` — the same leak the
      .vo-btn reset further down fights. Without this reset the two card buttons
      sat 5px to the right of the field above them and hung 5px past the card's
      inner edge (measured: field at x=795, button at x=800). Pinning the margin
      back to 0 lines up label + field + button on one left edge. The width cap
-     repeats the field cap above so the button is exactly as wide as the control
+     repeats the field cap below so the button is exactly as wide as the control
      it submits: in the wide standalone view the "Extinde termenul" block reads
-     as one 320px column instead of a 733px black bar under a 320px field, while
-     in the embedded slider / mobile columns (narrower than 320px) the 100%
-     width still governs. */
+     as one 320px column instead of a card-wide black bar under a 320px field,
+     while in the embedded slider / mobile columns (narrower than 320px) the
+     100% width still governs. */
   margin: 6px 0 0;
   width: 100%;
   max-width: 320px;
@@ -827,8 +859,9 @@ body.view-order .select2-container {
    $container.attr('class'))). The wrapper therefore inherited the 100% width
    above and, because dropdownAutoWidth leaves the inner .select2-dropdown at
    width:auto + position:relative, the option list of "Atribuie operatorului" /
-   "Extinde termenul" stretched to the whole page width and pushed past the
-   right edge of the window (horizontal scrollbar). The wrapper is always a
+   "Extinde termenul" (both in the Termen card's editor panel now) stretched to
+   the whole page width and pushed past the right edge of the window
+   (horizontal scrollbar). The wrapper is always a
    direct child of <body> while the visible controls always live inside
    .vo-body, so resetting it here hits only the open list and lets it shrink
    around the dropdown it holds. The 320px cap mirrors the one for the controls
@@ -838,21 +871,21 @@ body.view-order > .select2-container {
   max-width: 320px;
 }
 
-/* Cap for the in-form controls: the options card lays "Atribuie operatorului"
-   and "Extinde termenul" out side by side in .vo-grid-2 (1fr 1fr from 560px
-   up), so on a wide (non-embedded) window each control otherwise filled its
-   whole column and the pair read as stretched across the card. max-width only
-   trims that excess: when the column is narrower than the cap the 100% width
-   above still governs, so the ~300px columns of the embedded slider and the
+/* Cap for the Termen-card editor controls: the card always spans a single
+   column of .vo-grid-2 (1fr 1fr from 560px up) and the two forms stack under
+   the termen summary, so on a wide (non-embedded) window each control
+   otherwise filled the whole card and read as stretched. max-width only trims
+   that excess: when the card is narrower than the cap the 100% width above
+   still governs, so the ~300px column of the embedded slider and the
    single-column mobile layout are unchanged. The native <select> fallback gets
    the same cap for when select2 fails to load; the source <select> itself is
    hidden by select2, so this only ever affects the visible control. */
-.vo-options .select2-container,
-.vo-options select {
+.vo-termen-edit .select2-container,
+.vo-termen-edit select {
   max-width: 320px;
 }
 
-.vo-options select {
+.vo-termen-edit select {
   padding: 10px 12px;
   border: 0;
   border-radius: 8px;
