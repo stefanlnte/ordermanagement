@@ -2252,13 +2252,26 @@ $(document).ready(function () {
         $('button[onclick="editOrderDetails()"]').show();
         $('button[onclick="saveOrderDetails()"]').hide();
         $('button[onclick="cancelOrderDetailsEdit()"]').hide();
+        // The reload waits for the toast to close instead of racing it with a
+        // fixed timer: `setTimeout(..., 1500)` used to fire while the 2500 ms
+        // toast was still on screen, so its progress bar stopped at ~60% and
+        // the popup vanished mid-animation (the "weird" look). Timer shortened
+        // to 1400 ms so the total wait stays ~1.5 s, and the toast promise is
+        // chained into the reload — the same pattern as the Dropzone
+        // "queuecomplete" handler further down this file.
         Toast.fire({
           icon: 'success',
           title: 'Detaliile comenzii au fost salvate!',
-        });
-        setTimeout(() => {
+          timer: 1400,
+          // Only this notification opts out of the shared toast animation:
+          // SweetAlert2 animates toasts with its swal2-toast-show keyframes
+          // (0.5s of ±2deg rotation, designed for corner toasts), which wobbles
+          // oddly in the middle of the order panel. .vo-toast-calm in
+          // view_order.css swaps it for a short fade + lift.
+          customClass: { popup: 'vo-toast-calm' },
+        }).then(() => {
           location.reload();
-        }, 1500);
+        });
       },
       error: function (xhr) {
         Swal.fire({

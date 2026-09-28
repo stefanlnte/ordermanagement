@@ -700,6 +700,38 @@ body.view-order.is-embedded .vo-header {
   color: #fff;
 }
 
+/* Save toast — calm fade.
+   The "Detaliile comenzii au fost salvate!" notification (saveOrderDetails() in
+   script.js) is a SweetAlert2 toast, and toasts are animated with the vendor's
+   swal2-toast-show keyframes: half a second of ±2deg rotation, tuned for a
+   corner toast. Centred over the order panel that wobble reads as a glitch, so
+   that one call passes customClass: { popup: 'vo-toast-calm' } and gets a small
+   fade + lift instead. The keyframes are self-contained (not swal2-show), so
+   the look doesn't depend on SweetAlert2 internals — and the class is inert if
+   the CDN script ever fails to load. Three classes beat SweetAlert2's own
+   .swal2-toast.swal2-show / .swal2-hide (two classes), so no !important is
+   needed. Defined here rather than in styles.css because SweetAlert2 appends
+   the popup to the <body> of this page (the dashboard iframe). */
+@keyframes vo-toast-in {
+  from { opacity: 0; transform: translate3d(0, -6px, 0) scale(0.97); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes vo-toast-out {
+  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  to   { opacity: 0; transform: translate3d(0, -6px, 0) scale(0.98); }
+}
+
+.swal2-toast.vo-toast-calm.swal2-show {
+  animation: vo-toast-in 0.22s ease-out;
+}
+
+/* Keep `forwards`: SweetAlert2 destroys the popup on the hide animation's
+   `animationend` event, so the element has to stay animated to the end. */
+.swal2-toast.vo-toast-calm.swal2-hide {
+  animation: vo-toast-out 0.18s ease-in forwards;
+}
+
 body.view-order #header { display: none; } /* old header replaced by vo-header */
 
 /* Șabloane (WhatsApp templates): now a green pill inside the Client card
@@ -846,6 +878,22 @@ body.view-order .vo-body::-webkit-scrollbar {
 body.view-order,
 body.view-order * {
   box-sizing: border-box;
+}
+
+/* SweetAlert2 exception to the reset above. `body.view-order *` is (0,1,1),
+   while SweetAlert2 declares `box-sizing: content-box` on its icon through
+   `div:where(.swal2-icon)` — a (0,0,1) selector — so the reset above won and
+   the icon swallowed its own 0.25em border in the 2em (toast) / 5em (popup)
+   box. That shifts and shrinks the drawing area of every absolutely
+   positioned child of the icon (ring, the two tick strokes, and the white
+   .swal2-success-fix / circular-line masks), so the success check mark was
+   drawn as a stray diagonal blob — "an X instead of a tick". Verified by
+   rendering the same toast headlessly with and without this stylesheet.
+   Restoring the vendor value: (0,2,1) beats the reset. The ring already wins
+   with its own (0,2,1) rule, but is repeated so the intent is explicit. */
+body.view-order .swal2-icon,
+body.view-order .swal2-icon .swal2-success-ring {
+  box-sizing: content-box;
 }
 
 body.view-order .select2-container {
