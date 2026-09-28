@@ -491,6 +491,10 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Handle edit form submission
+  // update_client.php answers with the literal text "Client updated
+  // successfully!" on success and an "Error updating client: ..." message on
+  // failure — both over HTTP 200, so the response body has to be checked
+  // instead of the status code.
   $('#editClientForm').on('submit', function (event) {
     event.preventDefault();
     let formData = new FormData(this);
@@ -500,6 +504,13 @@ document.addEventListener('DOMContentLoaded', function () {
     })
       .then((response) => response.text())
       .then((data) => {
+        if (data.indexOf('Error') === 0) {
+          Toast.fire({
+            icon: 'error',
+            title: data,
+          });
+          return;
+        }
         Toast.fire({
           icon: 'success',
           title: 'Client actualizat!',
@@ -2360,6 +2371,209 @@ $(document).ready(function () {
     if (btnCancel) btnCancel.style.display = 'none';
   };
 
+  /* ==========================================================
+   * Client card editor
+   * ------------------------------------------------------------
+   * The Client card on view_order.php can now edit the client's
+   * name / phone / email in place. It POSTs to the SAME endpoint
+   * dashboard.php's "Editează client" modal uses (update_client.php,
+   * field names edit_client_*), so there is only one write path for
+   * a client's details in the app.
+   *
+   * The panel is revealed with .is-open (not an inline style) so
+   * view_order.css owns the layout, exactly like toggleTermenEdit().
+   * ========================================================== */
+
+  // Recompute the wa.me link from a phone number. Mirrors the PHP that
+  // built $waLink in view_order.php: country code +4, digits only.
+  function buildWaLink(phone) {
+    return 'https://wa.me/' + '+4' + String(phone).replace(/\D/g, '');
+  }
+
+  window.toggleClientEdit = function () {
+    const panel = document.getElementById('clientEditPanel');
+    const toggle = document.getElementById('clientEditToggle');
+    if (!panel) return;
+
+    // Stamp the server values on first open so cancelClientEdit() has
+    // something to restore. Done here (not at save time) so an abandoned
+    // edit never leaves the typed text sitting in the inputs.
+    ['client_name_edit', 'client_phone_edit', 'client_email_edit'].forEach(
+      function (id) {
+        const field = document.getElementById(id);
+        if (field && field.dataset.originalValue === undefined) {
+          field.dataset.originalValue = field.value;
+        }
+      },
+    );
+
+    const isOpen = panel.classList.toggle('is-open');
+
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      const label = toggle.querySelector('.vo-btn-label');
+      if (label) label.textContent = isOpen ? 'Închide' : 'Editează';
+      const icon = toggle.querySelector('i');
+      if (icon) {
+        icon.className = isOpen
+          ? 'fa-solid fa-xmark'
+          : 'fa-solid fa-pen-to-square';
+      }
+    }
+
+    if (isOpen) {
+      const nameField = document.getElementById('client_name_edit');
+      if (nameField) {
+        nameField.focus();
+        nameField.select();
+      }
+    }
+  };
+
+  // Put the fields back to what the server has (data-original-value, stamped
+  // by toggleClientEdit) and collapse the panel. Nothing is sent, so an
+  // abandoned edit leaves the client untouched.
+  window.cancelClientEdit = function () {
+    const panel = document.getElementById('clientEditPanel');
+    if (!panel) return;
+
+    ['client_name_edit', 'client_phone_edit', 'client_email_edit'].forEach(
+      function (id) {
+        const field = document.getElementById(id);
+        if (field && field.dataset.originalValue !== undefined) {
+          field.value = field.dataset.originalValue;
+        }
+      },
+    );
+
+    panel.classList.remove('is-open');
+
+    const toggle = document.getElementById('clientEditToggle');
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', 'false');
+      const label = toggle.querySelector('.vo-btn-label');
+      if (label) label.textContent = 'Editează';
+      const icon = toggle.querySelector('i');
+      if (icon) icon.className = 'fa-solid fa-pen-to-square';
+    }
+  };
+
+  window.saveClientDetails = function () {
+    const nameField = document.getElementById('client_name_edit');
+    const phoneField = document.getElementById('client_phone_edit');
+    const emailField = document.getElementById('client_email_edit');
+    const clientIdField = document.getElementById('client_id_edit');
+    const saveBtn = document.getElementById('clientSaveBtn');
+    if (!nameField || !phoneField || !clientIdField) return;
+
+    const newName = (nameField.value || '').trim();
+    const newPhone = (phoneField.value || '').trim();
+    const newEmail = emailField ? (emailField.value || '').trim() : '';
+
+    // Guard client-side rather than relying on the pattern attribute, which
+    // only blocks submission of a <form> — these buttons are type="button" and
+    // saveClientDetails() is what actually sends the request.
+    if (!newName) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Numele clientului este obligatoriu.',
+        position: 'center',
+      });
+      nameField.focus();
+      return;
+    }
+    if (!/^0[0-9]{9}$/.test(newPhone)) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Telefon invalid',
+        text: 'Numărul de telefon trebuie să conțină exact 10 cifre și să înceapă cu 0.',
+        position: 'center',
+      });
+      phoneField.focus();
+      return;
+    }
+
+    if (saveBtn) saveBtn.disabled = true;
+
+    $.ajax({
+      url: 'update_client.php',
+      method: 'POST',
+      data: {
+        edit_client_id: clientIdField.value,
+        edit_client_name: newName,
+        edit_client_phone: newPhone,
+        edit_client_email: newEmail,
+      },
+      success: function () {
+        if (saveBtn) saveBtn.disabled = false;
+
+        // The card's read-only texts…
+        const nameDisplay = document.getElementById('client_name_display');
+        if (nameDisplay) nameDisplay.textContent = newName;
+
+        const phoneDisplay = document.getElementById('client_phone_display');
+        if (phoneDisplay) phoneDisplay.textContent = newPhone;
+
+        // …the email line is only rendered when the client actually has one,
+        // so create/remove it to match what was just saved.
+        let emailDisplay = document.getElementById('client_email_display');
+        if (newEmail) {
+          if (!emailDisplay && phoneDisplay) {
+            emailDisplay = document.createElement('p');
+            emailDisplay.id = 'client_email_display';
+            phoneDisplay.insertAdjacentElement(
+              'afterend',
+              emailDisplay,
+            );
+          }
+          if (emailDisplay) emailDisplay.textContent = newEmail;
+        } else if (emailDisplay) {
+          emailDisplay.remove();
+        }
+
+        // The WhatsApp link is derived from the phone, so it has to follow.
+        const newWaLink = buildWaLink(newPhone);
+        const waAnchor = document.getElementById('client_wa_link');
+        if (waAnchor) waAnchor.href = newWaLink;
+
+        // Keep the rest of the page in sync with what's now on screen: the SMS
+        // and WhatsApp-template senders read these closure variables (captured
+        // off the data bridge at load), so they would otherwise keep dialling
+        // the old number until a reload.
+        clientName = newName;
+        clientPhone = newPhone;
+        waLink = newWaLink;
+        bridge.setAttribute('data-client-name', newName);
+        bridge.setAttribute('data-client-phone', newPhone);
+        bridge.setAttribute('data-wa-link', newWaLink);
+
+        // Stamp the saved values as the new "original" so a later cancel
+        // restores these rather than the pre-edit ones, then collapse.
+        if (nameField) nameField.dataset.originalValue = newName;
+        if (phoneField) phoneField.dataset.originalValue = newPhone;
+        if (emailField) emailField.dataset.originalValue = newEmail;
+
+        window.cancelClientEdit();
+
+        Toast.fire({
+          icon: 'success',
+          title: 'Datele clientului au fost salvate!',
+          timer: 1400,
+          customClass: { popup: 'vo-toast-calm' },
+        });
+      },
+      error: function (xhr) {
+        if (saveBtn) saveBtn.disabled = false;
+        Swal.fire({
+          icon: 'error',
+          title: 'Eroare la salvare',
+          text: xhr.responseText || 'Status: ' + xhr.status,
+          position: 'center',
+        });
+      },
+    });
+  };
+
   window.togglePin = function (orderId, pinState) {
     $.post('toggle_pin.php', { order_id: orderId, is_pinned: pinState })
       .done(() => {
@@ -3066,7 +3280,46 @@ $(document).ready(function () {
     paramName: 'file',
     maxFilesize: 1024, // MB
     acceptedFiles: null,
-    dictDefaultMessage: 'Adaugă fișiere',
+    // Full HTML placeholder, not a plain string: the red cloud-arrow icon, the
+    // red "alege" affordance and the file-types hint are all real Font Awesome
+    // / markup here rather than CSS ::before glyphs, so they can't silently
+    // fail to render (a `content: '\f0b6'` on an element that doesn't pick up
+    // the icon font just shows nothing). "alege" is a <span> rather than an
+    // <a> on purpose — Dropzone already opens the file dialog on a click
+    // anywhere in the zone, and an anchor here would also jump the page to "#".
+    dictDefaultMessage:
+      '<span class="vo-dz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>' +
+      '<span class="vo-dz-text">Trage fișiere aici sau <span class="vo-dz-browse">alege</span></span>' +
+      '<span class="vo-dz-hint">Imagini, PDF, DOC, XLS, TXT, CSV, ZIP</span>',
+    // No image thumbnails, at all, for any file type.
+    //
+    // This has to be `createImageThumbnails: false`, not merely a previewTemplate
+    // without an <img data-dz-thumbnail>. Dropzone's _enqueueThumbnail() gates on
+    // THIS OPTION (`options.createImageThumbnails && file.type.match(/image.*/)`)
+    // and then generates a data URL regardless of the template; its `thumbnail`
+    // handler just looks for [data-dz-thumbnail] nodes to paint. With no such node
+    // the image was still built and held in memory, and the handler still stripped
+    // the `dz-file-preview` class off the tile, which broke its styling.
+    // Turning the option off skips generation entirely — no file is decoded, so
+    // large TIFFs/PSDs never get read into memory.
+    createImageThumbnails: false,
+    // Custom preview template: a plain file chip, no <img data-dz-thumbnail>.
+    // Every data-dz-* attribute below is copied from the vendor default template
+    // (dropzone.js, `code` near the top) — these exact names are what Dropzone
+    // querySelectorAll's to fill the tile in. Two that are easy to get wrong:
+    // the filename hook is `data-dz-name` (there is no `data-dz-filename`), and
+    // `data-dz-size` belongs on a <span> INSIDE .dz-size, not on .dz-size itself.
+    previewTemplate:
+      '<div class="dz-preview dz-file-preview">' +
+      '  <div class="dz-image vo-dz-file-icon"><i class="fa-solid fa-file" aria-hidden="true"></i></div>' +
+      '  <div class="dz-details">' +
+      '    <div class="dz-filename"><span data-dz-name></span></div>' +
+      '    <div class="dz-size"><span data-dz-size></span></div>' +
+      '  </div>' +
+      '  <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>' +
+      '  <div class="dz-error-message"><span data-dz-errormessage></span></div>' +
+      '  <a class="dz-remove" href="javascript:undefined()" data-dz-remove title="Șterge fișierul"></a>' +
+      '</div>',
     dictFallbackMessage: 'Browserul dvs. nu suportă încărcarea',
     dictFileTooBig:
       'Fișierul este prea mare ({{filesize}}MiB). Dimensiunea maximă: {{maxFilesize}}MiB.',
@@ -3076,6 +3329,9 @@ $(document).ready(function () {
     dictRemoveFile: 'Șterge fișierul',
     dictMaxFilesExceeded: 'Nu puteți încărca mai multe fișiere.',
     init: function () {
+      // No per-file glyph injection needed: previewTemplate always ships the
+      // .vo-dz-file-icon <i>, so images and documents look identical.
+
       this.on('success', function (file, response) {
         console.log('Uploaded:', response);
       });

@@ -518,38 +518,570 @@ body.view-order.is-embedded .vo-header {
   margin: 0;
 }
 
-.attachments-section .dropzone {
-  border: 1px dashed rgba(18, 21, 26, 0.25);
-  background: var(--vo-surface);
-  border-radius: 8px;
-  min-height: 88px;
+/* ============================================================
+   DROPZONE — "Trage aici fișierele"
+   ============================================================
+   styles.css styles this as a dark 300px gradient box (`#orderDropzone`
+   rules). That selector is an id, so it outranks the class-based rules
+   view_order.css uses everywhere else — every override below therefore
+   has to be written as `#orderDropzone` too, otherwise it silently loses
+   to the global sheet no matter which file loads last. */
+#orderDropzone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 148px;
+  margin: 0;
+  padding: 28px 20px;
+  box-sizing: border-box;
+  border: 2px dashed rgba(18, 21, 26, 0.18);
+  border-radius: 16px;
+  background: radial-gradient(
+    120% 140% at 50% 0%,
+    #ffffff 0%,
+    var(--vo-surface) 55%,
+    var(--vo-surface-2) 100%
+  );
+  color: var(--vo-fg);
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  /* NOT `overflow: hidden`. It was only there to clip the ::before halo to the
+     rounded corners, but it also clips the hovered icon: the placeholder
+     lifts/scales on hover, and anything that grows past the padding box
+     (a .vo-dz-icon near an edge, a focus ring) gets sliced off. The halo
+     rounds itself via border-radius instead. */
+  transition: border-color 0.22s var(--vo-ease),
+    background-color 0.22s var(--vo-ease), box-shadow 0.22s var(--vo-ease),
+    transform 0.22s var(--vo-ease);
+}
+
+/* Soft yellow halo that only exists on hover / drag-over — the drop target
+   announces itself before a single pixel is dragged in. */
+/* Soft grey halo that only exists on hover / drag-hover — the drop target
+   announces itself before a single pixel is dragged in. Grey rather than the
+   brand yellow: the yellow halo tinted the whole drop area warm and fought the
+   red cloud-arrow icon sitting in the middle of it. The drag-hover state below
+   still gets the unmistakable yellow, because that's the moment that matters. */
+#orderDropzone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    60% 80% at 50% 50%,
+    rgba(18, 21, 26, 0.07) 0%,
+    rgba(18, 21, 26, 0) 70%
+  );
+  opacity: 0;
+  transition: opacity 0.25s var(--vo-ease);
+  pointer-events: none;
+}
+
+#orderDropzone:hover {
+  border-color: rgba(18, 21, 26, 0.34);
+  box-shadow: 0 6px 18px rgba(18, 21, 26, 0.1);
+}
+
+#orderDropzone:hover::before {
+  opacity: 1;
+}
+
+/* Drag-over: the frame snaps to the solid brand yellow and lifts 2px, so the
+   moment a file enters the zone is unmistakable. */
+#orderDropzone.drag-hover {
+  border-style: solid;
+  border-color: var(--vo-yellow);
+  background: #fffdf0;
+  box-shadow: 0 10px 26px rgba(18, 21, 26, 0.12);
+  transform: translateY(-2px);
+}
+
+#orderDropzone.drag-hover::before {
+  /* Its own yellow halo: the shared ::before is grey for hover, and a real
+     drag needs the stronger, warmer signal. */
+  background: radial-gradient(
+    60% 80% at 50% 50%,
+    rgba(255, 237, 0, 0.3) 0%,
+    rgba(255, 237, 0, 0) 70%
+  );
+  opacity: 1;
+}
+
+/* Icon + label. The markup comes from dictDefaultMessage in script.js (real
+   <i> Font Awesome elements, not ::before glyphs — a `content: '\f0b6'` on an
+   element that doesn't pick up the icon font renders as nothing at all).
+
+   `flex: 1` + the parent's `justify-content: center` is what actually centres
+   the icon: without it .dz-message is only as tall as its own text, so the
+   zone centres that short box and the icon sits noticeably above the middle.
+   Filling the zone's height and centring the contents inside it centres the
+   icon/text/hint stack as a group. */
+#orderDropzone .dz-message {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* 6px between icon / label / hint. The icon's own bottom margin used to do
+     this; it's gone so the icon can be centred cleanly. */
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  color: var(--vo-fg);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: center;
+}
+
+/* Red cloud-arrow bubble, matching the drop-target mock.
+
+   No `transition` and no :hover rule: the placeholder contents (icon, label,
+   hint) sit still — only the zone's own frame reacts to hover. An earlier
+   version grew the bubble's drop shadow on hover, which read as the icon
+   flickering rather than the drop target highlighting.
+
+   Centring: the message is a centred column, so the icon is centred on both
+   axes via `align-self: center` + `margin: 0 auto`. Its spacing comes from
+   the parent's `gap`, not a margin-bottom — a bottom margin would push the
+   whole stack up and leave the icon sitting above the zone's midline. */
+.vo-dz-icon {
+  display: flex;
+  flex: 0 0 auto;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--vo-danger);
+  color: #fff;
+  font-size: 15px;
+  box-shadow: 0 4px 10px rgba(192, 54, 44, 0.28);
+}
+
+.vo-dz-text {
+  display: block;
+  width: 100%;
+  font-weight: 500;
+}
+
+/* "alege" reads as a link. It's a <span>, not an <a>: the whole zone is
+   already the click target for the file dialog, and an anchor would also
+   jump the page to "#". */
+.vo-dz-browse {
+  color: var(--vo-danger);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* The file-types hint always gets its own full-width line under the
+   "Trage fișiere aici sau alege" label. No margin-top: the parent's gap
+   already spaces the three items, and an extra margin here would break their
+   even vertical rhythm. */
+.vo-dz-hint {
+  display: block;
+  width: 100%;
+  margin: 0;
+  color: var(--vo-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Once files are queued, dropzone.min.css hides the message with
+   `.dropzone.dz-started .dz-message { display: none }` (specificity 0,3,0) —
+   which the id-scoped flex rule above (1,1,0) beats, so the placeholder would
+   sit on top of the preview grid forever. Re-state it at the same weight. */
+#orderDropzone.dz-started .dz-message {
+  display: none;
+}
+
+/* --- Previews: a responsive tile grid instead of the old stacked boxes --- */
+#orderDropzone .dz-previews {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin: 14px 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 10px;
+  text-align: left;
+}
+
+#orderDropzone .dz-preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  /* dropzone.min.css ships `.dz-preview { position:absolute; opacity:.8 }`,
+     which would float the tiles out of the grid and wash them out. */
+  opacity: 1;
+  box-shadow: 0 0 0 1px rgba(18, 21, 26, 0.1);
+  overflow: hidden;
+  animation: vo-dz-in 0.28s var(--vo-ease) both;
+  transition: box-shadow 0.2s var(--vo-ease), transform 0.2s var(--vo-ease);
+}
+
+#orderDropzone .dz-preview:hover {
+  box-shadow: 0 0 0 1px rgba(18, 21, 26, 0.16), 0 6px 14px rgba(18, 21, 26, 0.1);
+  transform: translateY(-1px);
+}
+
+@keyframes vo-dz-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Uniform file chip. previewTemplate has no <img data-dz-thumbnail>, so no
+   file type ever paints a thumbnail here — every queued file gets this same
+   38px chip. The `background-size: cover` rules from the old thumbnail styling
+   are gone with it. */
+#orderDropzone .dz-preview .dz-image {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: var(--vo-surface-2);
+  color: var(--vo-muted);
+  font-size: 15px;
+}
+
+#orderDropzone .dz-preview .dz-details {
+  /* dropzone.min.css pins .dz-details across the full width of an absolutely
+     positioned 120px-tall preview box; in the compact row layout that would
+     push the filename out of the tile. */
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  flex: 1 1 auto;
+  opacity: 1;
+  line-height: 1.35;
+}
+
+#orderDropzone .dz-preview .dz-filename {
+  /* Same vendor reset: .dz-filename is absolutely positioned with 1em/3em of
+     padding sized for the big square preview. */
+  position: static;
+  overflow: hidden;
+  padding: 0;
+  color: var(--vo-fg);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#orderDropzone .dz-preview .dz-filename span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#orderDropzone .dz-preview .dz-size {
+  /* .dz-size is bottom-anchored in the vendor sheet. The template nests a
+     <span data-dz-size> inside it, so the span needs the positioning reset
+     too (dropzone.min.css styles `.dz-size` as the absolutely positioned
+     element and would otherwise leave the inner span unstyled). */
+  position: static;
+  margin-top: 2px;
+  color: var(--vo-subtle);
+  font-size: 11px;
+}
+
+#orderDropzone .dz-preview .dz-size span {
+  position: static;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* Progress: a 3px bar pinned to the tile's bottom edge. Yellow while running,
+   so an in-flight upload reads as "brand" rather than an error. */
+#orderDropzone .dz-preview .dz-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(18, 21, 26, 0.08);
+}
+
+#orderDropzone .dz-preview .dz-progress .dz-upload {
+  height: 100%;
+  background: linear-gradient(90deg, var(--vo-yellow) 0%, #ffd733 100%);
+  transition: width 0.2s linear;
+}
+
+#orderDropzone .dz-preview .dz-progress .dz-upload.err {
+  background: var(--vo-danger);
+}
+
+/* Success / error tint on the whole tile. */
+#orderDropzone .dz-preview.dz-success {
+  box-shadow: 0 0 0 1px rgba(47, 138, 78, 0.35);
+}
+
+#orderDropzone .dz-preview.dz-error {
+  box-shadow: 0 0 0 1px rgba(192, 54, 44, 0.35);
+}
+
+#orderDropzone .dz-preview.dz-error .dz-error-message {
+  /* dropzone.min.css positions .dz-error-message absolutely over the whole
+     tile and paints it with the vendor's red box — inside a 38px-tall row
+     that hides the filename entirely. */
+  position: static;
+  display: block;
+  padding: 0;
+  background: none;
+  margin: 2px 0 0;
+  color: var(--vo-danger);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Remove / cancel links: small circular buttons, top-right of the tile. */
+#orderDropzone .dz-preview .dz-remove {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--vo-muted);
+  font-size: 13px;
+  line-height: 1;
+  text-decoration: none;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+#orderDropzone .dz-preview .dz-remove:hover {
+  background: rgba(192, 54, 44, 0.12);
+  color: var(--vo-danger);
+}
+
+@media (max-width: 560px) {
+  #orderDropzone {
+    min-height: 128px;
+    padding: 22px 14px;
+  }
+
+  .vo-dz-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+  }
+
+  #orderDropzone .dz-previews {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Saved attachments below the dropzone: hairline rows with a file chip,
+   instead of the old plain grey blocks. */
+.vo-card-head-icon {
+  margin-right: 6px;
+  color: var(--vo-muted);
+  font-size: 12px;
+}
+
+/* Empty state: "Niciun atașament încă." only renders when the list is empty
+   (view_order.php), so it never appears alongside real files. */
+.vo-attachments-empty {
+  margin: 12px 0 0;
+  color: var(--vo-muted);
+  font-size: 13px;
+  text-align: center;
 }
 
 #attachmentsList {
   list-style: none;
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   padding: 0;
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 #attachmentsList li {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   background: var(--vo-surface);
-  border-radius: 8px;
-  padding: 8px 12px;
+  box-shadow: 0 0 0 1px var(--vo-border);
+  border-radius: 10px;
+  padding: 9px 12px;
   font-size: 14px;
+  transition: box-shadow 0.2s var(--vo-ease);
+}
+
+#attachmentsList li:hover {
+  box-shadow: 0 0 0 1px rgba(18, 21, 26, 0.2);
+}
+
+#attachmentsList li a {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--vo-fg);
+  text-decoration: none;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The file chip is the real <i class="fa-solid fa-file"> in view_order.php's
+   markup, so it is styled directly. An earlier version drew it as
+   `#attachmentsList li a::before` with a `content: '\f15b'` glyph; that was
+   replaced when the icon became a real element, and the ::before was left
+   behind — still rendering an empty 28px grey box, and its `flex: 0 0 auto`
+   reserved that space next to the real icon, pushing the filename over. */
+#attachmentsList li a > i.fa-file {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--vo-surface-2);
+  color: var(--vo-muted);
+  font-size: 13px;
+}
+
+/* The filename is the <span> wrapping the name; it takes the remaining width
+   and truncates, so long names ellipsise instead of stretching the row. */
+#attachmentsList li a > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#attachmentsList li a:hover {
+  color: var(--vo-ink);
+  text-decoration: underline;
 }
 
 .deleteAttachment {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   background: transparent;
   border: 0;
-  color: var(--vo-danger);
+  color: var(--vo-subtle);
   cursor: pointer;
-  padding: 8px;
+  padding: 0;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.deleteAttachment:hover {
+  background: rgba(192, 54, 44, 0.12);
+  color: var(--vo-danger);
+}
+
+/* ============================================================
+   CLIENT CARD EDITOR
+   ============================================================
+   The Client card's "Editează" button reveals a small form with the
+   client's name / phone / email. Same reveal pattern as .vo-termen-edit
+   (hidden by the class alone, script.js flips .is-open), so the layout
+   lives here rather than in an inline style.
+
+   The card is half of .vo-grid-2 from 560px up, so the form is a single
+   column with full-width fields — two columns would leave ~150px per
+   input inside the slider. */
+.vo-client-edit {
+  display: none;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--vo-border);
+}
+
+.vo-client-edit.is-open {
+  display: block;
+}
+
+.vo-client-edit form {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.vo-field {
+  display: grid;
+  gap: 4px;
+}
+
+.vo-field label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vo-muted);
+}
+
+.vo-field-hint {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  color: var(--vo-subtle);
+}
+
+.vo-field input {
+  /* styles.css caps inputs with an intrinsic max-width, which would make the
+     editor fields stop short of the card's right edge. */
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--vo-surface);
+  color: var(--vo-fg);
+  font: inherit;
+  font-size: 14px;
+  box-shadow: 0 0 0 1px var(--vo-border);
+  transition: box-shadow 0.18s ease;
+}
+
+.vo-field input:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--vo-ink), 0 0 0 3px rgba(255, 237, 0, 0.35);
+}
+
+/* The Șabloane pill sits after the editor; when the panel is open the two
+   would read as one control cluster, so give it a little more air. */
+.vo-client-edit.is-open ~ #templateMsgWidget {
+  margin-top: 16px;
 }
 
 /* Termen card editor: the "Editează" button reveals the two forms that used to
