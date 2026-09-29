@@ -341,13 +341,13 @@ body.view-order.is-embedded .vo-header {
   gap: 8px;
 }
 
-#detalii_suplimentare_edit,
-#avans_edit {
+/* The "Detalii suplimentare" edit box. styles.css caps every textarea with
+   `textarea { max-width: fit-content }` (element selector, so nothing here
+   out-specified it) — the box was therefore clamped to its intrinsic ~20-column
+   size and never reached the card's edge. Reset it explicitly. The Avans input
+   has its own rules further down, under the Avans editor. */
+#detalii_suplimentare_edit {
   width: 100%;
-  /* styles.css caps every textarea with `textarea { max-width: fit-content }`
-     (element selector, so nothing here out-specified it) — the "Detalii
-     suplimentare" edit box was therefore clamped to its intrinsic ~20-column
-     size and never reached the card's edge. Reset it explicitly. */
   max-width: none;
   box-sizing: border-box;
   margin-top: 8px;
@@ -519,13 +519,17 @@ body.view-order.is-embedded .vo-header {
   font-size: 14px;
 }
 
-.vo-totals div {
+/* Scoped to .vo-totals-row rather than a bare `.vo-totals div`: the Avans
+   editor panel is a div inside .vo-totals too, and the old descendant
+   selector gave it the totals' flex/space-between row layout. */
+.vo-totals-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   color: var(--vo-muted);
 }
 
-.vo-totals .vo-due {
+.vo-totals-row.vo-due {
   font-size: 16px;
   font-weight: 600;
   color: var(--vo-fg);
@@ -535,6 +539,88 @@ body.view-order.is-embedded .vo-header {
   font-variant-numeric: tabular-nums;
   font-family: 'Poppins', sans-serif;
   color: var(--vo-fg);
+}
+
+/* ============================================================
+   AVANS EDITOR
+   The pencil in the Bon card's "Avans" row reveals a small panel
+   with a number input. Same reveal pattern as .vo-client-edit and
+   .vo-termen-edit: hidden by the class alone, script.js flips
+   .is-open (toggleAvansEdit / saveAvans / cancelAvansEdit).
+   ============================================================ */
+
+/* The pencil. Sized down from .vo-btn because the totals rows are 14px —
+   a full-size button would dwarf the number it edits. */
+.vo-inline-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--vo-muted);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+.vo-inline-edit-btn:hover {
+  background: var(--vo-surface-2);
+  color: var(--vo-fg);
+}
+
+.vo-avans-edit {
+  display: none;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--vo-border);
+}
+
+.vo-avans-edit.is-open {
+  display: grid;
+}
+
+.vo-avans-edit-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vo-muted);
+}
+
+#avans_edit {
+  width: 100%;
+  /* styles.css caps inputs with an intrinsic max-width, which would make the
+     box stop short of the card's right edge. */
+  max-width: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--vo-surface);
+  color: var(--vo-fg);
+  font: inherit;
+  font-size: 14px;
+  box-shadow: 0 0 0 1px var(--vo-border);
+  transition: box-shadow 0.18s ease;
+}
+
+#avans_edit:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--vo-ink), 0 0 0 3px rgba(255, 237, 0, 0.35);
+}
+
+.vo-avans-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .attachments-section {

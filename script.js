@@ -2204,28 +2204,24 @@ $(document).ready(function () {
   // in view_order.php's HTML, so they must live on window.
   // ============================================================
 
+  // The "Detalii comandă" card edits order_details + detalii_suplimentare
+  // only. Avans has its own editor next to its value in the Bon card
+  // (toggleAvansEdit / saveAvans), so it is deliberately NOT touched here —
+  // before that split, clicking "Editează" on this card revealed an input in a
+  // different card, which read as "avans can't be edited from here".
   window.editOrderDetails = function () {
     const suplText = document.getElementById('detalii_suplimentare_text');
     if (suplText) suplText.style.display = 'none';
 
-    const avansText = document.getElementById('avans_text');
-    if (avansText) avansText.style.display = 'none';
-
-    // Remember the server values before the fields are edited:
-    // cancelOrderDetailsEdit() puts them back, so an abandoned edit never
-    // leaves the typed text sitting in the inputs and a reopened editor shows
-    // what is actually stored.
-    ['detalii_suplimentare_edit', 'avans_edit'].forEach(function (id) {
-      const field = document.getElementById(id);
-      if (field) field.dataset.originalValue = field.value;
-    });
-
-    // Show inputs
+    // Remember the server value before the field is edited:
+    // cancelOrderDetailsEdit() puts it back, so an abandoned edit never leaves
+    // the typed text sitting in the input and a reopened editor shows what is
+    // actually stored.
     const suplEdit = document.getElementById('detalii_suplimentare_edit');
-    if (suplEdit) suplEdit.style.display = 'block';
+    if (suplEdit) suplEdit.dataset.originalValue = suplEdit.value;
 
-    const avansEdit = document.getElementById('avans_edit');
-    if (avansEdit) avansEdit.style.display = 'inline';
+    // Show input
+    if (suplEdit) suplEdit.style.display = 'block';
 
     // Toggle buttons: Editează out, Salvează + Renunță in
     const btnEdit = document.querySelector(
@@ -2244,7 +2240,6 @@ $(document).ready(function () {
 
   window.saveOrderDetails = function () {
     const detaliiSuplimentare = $('#detalii_suplimentare_edit').val() || '';
-    const avans = $('#avans_edit').val() || '';
     const orderId = currentOrderId;
 
     $.ajax({
@@ -2253,13 +2248,10 @@ $(document).ready(function () {
       data: {
         order_id: orderId,
         detalii_suplimentare: detaliiSuplimentare,
-        avans: avans,
       },
       success: function () {
         $('#detalii_suplimentare_text').text(detaliiSuplimentare).show();
         $('#detalii_suplimentare_edit').hide();
-        $('#avans_text').text(avans).show();
-        $('#avans_edit').hide();
         $('button[onclick="editOrderDetails()"]').show();
         $('button[onclick="saveOrderDetails()"]').hide();
         $('button[onclick="cancelOrderDetailsEdit()"]').hide();
@@ -2326,11 +2318,11 @@ $(document).ready(function () {
     }
   };
 
-  // Cancel ("Renunță") for the Detalii comandă editor: puts the two fields back
-  // to the values they had when Editează was clicked (data-original-value, set
-  // by editOrderDetails), re-hides them, restores the read-only texts and
-  // swaps the buttons back to Editează. Nothing is sent to the server, so the
-  // order keeps whatever is stored — unlike saveOrderDetails(), which POSTs to
+  // Cancel ("Renunță") for the Detalii comandă editor: puts the field back to
+  // the value it had when Editează was clicked (data-original-value, set by
+  // editOrderDetails), re-hides it, restores the read-only text and swaps the
+  // buttons back to Editează. Nothing is sent to the server, so the order keeps
+  // whatever is stored — unlike saveOrderDetails(), which POSTs to
   // update_order_details.php and then reloads the page.
   window.cancelOrderDetailsEdit = function () {
     const suplEdit = document.getElementById('detalii_suplimentare_edit');
@@ -2341,21 +2333,10 @@ $(document).ready(function () {
       suplEdit.style.display = 'none';
     }
 
-    const avansEdit = document.getElementById('avans_edit');
-    if (avansEdit) {
-      if (avansEdit.dataset.originalValue !== undefined) {
-        avansEdit.value = avansEdit.dataset.originalValue;
-      }
-      avansEdit.style.display = 'none';
-    }
-
     // display = '' drops the inline style instead of replacing it, which is
-    // what jQuery's .show() does for these two elements in the save path.
+    // what jQuery's .show() does for this element in the save path.
     const suplText = document.getElementById('detalii_suplimentare_text');
     if (suplText) suplText.style.display = '';
-
-    const avansText = document.getElementById('avans_text');
-    if (avansText) avansText.style.display = '';
 
     const btnEdit = document.querySelector(
       'button[onclick="editOrderDetails()"]',
@@ -2369,6 +2350,175 @@ $(document).ready(function () {
     if (btnEdit) btnEdit.style.display = '';
     if (btnSave) btnSave.style.display = 'none';
     if (btnCancel) btnCancel.style.display = 'none';
+  };
+
+  /* ==========================================================
+   * Avans editor (Bon card, "Avans" row)
+   * ------------------------------------------------------------
+   * Avans is shown in the Bon card's totals block, so it is edited
+   * right there: a pencil next to the value reveals a small panel
+   * with a number input, mirroring the Client and Termen cards.
+   *
+   * It POSTs to update_order_details.php — the same endpoint the
+   * "Detalii comandă" card uses — but with `avans` only. That
+   * endpoint builds its SET list from whichever keys are present,
+   * so omitting detalii_suplimentare leaves it untouched; it still
+   * recomputes orders.total from the article lines minus the new
+   * avans, which is why "De achitat" stays correct after a save.
+   *
+   * The panel is revealed with .is-open (not an inline style) so
+   * view_order.css owns the layout, exactly like toggleTermenEdit().
+   * ========================================================== */
+
+  // Sum of the bon's live article lines — the same figure loadOrderArticles()
+  // uses for "De achitat", recomputed here so changing avans updates the
+  // remaining amount immediately instead of only after the reload.
+  function bonSubtotal() {
+    let sum = 0;
+    const rows = document.querySelectorAll('#bonTableBody tr');
+    rows.forEach((tr) => {
+      const cells = tr.querySelectorAll('td');
+      if (cells.length < 3) return;
+      const qty = parseFloat(cells[1].textContent) || 0;
+      const unit = parseFloat(cells[2].textContent) || 0;
+      sum += qty * unit;
+    });
+    return sum;
+  }
+
+  // Recompute "De achitat" from the bon + the value currently displayed as
+  // avans. Cells are read by position (qty, unit price), same as the ticket.
+  // Clamped at 0, matching the print view's `max(0, $subtotal - $avans)` — an
+  // overpaid or empty bon should read "0.00", not a negative amount.
+  function refreshDueTotal() {
+    const avansText = document.getElementById('avans_text');
+    const dueEl = document.getElementById('totalPrice');
+    if (!avansText || !dueEl) return;
+    const avans = parseFloat(avansText.textContent) || 0;
+    dueEl.textContent = Math.max(0, bonSubtotal() - avans).toFixed(2) + ' lei';
+  }
+
+  window.toggleAvansEdit = function () {
+    const panel = document.getElementById('avansEditPanel');
+    const toggle = document.getElementById('avansEditToggle');
+    if (!panel) return;
+
+    // Stamp the server value on first open so cancelAvansEdit() has something
+    // to restore. Done here (not at save time) so an abandoned edit never
+    // leaves the typed number sitting in the input.
+    const field = document.getElementById('avans_edit');
+    if (field && field.dataset.originalValue === undefined) {
+      field.dataset.originalValue = field.value;
+    }
+
+    const isOpen = panel.classList.toggle('is-open');
+
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      const icon = toggle.querySelector('i');
+      if (icon) {
+        icon.className = isOpen
+          ? 'fa-solid fa-xmark'
+          : 'fa-solid fa-pen-to-square';
+      }
+    }
+
+    if (isOpen && field) {
+      field.focus();
+      field.select();
+    }
+  };
+
+  // Put the input back to the stored value and collapse the panel. Nothing is
+  // sent, so an abandoned edit leaves orders.avans untouched.
+  window.cancelAvansEdit = function () {
+    const panel = document.getElementById('avansEditPanel');
+    const toggle = document.getElementById('avansEditToggle');
+    const field = document.getElementById('avans_edit');
+    if (!panel) return;
+
+    if (field && field.dataset.originalValue !== undefined) {
+      field.value = field.dataset.originalValue;
+    }
+    panel.classList.remove('is-open');
+
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', 'false');
+      const icon = toggle.querySelector('i');
+      if (icon) icon.className = 'fa-solid fa-pen-to-square';
+    }
+  };
+
+  window.saveAvans = function () {
+    const field = document.getElementById('avans_edit');
+    const panel = document.getElementById('avansEditPanel');
+    if (!field || !panel) return;
+
+    // The control is <input type="number">, so the browser already rejects
+    // anything that isn't a number and sanitises what it accepts — parseFloat
+    // here only has to deal with the empty field, which means "no advance".
+    const raw = String(field.value || '').trim();
+    const parsed = raw === '' ? 0 : parseFloat(raw);
+
+    if (isNaN(parsed)) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Valoare invalidă',
+        text: 'Avansul trebuie să fie un număr.',
+        position: 'center',
+      });
+      field.focus();
+      return;
+    }
+
+    // Normalise to 2 decimals so what the user sees after saving matches what
+    // was stored (and what the totals row shows on the next page load).
+    const avans = Math.max(0, parsed).toFixed(2);
+    field.value = avans;
+
+    $.ajax({
+      url: 'update_order_details.php',
+      method: 'POST',
+      data: {
+        order_id: currentOrderId,
+        avans: avans,
+      },
+      success: function () {
+        const avansText = document.getElementById('avans_text');
+        if (avansText) avansText.textContent = avans;
+        // Keep the thermal ticket's Avans line in step; printOrder() re-reads
+        // #avans_text, but setting it here means a Ctrl+P without printOrder()
+        // still shows the new figure.
+        const printAvans = document.getElementById('printAvans');
+        if (printAvans) printAvans.textContent = avans;
+        refreshDueTotal();
+
+        panel.classList.remove('is-open');
+        const toggle = document.getElementById('avansEditToggle');
+        if (toggle) {
+          toggle.setAttribute('aria-expanded', 'false');
+          const icon = toggle.querySelector('i');
+          if (icon) icon.className = 'fa-solid fa-pen-to-square';
+        }
+
+        Toast.fire({
+          icon: 'success',
+          title: 'Avansul a fost salvat!',
+          timer: 1400,
+          customClass: { popup: 'vo-toast-calm' },
+        }).then(() => {
+          location.reload();
+        });
+      },
+      error: function (xhr) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Eroare la salvare',
+          text: xhr.responseText || 'Status: ' + xhr.status,
+          position: 'center',
+        });
+      },
+    });
   };
 
   /* ==========================================================

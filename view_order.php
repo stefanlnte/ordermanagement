@@ -462,8 +462,10 @@ $stepDeliveredDone = $isDelivered;
                              space-between flex row: as three separate items,
                              Salvează would drift to the middle of the card
                              while editing. Renunță (cancelOrderDetailsEdit()
-                             in script.js) only puts the fields and the
-                             buttons back — nothing is POSTed. */ ?>
+                             in script.js) only puts the field and the
+                             buttons back — nothing is POSTed. This card owns
+                             "Detalii suplimentare" only; Avans is edited from
+                             the Bon card, next to the value it changes. */ ?>
                         <div class="vo-card-actions">
                             <button type="button" class="vo-btn" onclick="editOrderDetails()"><i class="fa-solid fa-pen-to-square"></i> Editează</button>
                             <button type="button" class="vo-btn vo-btn-ink" onclick="saveOrderDetails()" style="display:none;"><i class="fa-solid fa-floppy-disk"></i> Salvează</button>
@@ -520,12 +522,45 @@ $stepDeliveredDone = $isDelivered;
                 </div>
 
                 <div class="vo-totals">
-                    <div>
+                    <?php /* The Avans row carries its own "Editează" toggle, exactly
+                             like the Client and Termen cards: the field is edited
+                             where it is read. It used to be driven by the "Detalii
+                             comandă" card's button, which revealed an input in a
+                             different card entirely — the pencil next to the value
+                             is the affordance that had gone missing. */ ?>
+                    <div class="vo-totals-row">
                         <span>Avans</span>
-                        <span><span id="avans_text"><?= htmlspecialchars($order['avans']) ?></span> lei</span>
+                        <span class="vo-totals-value">
+                            <span id="avans_text"><?= htmlspecialchars($order['avans']) ?></span> lei
+                            <?php if (!$isLocked): ?>
+                                <button type="button" id="avansEditToggle" class="vo-inline-edit-btn"
+                                        onclick="toggleAvansEdit()" aria-expanded="false"
+                                        aria-controls="avansEditPanel" title="Editează avansul">
+                                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                                </button>
+                            <?php endif; ?>
+                        </span>
                     </div>
-                    <input type="number" id="avans_edit" style="display:none;" value="<?= htmlspecialchars($order['avans']) ?>" step="0.01">
-                    <div class="vo-due" id="totalWrapper">
+                    <?php if (!$isLocked): ?>
+                        <?php /* Hidden by the class alone (no inline display:none) so
+                                 the layout lives in view_order.css and script.js only
+                                 flips .is-open — same pattern as .vo-client-edit and
+                                 .vo-termen-edit. It POSTs to update_order_details.php
+                                 with `avans` only; that endpoint reads each field
+                                 conditionally, so omitting detalii_suplimentare
+                                 leaves it untouched. */ ?>
+                        <div id="avansEditPanel" class="vo-avans-edit">
+                            <label class="vo-avans-edit-label" for="avans_edit">Avans (lei)</label>
+                            <input type="number" id="avans_edit" step="0.01" min="0"
+                                   inputmode="decimal" placeholder="0.00"
+                                   value="<?= htmlspecialchars($order['avans']) ?>">
+                            <div class="vo-avans-edit-actions">
+                                <button type="button" class="vo-btn vo-btn-ink" onclick="saveAvans()"><i class="fa-solid fa-floppy-disk"></i> Salvează</button>
+                                <button type="button" class="vo-btn" onclick="cancelAvansEdit()"><i class="fa-solid fa-xmark"></i> Renunță</button>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                    <div class="vo-totals-row vo-due" id="totalWrapper">
                         <span>De achitat</span>
                         <span id="totalPrice">0.00</span>
                     </div>
