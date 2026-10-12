@@ -2420,20 +2420,26 @@ textarea {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); /* Umbră mai pronunțată pentru contrast */
-  /* Border: LIGHT GREY on every inactive card — the accent color only shows
-     once the card is active (.stat-card.stat-filter-active below). The left
-     bar stays 4px wide in both states so activating never shifts the card. */
-  border: 1px solid #c9c9c9;
-  border-left: 4px solid #c9c9c9;
+  /* Border: GREY on every inactive card — the accent color only shows once
+     the card is active (.stat-card.stat-filter-active below). The page behind
+     is WHITE, so the 4px left bar uses a deeper grey than the hairline
+     outline; a single light tone there blends into the background and reads
+     as "no border at all". The bar stays 4px wide in both states so
+     activating a card never shifts it. */
+  border: 1px solid #cfcfcf;
+  border-left: 4px solid #9a9a9a;
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* Efect de plutire la hover — the light-grey border brightens one step */
+/* Efect de plutire la hover — only the hairline outline brightens; the grey
+   left bar keeps its tone so the card edge never melts into the white page */
 .stat-card:hover {
   transform: translateY(-5px);
-  border-color: #e4e4e4;
+  border-top-color: #e4e4e4;
+  border-right-color: #e4e4e4;
+  border-bottom-color: #e4e4e4;
 }
 
 /* Stat cards double as filter shortcuts */
