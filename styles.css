@@ -2420,16 +2420,20 @@ textarea {
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); /* Umbră mai pronunțată pentru contrast */
-  border: 1px solid rgba(255, 255, 255, 0.05); /* Margine fină, aproape invizibilă */
+  /* Border: LIGHT GREY on every inactive card — the accent color only shows
+     once the card is active (.stat-card.stat-filter-active below). The left
+     bar stays 4px wide in both states so activating never shifts the card. */
+  border: 1px solid #c9c9c9;
+  border-left: 4px solid #c9c9c9;
   position: relative;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* Efect de plutire la hover */
+/* Efect de plutire la hover — the light-grey border brightens one step */
 .stat-card:hover {
   transform: translateY(-5px);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: #e4e4e4;
 }
 
 /* Stat cards double as filter shortcuts */
@@ -2446,18 +2450,21 @@ textarea {
     /* slate grey outer */ 0 10px 25px rgba(0, 0, 0, 0.3);
 }
 
-/* Active (filter applied) — light-mode version of the card's own dark style:
-   same idea as .stat-card's dark gradient, just flipped light and tinted
-   with that card's own secondary/accent color (--accent, set per .card-*
-   variant below) instead of one neutral tone shared by every card. */
+/* Active (filter applied) — the card STAYS DARK; it never flips to a light
+   theme. The background is the very same dark gradient .stat-card uses,
+   layered under a tint of that card's own accent color (--accent, set per
+   .card-* variant below). What turns on is the BORDER: the accent color
+   replaces the light grey that every inactive card carries. */
 .stat-card.stat-filter-active {
-  border-color: rgba(var(--accent, 110, 125, 150), 0.9);
-  background: linear-gradient(
-    165deg,
-    #ffffff 0%,
-    rgba(var(--accent, 110, 125, 150), 0.14) 55%,
-    rgba(var(--accent, 110, 125, 150), 0.22) 100%
-  );
+  border-color: rgba(var(--accent, 110, 125, 150), 0.55);
+  border-left: 4px solid rgb(var(--accent, 110, 125, 150));
+  background:
+    linear-gradient(
+      165deg,
+      rgba(var(--accent, 110, 125, 150), 0.3) 0%,
+      rgba(var(--accent, 110, 125, 150), 0.1) 100%
+    ),
+    linear-gradient(135deg, #000000 0%, #3c3c3c 50%, #6c6c6c 100%);
   transform: translateY(-4px);
 }
 
@@ -2498,14 +2505,8 @@ textarea {
   ); /* fully saturated accent on hover */
 }
 
-/* Text needs to flip to dark now that the active card has a light background */
-.stat-card.stat-filter-active .stat-info h3 {
-  color: #1a1a1a;
-}
-
-.stat-card.stat-filter-active .stat-info p {
-  color: #555555;
-}
+/* Text stays light on the active card too: it keeps the dark background, so
+   the shared #ffffff / #aaaaaa colors from .stat-info above still apply. */
 
 /* Aliniere text interior */
 .stat-info {
@@ -2552,7 +2553,6 @@ textarea {
 /* 🔴 Overdue — deeper, clearer red (less orange-ish) */
 .card-overdue {
   --accent: 220, 38, 38; /* #dc2626 */
-  border-left: 4px solid #dc2626;
 }
 
 .card-overdue .stat-icon {
@@ -2564,25 +2564,23 @@ textarea {
   box-shadow: 0 15px 30px rgba(220, 38, 38, 0.22);
 }
 
-/* 🟡 In Progress — warmer amber that sits between red & orange */
+/* 🔵 În lucru / Atribuite — blue (moved here from "Livrate azi") */
 .card-active {
-  --accent: 217, 119, 6; /* #d97706 */
-  border-left: 4px solid #d97706;
+  --accent: 51, 181, 229; /* #33b5e5 */
 }
 
 .card-active .stat-icon {
-  background: rgba(217, 119, 6, 0.12);
-  color: #d97706;
+  background: rgba(51, 181, 229, 0.15);
+  color: #33b5e5;
 }
 
 .card-active:hover {
-  box-shadow: 0 15px 30px rgba(217, 119, 6, 0.22);
+  box-shadow: 0 15px 30px rgba(51, 181, 229, 0.25);
 }
 
 /* 🟢 Completed — slightly softer, more premium emerald */
 .card-completed {
   --accent: 5, 150, 105; /* #059669 */
-  border-left: 4px solid #059669;
 }
 
 .card-completed .stat-icon {
@@ -2597,7 +2595,6 @@ textarea {
 /* 🟠 Deliver Today — pure, vivid orange (clearly separated from amber) */
 .card-deliver-today {
   --accent: 234, 88, 12; /* #ea580c */
-  border-left: 4px solid #ea580c;
 }
 
 .card-deliver-today .stat-icon {
@@ -2609,17 +2606,16 @@ textarea {
   box-shadow: 0 15px 30px rgba(234, 88, 12, 0.22);
 }
 
-/* 🔵 Delivered Today — slightly deeper, more confident blue */
+/* ⚪ Delivered Today — neutral grey (the blue moved to "În lucru / Atribuite") */
 .card-delivered-today {
-  --accent: 51, 181, 229;
-  border-left: 4px solid #33b5e5;
+  --accent: 154, 154, 154; /* #9a9a9a */
 }
 .card-delivered-today .stat-icon {
-  background: rgba(51, 181, 229, 0.15);
-  color: #33b5e5;
+  background: rgba(154, 154, 154, 0.15);
+  color: #9a9a9a;
 }
 .card-delivered-today:hover {
-  box-shadow: 0 15px 30px rgba(51, 181, 229, 0.25);
+  box-shadow: 0 15px 30px rgba(154, 154, 154, 0.25);
 }
 
 /* ================================
