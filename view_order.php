@@ -262,7 +262,7 @@ $stepDeliveredDone = $isDelivered;
             <p class="vo-kicker">Comanda</p>
             <div class="vo-title-row">
                 <div>
-                    <div class="vo-title-heading">Comanda nr. <strong class="order_id_large">#<?= htmlspecialchars($orderIdPad) ?></strong> <button type="button" id="printBtn" class="vo-btn vo-btn-yellow print-button vo-print-inline" onclick="printOrder()"><i class="fa-solid fa-print"></i> Print</button></div>
+                    <div class="vo-title-heading">Comanda<strong class="order_id_large"><?= htmlspecialchars($orderIdPad) ?></strong> <button type="button" id="printBtn" class="vo-btn vo-btn-yellow print-button vo-print-inline" onclick="printOrder()"><i class="fa-solid fa-print"></i> Print</button></div>
                     <div class="vo-badges">
                         <div id="achitatContainer-<?= (int)$order['order_id'] ?>">
                             <?php if ((int)$order['is_achitat'] === 1): ?>
@@ -534,8 +534,8 @@ $stepDeliveredDone = $isDelivered;
                             <span id="avans_text"><?= htmlspecialchars($order['avans']) ?></span> lei
                             <?php if (!$isLocked): ?>
                                 <button type="button" id="avansEditToggle" class="vo-inline-edit-btn"
-                                        onclick="toggleAvansEdit()" aria-expanded="false"
-                                        aria-controls="avansEditPanel" title="Editează avansul">
+                                    onclick="toggleAvansEdit()" aria-expanded="false"
+                                    aria-controls="avansEditPanel" title="Editează avansul">
                                     <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                                 </button>
                             <?php endif; ?>
@@ -552,8 +552,8 @@ $stepDeliveredDone = $isDelivered;
                         <div id="avansEditPanel" class="vo-avans-edit">
                             <label class="vo-avans-edit-label" for="avans_edit">Avans (lei)</label>
                             <input type="number" id="avans_edit" step="0.01" min="0"
-                                   inputmode="decimal" placeholder="0.00"
-                                   value="<?= htmlspecialchars($order['avans']) ?>">
+                                inputmode="decimal" placeholder="0.00"
+                                value="<?= htmlspecialchars($order['avans']) ?>">
                             <div class="vo-avans-edit-actions">
                                 <button type="button" class="vo-btn vo-btn-ink" onclick="saveAvans()"><i class="fa-solid fa-floppy-disk"></i> Salvează</button>
                                 <button type="button" class="vo-btn" onclick="cancelAvansEdit()"><i class="fa-solid fa-xmark"></i> Renunță</button>
@@ -603,7 +603,7 @@ $stepDeliveredDone = $isDelivered;
 
     <!-- Thermal ticket: hidden on screen, used by window.print() -->
     <div id="printArea">
-        <h2>Comanda nr. <strong class="order_id_large"><?php echo (int)$order['order_id']; ?></strong></h2>
+        <h2>Comanda <strong class="order_id_large"><?php echo (int)$order['order_id']; ?></strong></h2>
         <h2 id="printAchitatBadge" class="ticket-badge" <?php if ((int)$order['is_achitat'] !== 1) echo ' style="display:none;"'; ?>>Comandă achitată</h2>
         <h2 id="printLucruBadge" class="ticket-badge ticket-badge--outline" style="display:none;">Comandă în lucru</h2>
         <p><strong>Din data: </strong><?php echo formatTermenLabel($order['order_date']); ?></p>
@@ -647,6 +647,7 @@ $stepDeliveredDone = $isDelivered;
         <?php endif; ?>
         <p><strong>Avans: </strong><span id="printAvans"><?php echo htmlspecialchars($order['avans']); ?></span> lei</p>
         <p><strong>Sumă de achitat:</strong> <span id="printTotal"><?= number_format(max(0, $subtotal - (float)$order['avans']), 2) ?></span> lei</p>
+        <br>
         <p class="ticket-logo"><img src="comenzi.svg" alt="Color Print" height="48"></p>
         <div class="contact-info small-text">
             <p>Str. Roman Mușat, Nr. 21, Roman</p>
