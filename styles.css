@@ -2513,6 +2513,26 @@ textarea {
   color: #555555;
 }
 
+/* Built-in Font Awesome icon animations (fa-beat, fa-spin, fa-beat-fade,
+   fa-bounce, fa-pulse) — the class lives on each .stat-icon <i> in
+   dashboard.php, but the animation only RUNS while this card is the
+   active filter. The :not() selector outranks FA's single-class
+   animation rules, so an idle card's icon stays perfectly still and
+   starts animating the moment the card becomes active. Tune speed with
+   FA's own --fa-animation-duration custom property if needed.
+   (The "Finalizate" and "De livrat azi" cards skip FA's built-ins for
+   bespoke keyframes of their own — see STAT CARD ICON MOTION below.) */
+.stat-card:not(.stat-filter-active) .stat-icon i {
+  animation: none;
+}
+
+/* Respect users who opted out of motion */
+@media (prefers-reduced-motion: reduce) {
+  .stat-card .stat-icon i {
+    animation: none;
+  }
+}
+
 /* Aliniere text interior */
 .stat-info {
   display: flex;
@@ -2550,6 +2570,7 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative; /* anchor for the custom icon-motion decorations below */
   transition: all 0.3s ease;
 }
 
@@ -2598,6 +2619,7 @@ textarea {
 .card-completed .stat-icon {
   background: rgba(5, 150, 105, 0.12);
   color: #059669;
+  overflow: hidden; /* clips the gloss sweep added in STAT CARD ICON MOTION */
 }
 
 .card-completed:hover {
@@ -2638,6 +2660,194 @@ textarea {
   box-shadow:
     0 15px 30px rgba(107, 114, 128, 0.35),
     0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* ================================================================
+   STAT CARD ICON MOTION — bespoke keyframes
+   ------------------------------------------------------------------
+   Three of the five cards animate with Font Awesome's built-in classes
+   (see the note above). The other two got custom motion instead, built
+   here from plain keyframes plus ::before/::after decorations on the
+   .stat-icon halo. Same rules as the FA ones: the motion only runs
+   while the card is the active filter, and never runs for users who
+   prefer reduced motion.
+
+   • "De livrat azi" — a van on the highway: a smooth, purely horizontal
+     glide (nothing ever moves on the Y axis — no bouncing) while two
+     staggered speed-line dashes streak past behind it.
+
+   • "Finalizate" — a medal catching the light: the medal rocks on its
+     ribbon, a gloss sweep crosses the halo, and a little four-point
+     sparkle pops in the top-right corner. When the card becomes the
+     active filter, fa-medal also swaps to fa-trophy via the standard
+     data-icon-active mechanism in script.js.
+   ================================================================ */
+
+/* --- De livrat azi ------------------------------------------------- */
+
+/* Road sway — gentle forward/backward glide with a hint of suspension
+   tilt, easing smoothly through the middle instead of snapping. */
+@keyframes stat-van-glide {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  25% {
+    transform: translateX(4px) rotate(1.2deg);
+  }
+  50% {
+    transform: translateX(0) rotate(0deg);
+  }
+  75% {
+    transform: translateX(-4px) rotate(-1.2deg);
+  }
+}
+
+/* Speed lines — slide backwards while fading out, so each dash reads
+   as a motion trail the van leaves behind. */
+@keyframes stat-speed-streak {
+  0% {
+    transform: translateX(8px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateX(-8px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card-deliver-today.stat-filter-active .stat-icon i {
+    animation: stat-van-glide 2s ease-in-out infinite;
+  }
+
+  /* Two short dashes parked on the halo's left edge, staggered so the
+     trail keeps flowing. currentColor picks up the card's yellow. */
+  .card-deliver-today.stat-filter-active .stat-icon::before,
+  .card-deliver-today.stat-filter-active .stat-icon::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    pointer-events: none;
+  }
+
+  .card-deliver-today.stat-filter-active .stat-icon::before {
+    top: 36%;
+    width: 11px;
+    animation: stat-speed-streak 1.2s ease-out infinite;
+  }
+
+  .card-deliver-today.stat-filter-active .stat-icon::after {
+    top: 62%;
+    width: 7px;
+    animation: stat-speed-streak 1.2s ease-out 0.5s infinite;
+  }
+}
+
+/* --- Finalizate ---------------------------------------------------- */
+
+/* The medal rocks on its ribbon and settles — a small "job done"
+   flourish instead of a generic pulse. */
+@keyframes stat-medal-sway {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  12% {
+    transform: rotate(-7deg) scale(1.08);
+  }
+  30% {
+    transform: rotate(5deg) scale(1.04);
+  }
+  48% {
+    transform: rotate(-3deg) scale(1.02);
+  }
+  66% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+/* Light sweeping across the metal — a skewed gloss bar that the halo's
+   circle clips (overflow: hidden on .card-completed .stat-icon). */
+@keyframes stat-gloss-sweep {
+  0% {
+    transform: translateX(-170%) skewX(-18deg);
+  }
+  55%,
+  100% {
+    transform: translateX(330%) skewX(-18deg);
+  }
+}
+
+/* A tiny four-point sparkle flashing in the medal's top-right corner. */
+@keyframes stat-sparkle-pop {
+  0%,
+  100% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  28% {
+    transform: scale(1) rotate(20deg);
+    opacity: 1;
+  }
+  46% {
+    transform: scale(0) rotate(50deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card-completed.stat-filter-active .stat-icon i {
+    animation: stat-medal-sway 2.4s ease-in-out infinite;
+  }
+
+  .card-completed.stat-filter-active .stat-icon::after {
+    content: '';
+    position: absolute;
+    top: -25%;
+    bottom: -25%;
+    left: 0;
+    width: 45%;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.55) 50%,
+      transparent 100%
+    );
+    pointer-events: none;
+    animation: stat-gloss-sweep 2.4s ease-in-out infinite;
+  }
+
+  .card-completed.stat-filter-active .stat-icon::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 11px;
+    height: 11px;
+    background: #6ee7b7; /* soft emerald — the card's own accent family */
+    clip-path: polygon(
+      50% 0%,
+      62% 38%,
+      100% 50%,
+      62% 62%,
+      50% 100%,
+      38% 62%,
+      0% 50%,
+      38% 38%
+    );
+    pointer-events: none;
+    animation: stat-sparkle-pop 2.4s ease-in-out infinite;
+  }
 }
 
 /* ================================

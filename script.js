@@ -2048,10 +2048,47 @@ document.addEventListener('DOMContentLoaded', function () {
     // Enter/Space) toggles that status bucket on the table via the same quiet
     // refresh used by the toolbar. Clicking the active card again clears it.
 
+    // Font Awesome 6.5.1's built-in animation classes — used to tell a stat
+    // icon's real class apart from the animation riding on it, so the icon
+    // itself can be swapped without losing the animation (or vice versa).
+    const FA_ANIMATION_CLASSES = [
+      'fa-beat',
+      'fa-beat-fade',
+      'fa-bounce',
+      'fa-fade',
+      'fa-flip',
+      'fa-pulse',
+      'fa-shake',
+      'fa-spin',
+      'fa-spin-pulse',
+    ];
+
+    // Icons may declare data-icon-active; when their card becomes active the
+    // idle icon class is swapped for it with classList.replace() (and swapped
+    // back when the card is cleared). The idle class is derived once from the
+    // markup: the only fa-* class that is neither the fa-solid style prefix
+    // nor one of the animation classes above.
+    function syncStatCardIcon(card) {
+      const icon = card.querySelector('.stat-icon i[data-icon-active]');
+      if (!icon) return;
+
+      if (!icon.dataset.iconIdle) {
+        icon.dataset.iconIdle = Array.from(icon.classList).find(
+          (cls) => cls !== 'fa-solid' && !FA_ANIMATION_CLASSES.includes(cls),
+        );
+      }
+
+      const active = card.classList.contains('stat-filter-active');
+      const from = active ? icon.dataset.iconIdle : icon.dataset.iconActive;
+      const to = active ? icon.dataset.iconActive : icon.dataset.iconIdle;
+      if (from && to) icon.classList.replace(from, to);
+    }
+
     function clearStatCardActive() {
       document.querySelectorAll('.stat-card').forEach((card) => {
         card.classList.remove('stat-filter-active');
         card.setAttribute('aria-pressed', 'false');
+        syncStatCardIcon(card);
       });
     }
 
@@ -2063,6 +2100,7 @@ document.addEventListener('DOMContentLoaded', function () {
             statusValue !== '' && card.dataset.statusFilter === statusValue;
           card.classList.toggle('stat-filter-active', active);
           card.setAttribute('aria-pressed', active ? 'true' : 'false');
+          syncStatCardIcon(card);
         });
     }
 
@@ -2107,6 +2145,10 @@ document.addEventListener('DOMContentLoaded', function () {
             applyCardFilter();
           }
         });
+
+        // The server may have rendered this card already active (a filtered
+        // page load) — start its icon off in the matching state.
+        syncStatCardIcon(card);
       });
 
     // Pagination links live inside the AJAX-swapped .pagination block, so

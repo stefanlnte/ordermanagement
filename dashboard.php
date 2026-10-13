@@ -493,7 +493,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
              tabindex="0"
              role="button"
              aria-pressed="<?= $status_filter === 'overdue' ? 'true' : 'false' ?>">
-            <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation fa-beat"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_overdue; ?></h3>
                 <p>Termen Depășit</p>
@@ -507,7 +507,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
              tabindex="0"
              role="button"
              aria-pressed="<?= $status_filter === 'assigned' ? 'true' : 'false' ?>">
-            <div class="stat-icon"><i class="fa-solid fa-person-digging"></i></div>
+            <div class="stat-icon"><i class="fa-solid fa-person-digging fa-spin" data-icon-active="fa-gears"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_active; ?></h3>
                 <p>În lucru / Atribuite</p>
@@ -521,7 +521,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
              tabindex="0"
              role="button"
              aria-pressed="<?= $status_filter === 'completed' ? 'true' : 'false' ?>">
-            <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="stat-icon"><i class="fa-solid fa-medal" data-icon-active="fa-trophy"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_completed; ?></h3>
                 <p>Finalizate</p>
@@ -535,7 +535,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
              tabindex="0"
              role="button"
              aria-pressed="<?= $status_filter === 'deliver_today' ? 'true' : 'false' ?>">
-            <div class="stat-icon"><i class="fa-solid fa-truck-fast"></i></div>
+            <div class="stat-icon"><i class="fa-solid fa-van-shuttle"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_deliver_today; ?></h3>
                 <p>De livrat azi</p>
@@ -549,7 +549,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
              tabindex="0"
              role="button"
              aria-pressed="<?= $status_filter === 'delivered_today' ? 'true' : 'false' ?>">
-            <div class="stat-icon"><i class="fa-solid fa-flag-checkered"></i></div>
+            <div class="stat-icon"><i class="fa-solid fa-flag-checkered fa-pulse"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_delivered_today; ?></h3>
                 <p>Livrate azi</p>
