@@ -770,31 +770,41 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
                                 $due_date = formatRemainingDays($row["due_date"], $row["status"], $row["delivery_date"] ?? null);
                                 $status_db = $row["status"] ?? 'neatribuită';
 
-                                // 1. Calculăm dacă termenul este depășit
+                                // 1. Calculăm dacă termenul este depășit sau dacă
+                                //    comanda se livrează chiar ASTĂzi
                                 $is_overdue = false;
+                                $is_due_today = false;
+                                $is_open_status = $status_db !== 'completed' && $status_db !== 'delivered';
+
                                 if (!empty($row['due_date'])) {
                                     $clean_date = date('Y-m-d', strtotime($row['due_date']));
                                     $deadline_timestamp = strtotime($clean_date . ' 23:59:59');
 
-                                    if (time() > $deadline_timestamp && $status_db !== 'completed' && $status_db !== 'delivered') {
+                                    if (time() > $deadline_timestamp && $is_open_status) {
                                         $is_overdue = true;
+                                    } elseif ($is_open_status && $status_db !== 'cancelled' && $clean_date === date('Y-m-d')) {
+                                        $is_due_today = true;
                                     }
                                 }
 
                                 // 2. Heavy Theme Logic (CMYK Print Inspired)
+                                //    Galbenul (vechile culori "În lucru") e rezervat
+                                //    exclusiv comenzilor de livrat ASTĂzi. Restul
+                                //    comenzilor active — indiferent a cui sunt —
+                                //    primesc albastrul/cyan-ul "Atribuită".
                                 $theme_class = 'theme-default';
                                 $status_content = '';
+                                $is_mine = $row["assigned_to"] == $_SESSION['user_id'];
 
                                 if ($is_overdue) {
                                     $theme_class = 'theme-magenta'; // Urgent/Overdue
-                                    $icon = ($row["assigned_to"] == $_SESSION['user_id']) ? '<i class="fas fa-star"></i>' : '<i class="fa-solid fa-person-digging"></i>';
+                                    $icon = $is_mine ? '<i class="fas fa-star"></i>' : '<i class="fa-solid fa-person-digging"></i>';
                                     $status_content = $icon . ' Întârziată';
-                                } elseif ($row["assigned_to"] == $_SESSION['user_id'] && $status_db != 'completed' && $status_db != 'delivered') {
-                                    $status_content = '<i class="fas fa-star"></i> În lucru';
-                                    $theme_class = 'theme-yellow'; // Current User
-                                } elseif ($status_db != "completed" && $status_db != "delivered") {
-                                    $status_content = '<i class="fa-solid fa-person-digging"></i> Atribuită';
-                                    $theme_class = 'theme-cyan'; // Assigned
+                                } elseif ($is_open_status) {
+                                    $status_content = $is_mine
+                                        ? '<i class="fas fa-star"></i> În lucru'
+                                        : '<i class="fa-solid fa-person-digging"></i> Atribuită';
+                                    $theme_class = $is_due_today ? 'theme-yellow' : 'theme-cyan'; // De livrat azi / Atribuită
                                 } elseif ($status_db == 'completed') {
                                     $status_content = '<i class="fas fa-flag-checkered"></i> Finalizată';
                                     $theme_class = 'theme-green'; // Completed

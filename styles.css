@@ -529,7 +529,7 @@ tbody tr:hover {
 
 /* --- Status-Derived Soft Gradients --- */
 
-/* Yellow (În lucru) */
+/* Yellow (De livrat azi) */
 .heavy-row.theme-yellow {
   background: linear-gradient(
     135deg,
@@ -630,9 +630,16 @@ tbody tr:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Row hover darkens the row (bg tint + brightness filter), which washes out
+   the pill's soft 10% shadow — restate a slightly punchier one so the drop
+   shadow stays visible while the row is hovered. */
+tbody tr:hover .heavy-pill {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
 /* --- 5. CMYK & Print Themes (The Heavy Color Injection) --- */
 
-/* Yellow (În lucru) - Vibrant and glowing */
+/* Yellow (De livrat azi) - Vibrant and glowing */
 .theme-yellow td:first-child {
   border-left-color: #ffde00; /* True Print Yellow */
 }
@@ -681,7 +688,6 @@ tbody tr:hover {
 .theme-key .heavy-pill {
   background: #edf2f7;
   color: #718096;
-  box-shadow: none;
 }
 .theme-key td {
   opacity: 0.75; /* Fades the delivered rows slightly */
@@ -2561,7 +2567,9 @@ textarea {
 }
 
 .card-overdue:hover {
-  box-shadow: 0 15px 30px rgba(220, 38, 38, 0.22);
+  box-shadow:
+    0 15px 30px rgba(220, 38, 38, 0.22),
+    0 10px 25px rgba(0, 0, 0, 0.3); /* keep the idle drop shadow on hover */
 }
 
 /* 🔵 Atribuite — slightly deeper, more confident blue (moved from Livrate azi) */
@@ -2576,7 +2584,9 @@ textarea {
 }
 
 .card-active:hover {
-  box-shadow: 0 15px 30px rgba(51, 181, 229, 0.25);
+  box-shadow:
+    0 15px 30px rgba(51, 181, 229, 0.25),
+    0 10px 25px rgba(0, 0, 0, 0.3); /* keep the idle drop shadow on hover */
 }
 
 /* 🟢 Completed — slightly softer, more premium emerald */
@@ -2591,7 +2601,9 @@ textarea {
 }
 
 .card-completed:hover {
-  box-shadow: 0 15px 30px rgba(5, 150, 105, 0.22);
+  box-shadow:
+    0 15px 30px rgba(5, 150, 105, 0.22),
+    0 10px 25px rgba(0, 0, 0, 0.3); /* keep the idle drop shadow on hover */
 }
 
 /* 🟡 De livrat azi — clear yellow (distinct from the red/orange end) */
@@ -2606,7 +2618,9 @@ textarea {
 }
 
 .card-deliver-today:hover {
-  box-shadow: 0 15px 30px rgba(234, 179, 8, 0.25);
+  box-shadow:
+    0 15px 30px rgba(234, 179, 8, 0.25),
+    0 10px 25px rgba(0, 0, 0, 0.3); /* keep the idle drop shadow on hover */
 }
 
 /* ⚪ Livrate azi — neutral grey (settled / wrapped up for the day) */
@@ -2619,7 +2633,11 @@ textarea {
   color: #cbd5e1; /* light slate — keeps the flag visible on the dark card */
 }
 .card-delivered-today:hover {
-  box-shadow: 0 15px 30px rgba(107, 114, 128, 0.25);
+  /* The grey accent glow alone is almost invisible on white — keep the black
+     drop shadow too, otherwise this card looks like it loses its shadow. */
+  box-shadow:
+    0 15px 30px rgba(107, 114, 128, 0.35),
+    0 10px 25px rgba(0, 0, 0, 0.3);
 }
 
 /* ================================

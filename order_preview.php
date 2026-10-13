@@ -12,7 +12,7 @@ if (!$order_id) {
 
 /* Theme map mirrors .heavy-row accents in styles.css */
 $theme_map = [
-    'yellow'  => '#ffde00', /* În lucru */
+    'yellow'  => '#ffde00', /* De livrat azi */
     'cyan'    => '#00aeef', /* Atribuită */
     'magenta' => '#ff0000', /* Întârziată / Urgent */
     'green'   => '#00c371', /* Finalizată */
@@ -150,7 +150,7 @@ $is_delivered = ($order_status === 'delivered');
        ============================================================ */
     .tippy-box[data-theme~='order-preview'] {
         --preview-accent: #ffde00;
-        /* default: yellow / În lucru */
+        /* default: yellow / De livrat azi */
         --preview-accent-soft: rgba(255, 222, 0, 0.25);
 
         background: linear-gradient(135deg, #000000 0%, #3c3c3c 50%, #6c6c6c 100%);
@@ -494,8 +494,8 @@ $is_delivered = ($order_status === 'delivered');
           • Manual: el.style.setProperty('--preview-accent', '#00aeef')
 
         Colors match .heavy-row left borders in styles.css:
-          yellow  #ffde00  În lucru
-          cyan    #00aeef  Atribuită
+          yellow  #ffde00  De livrat azi
+          cyan    #00aeef  Atribuită (toate comenzile active nelivrate)
           magenta #ff0000  Întârziată / Urgent
           green   #00c371  Finalizată
           key     #a0aec0  Livrată
