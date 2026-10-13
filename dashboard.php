@@ -521,7 +521,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
              tabindex="0"
              role="button"
              aria-pressed="<?= $status_filter === 'completed' ? 'true' : 'false' ?>">
-            <div class="stat-icon"><i class="fa-solid fa-medal" data-icon-active="fa-trophy"></i></div>
+            <div class="stat-icon"><i class="fa-solid fa-check" data-icon-active="fa-trophy"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_completed; ?></h3>
                 <p>Finalizate</p>
@@ -549,7 +549,7 @@ function formatRemainingDays($dueDate, $status, $deliveryDate = null)
              tabindex="0"
              role="button"
              aria-pressed="<?= $status_filter === 'delivered_today' ? 'true' : 'false' ?>">
-            <div class="stat-icon"><i class="fa-solid fa-flag-checkered fa-pulse"></i></div>
+            <div class="stat-icon"><i class="fa-solid fa-flag-checkered"></i></div>
             <div class="stat-info">
                 <h3><?= $stats_delivered_today; ?></h3>
                 <p>Livrate azi</p>

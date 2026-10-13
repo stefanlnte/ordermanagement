@@ -2520,8 +2520,9 @@ textarea {
    animation rules, so an idle card's icon stays perfectly still and
    starts animating the moment the card becomes active. Tune speed with
    FA's own --fa-animation-duration custom property if needed.
-   (The "Finalizate" and "De livrat azi" cards skip FA's built-ins for
-   bespoke keyframes of their own — see STAT CARD ICON MOTION below.) */
+   (The "Finalizate", "De livrat azi" and "Livrate azi" cards skip FA's
+   built-ins for bespoke keyframes of their own — see STAT CARD ICON
+   MOTION below.) */
 .stat-card:not(.stat-filter-active) .stat-icon i {
   animation: none;
 }
@@ -2665,22 +2666,25 @@ textarea {
 /* ================================================================
    STAT CARD ICON MOTION — bespoke keyframes
    ------------------------------------------------------------------
-   Three of the five cards animate with Font Awesome's built-in classes
-   (see the note above). The other two got custom motion instead, built
+   Two of the five cards animate with Font Awesome's built-in classes
+   (see the note above). The other three got custom motion instead, built
    here from plain keyframes plus ::before/::after decorations on the
    .stat-icon halo. Same rules as the FA ones: the motion only runs
-   while the card is the active filter, and never runs for users who
-   prefer reduced motion.
+   while the card is the active filter (except "Livrate azi", whose flag
+   swings continuously — see its section below), and never runs for
+   users who prefer reduced motion.
 
    • "De livrat azi" — a van on the highway: a smooth, purely horizontal
      glide (nothing ever moves on the Y axis — no bouncing) while two
      staggered speed-line dashes streak past behind it.
 
-   • "Finalizate" — a medal catching the light: the medal rocks on its
-     ribbon, a gloss sweep crosses the halo, and a little four-point
-     sparkle pops in the top-right corner. When the card becomes the
-     active filter, fa-medal also swaps to fa-trophy via the standard
-     data-icon-active mechanism in script.js.
+   • "Livrate azi" — the finish-line flag flutters in a light breeze: a
+     gentle rotate/skew wave that reads as fabric, never a 360° spin.
+
+   • "Finalizate" — a plain check mark at rest; when the card becomes
+     the active filter it swaps to fa-trophy via the standard
+     data-icon-active mechanism in script.js and rocks while a gloss
+     sweep crosses the halo and a little four-point sparkle pops.
    ================================================================ */
 
 /* --- De livrat azi ------------------------------------------------- */
@@ -2752,8 +2756,9 @@ textarea {
 
 /* --- Finalizate ---------------------------------------------------- */
 
-/* The medal rocks on its ribbon and settles — a small "job done"
-   flourish instead of a generic pulse. */
+/* The trophy rocks on its pedestal and settles — a small "job done"
+   flourish instead of a generic pulse. Runs on the active card only,
+   where fa-check has been swapped for fa-trophy. */
 @keyframes stat-medal-sway {
   0%,
   100% {
@@ -2847,6 +2852,39 @@ textarea {
     );
     pointer-events: none;
     animation: stat-sparkle-pop 2.4s ease-in-out infinite;
+  }
+}
+
+/* --- Livrate azi --------------------------------------------------- */
+
+/* The finish-line flag caught in a light breeze — a small rotate+skew
+   flutter that reads as fabric waving, not a 360° pirouette (which is
+   what FA's fa-pulse used to do to it). Unlike the other bespoke cards,
+   the flag swings CONTINUOUSLY — idle as well as active — so the card
+   always reads "wrapped up for the day". The .stat-card class bumps the
+   selector to the same specificity as the generic idle "animation: none"
+   rule above; coming later in the file, it wins while the card is idle,
+   and it also covers the active state. The no-preference guard keeps it
+   still for users who opted out of motion. */
+@keyframes stat-flag-wave {
+  0%,
+  100% {
+    transform: rotate(0deg) skewY(0deg);
+  }
+  20% {
+    transform: rotate(2.5deg) skewY(-4deg);
+  }
+  45% {
+    transform: rotate(-1.5deg) skewY(3deg);
+  }
+  70% {
+    transform: rotate(1.5deg) skewY(-2deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stat-card.card-delivered-today .stat-icon i {
+    animation: stat-flag-wave 2.4s ease-in-out infinite;
   }
 }
 
