@@ -1597,7 +1597,14 @@ document.addEventListener('DOMContentLoaded', function () {
  * Accepts an optional onSuccess callback (fires only when the
  * request returns HTTP 200).
  * ============================================================ */
-window.sendSms = function (clientPhone, orderId, assignedTo, clientName, boss, onSuccess) {
+window.sendSms = function (
+  clientPhone,
+  orderId,
+  assignedTo,
+  clientName,
+  boss,
+  onSuccess,
+) {
   let xhr = new XMLHttpRequest();
   xhr.open('POST', 'send_sms.php', true);
   xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -1607,7 +1614,13 @@ window.sendSms = function (clientPhone, orderId, assignedTo, clientName, boss, o
         console.log('SMS SENT for order ' + orderId);
         if (typeof onSuccess === 'function') onSuccess();
       } else {
-        console.error('Nu s-a putut trimite SMS pentru comanda ' + orderId + ' (status ' + xhr.status + ')');
+        console.error(
+          'Nu s-a putut trimite SMS pentru comanda ' +
+            orderId +
+            ' (status ' +
+            xhr.status +
+            ')',
+        );
       }
     }
   };
@@ -1663,20 +1676,26 @@ document.addEventListener('DOMContentLoaded', function () {
           cancelButtonText: 'Anulează',
         }).then((result) => {
           if (result.isConfirmed) {
-            quickUpdateOrderStatus(orderId, 'completed', {}, instance, function () {
-              // Mirror view_order.php's finish flow: after the order is
-              // marked completed, notify the client via SMS.
-              const content = root.querySelector('.order-preview-content');
-              if (content) {
-                window.sendSms(
-                  content.dataset.clientPhone || '',
-                  orderId,
-                  content.dataset.assignedTo || '',
-                  content.dataset.clientName || '',
-                  content.dataset.boss || '',
-                );
-              }
-            });
+            quickUpdateOrderStatus(
+              orderId,
+              'completed',
+              {},
+              instance,
+              function () {
+                // Mirror view_order.php's finish flow: after the order is
+                // marked completed, notify the client via SMS.
+                const content = root.querySelector('.order-preview-content');
+                if (content) {
+                  window.sendSms(
+                    content.dataset.clientPhone || '',
+                    orderId,
+                    content.dataset.assignedTo || '',
+                    content.dataset.clientName || '',
+                    content.dataset.boss || '',
+                  );
+                }
+              },
+            );
           }
         });
       };
@@ -1906,7 +1925,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // reads the form, so without this we'd LOSE the filter when sorting/filtering
     // (the select is empty for smart buckets and the param drops out). Keep the
     // current smart filter here so buildFilterUrl() re-applies it.
-    const SMART_STATUS_FILTERS = ['overdue', 'deliver_today', 'delivered_today'];
+    const SMART_STATUS_FILTERS = [
+      'overdue',
+      'deliver_today',
+      'delivered_today',
+    ];
     let smartFilterStatus = '';
 
     // If the page loaded with a smart filter already active (e.g. ?status_filter=
@@ -1963,18 +1986,6 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .finally(() => {
           if (filtersWrapper) filtersWrapper.classList.remove('is-loading');
-
-          // 4. Afișăm succesul când a terminat, apoi îl închidem
-          Swal.fire({
-            toast: 'true',
-            icon: 'success',
-            title: 'Filtru actualizat',
-            position: 'center',
-            width: 'auto',
-            showConfirmButton: false,
-            timer: 750,
-            backdrop: false,
-          });
         });
     }
 
@@ -2045,14 +2056,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function syncStatCardHighlight(statusValue) {
-      document.querySelectorAll('.stat-card[data-status-filter]').forEach(
-        (card) => {
+      document
+        .querySelectorAll('.stat-card[data-status-filter]')
+        .forEach((card) => {
           const active =
             statusValue !== '' && card.dataset.statusFilter === statusValue;
           card.classList.toggle('stat-filter-active', active);
           card.setAttribute('aria-pressed', active ? 'true' : 'false');
-        },
-      );
+        });
     }
 
     document
@@ -2671,10 +2682,7 @@ $(document).ready(function () {
           if (!emailDisplay && phoneDisplay) {
             emailDisplay = document.createElement('p');
             emailDisplay.id = 'client_email_display';
-            phoneDisplay.insertAdjacentElement(
-              'afterend',
-              emailDisplay,
-            );
+            phoneDisplay.insertAdjacentElement('afterend', emailDisplay);
           }
           if (emailDisplay) emailDisplay.textContent = newEmail;
         } else if (emailDisplay) {
@@ -2792,19 +2800,26 @@ $(document).ready(function () {
   // (same one the order-preview Tippy popup uses), then shows the success
   // modal only after send_sms.php answered with HTTP 200.
   function sendSMS(clientPhone, orderId, assignedTo, clientName, boss) {
-    window.sendSms(clientPhone, orderId, assignedTo, clientName, boss, function () {
-      Swal.fire({
-        icon: 'success',
-        title: 'Felicitări!',
-        text: 'Comanda a fost terminată cu succes 🎉',
-        position: 'center',
-        showConfirmButton: false,
-        timer: 2000,
-        timerProgressBar: true,
-      }).then(() => {
-        console.log('SMS SENT');
-      });
-    });
+    window.sendSms(
+      clientPhone,
+      orderId,
+      assignedTo,
+      clientName,
+      boss,
+      function () {
+        Swal.fire({
+          icon: 'success',
+          title: 'Felicitări!',
+          text: 'Comanda a fost terminată cu succes 🎉',
+          position: 'center',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true,
+        }).then(() => {
+          console.log('SMS SENT');
+        });
+      },
+    );
   }
 
   window.deliverOrder = function () {
@@ -2909,7 +2924,8 @@ $(document).ready(function () {
   function syncTicketBadges() {
     const achitatBtn = document.getElementById('toggleAchitatButton');
     const isAchitat =
-      (achitatBtn && Number(achitatBtn.getAttribute('data-current-state')) === 1) ||
+      (achitatBtn &&
+        Number(achitatBtn.getAttribute('data-current-state')) === 1) ||
       !!document.querySelector('[id^="achitatContainer-"] .achitatBadge');
     const printAchitat = document.getElementById('printAchitatBadge');
     if (printAchitat) {
@@ -2917,7 +2933,9 @@ $(document).ready(function () {
     }
     const printLucru = document.getElementById('printLucruBadge');
     if (printLucru) {
-      printLucru.style.display = document.getElementById('comandaLucruElement') ? '' : 'none';
+      printLucru.style.display = document.getElementById('comandaLucruElement')
+        ? ''
+        : 'none';
     }
     const liveBody = document.getElementById('bonTableBody');
     const ticketBody = document.getElementById('printBonBody');
@@ -3035,7 +3053,10 @@ $(document).ready(function () {
       h2Element.id = 'comandaLucruElement';
       h2Element.textContent = 'Comandă în lucru';
       const badges = document.querySelector('.vo-badges');
-      const title = document.querySelector('.vo-title-heading') || document.querySelector('.vo-title-row h2') || document.querySelector('h2');
+      const title =
+        document.querySelector('.vo-title-heading') ||
+        document.querySelector('.vo-title-row h2') ||
+        document.querySelector('h2');
       if (badges) {
         badges.appendChild(h2Element);
       } else if (title) {
@@ -3541,7 +3562,8 @@ $(document).ready(function () {
 
     // Format: days = 24h blocks; last day runs until dueMs (may be 18:00)
     function formatWithSeconds(totalSec) {
-      if (totalSec <= 0) return isCompleted ? 'Livrare în așteptare' : 'Termen depășit';
+      if (totalSec <= 0)
+        return isCompleted ? 'Livrare în așteptare' : 'Termen depășit';
       let days = Math.floor(totalSec / 86400);
       let rem = totalSec - days * 86400;
       let hours = Math.floor(rem / 3600);
@@ -3696,8 +3718,8 @@ document.addEventListener('DOMContentLoaded', function () {
     return window.location.search;
   }
 
-  let lastKey = null;     // view key we have a baseline for
-  let knownPageSig = null;  // hash of the table/pagination/pinned for lastKey
+  let lastKey = null; // view key we have a baseline for
+  let knownPageSig = null; // hash of the table/pagination/pinned for lastKey
   let knownStatsSig = null; // hash of the stat cards currently on screen
   let checkInFlight = false;
 

@@ -2564,19 +2564,19 @@ textarea {
   box-shadow: 0 15px 30px rgba(220, 38, 38, 0.22);
 }
 
-/* 🟡 In Progress — warmer amber that sits between red & orange */
+/* 🔵 Atribuite — slightly deeper, more confident blue (moved from Livrate azi) */
 .card-active {
-  --accent: 217, 119, 6; /* #d97706 */
-  border-left: 4px solid #d97706;
+  --accent: 51, 181, 229; /* #33b5e5 */
+  border-left: 4px solid #33b5e5;
 }
 
 .card-active .stat-icon {
-  background: rgba(217, 119, 6, 0.12);
-  color: #d97706;
+  background: rgba(51, 181, 229, 0.15);
+  color: #33b5e5;
 }
 
 .card-active:hover {
-  box-shadow: 0 15px 30px rgba(217, 119, 6, 0.22);
+  box-shadow: 0 15px 30px rgba(51, 181, 229, 0.25);
 }
 
 /* 🟢 Completed — slightly softer, more premium emerald */
@@ -2594,32 +2594,32 @@ textarea {
   box-shadow: 0 15px 30px rgba(5, 150, 105, 0.22);
 }
 
-/* 🟠 Deliver Today — pure, vivid orange (clearly separated from amber) */
+/* 🟡 De livrat azi — clear yellow (distinct from the red/orange end) */
 .card-deliver-today {
-  --accent: 234, 88, 12; /* #ea580c */
-  border-left: 4px solid #ea580c;
+  --accent: 234, 179, 8; /* #eab308 */
+  border-left: 4px solid #eab308;
 }
 
 .card-deliver-today .stat-icon {
-  background: rgba(234, 88, 12, 0.12);
-  color: #ea580c;
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
 }
 
 .card-deliver-today:hover {
-  box-shadow: 0 15px 30px rgba(234, 88, 12, 0.22);
+  box-shadow: 0 15px 30px rgba(234, 179, 8, 0.25);
 }
 
-/* 🔵 Delivered Today — slightly deeper, more confident blue */
+/* ⚪ Livrate azi — neutral grey (settled / wrapped up for the day) */
 .card-delivered-today {
-  --accent: 51, 181, 229;
-  border-left: 4px solid #33b5e5;
+  --accent: 107, 114, 128; /* #6b7280 */
+  border-left: 4px solid #6b7280;
 }
 .card-delivered-today .stat-icon {
-  background: rgba(51, 181, 229, 0.15);
-  color: #33b5e5;
+  background: rgba(203, 213, 225, 0.16);
+  color: #cbd5e1; /* light slate — keeps the flag visible on the dark card */
 }
 .card-delivered-today:hover {
-  box-shadow: 0 15px 30px rgba(51, 181, 229, 0.25);
+  box-shadow: 0 15px 30px rgba(107, 114, 128, 0.25);
 }
 
 /* ================================
